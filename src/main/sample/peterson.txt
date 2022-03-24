@@ -1,0 +1,20 @@
+shared int turn;
+shared bool flag0 false;
+shared bool flag1 false;
+shared int change;
+
+fork (turn)
+{
+  flag0 = true;
+  turn = 1;
+  while (flag1 && turn == 1) { }
+  change = 1;
+  flag0 = false;
+  }
+{
+  flag1 = true;
+  turn = 0;
+  while (flag0 && turn == 0) { }
+  change = 2;
+  flag1 = false;
+}
