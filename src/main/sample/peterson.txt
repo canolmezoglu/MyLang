@@ -1,9 +1,9 @@
-shared int turn;
+shared int turn = 0;
 shared bool flag0 false;
 shared bool flag1 false;
-shared int change;
+shared int change = 0;
 
-fork (turn)
+thread
 {
   flag0 = true;
   turn = 1;
@@ -11,7 +11,7 @@ fork (turn)
   change = 1;
   flag0 = false;
   }
-{
+thread {
   flag1 = true;
   turn = 0;
   while (flag0 && turn == 0) { }

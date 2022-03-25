@@ -1,40 +1,51 @@
 grammar MyLang;
 
-program: stat+
+program: instruction+
     ;
-stat: RPAR stat* LPAR                           #blockStat
-    | SHARED? type target '=' expr? END          #assStat
-    | target '=' expr END                       #changeStat
-    | IF LPAR expr RPAR stat (ELSE stat)?       #ifStat
-    | WHILE LPAR expr RPAR LBRACE stat? RBRACE   #whileStat
-    | FORK LPAR target RPAR  fstat fstat        #forkStat
-    ;
-
-fstat: LBRACE stat* RBRACE #forkBlock
+instruction:
+      statement                                 #statementInst
+    | ifConstruct                               #ifInst
+    | whileConstruct                            #whileInst
+    | threadConstruct                           #threadInst
+    | printConstruct                            #printInst
     ;
 
-target
-    : ID               #idTarget
+statement: declaration | changeAss ;
+
+ifConstruct :  IF LPAR expr RPAR LBRACE instruction* RBRACE (ELSE LBRACE instruction* RBRACE)? ;
+
+whileConstruct :  WHILE LPAR expr RPAR LBRACE instruction* RBRACE  ;
+
+threadConstruct : THREAD LBRACE instruction+ RBRACE;
+
+printConstruct : PRINT LPAR expr RPAR END;
+
+// all the first+ is same below, problem?
+expr: prefixOp expr        #prfExpr
+    | expr mult expr       #multExpr
+    | expr plus expr       #plusExpr
+    | expr comp expr       #compExpr
+    | expr booleanOp expr  #boolExpr
+    | LPAR expr RPAR       #parExpr
+    | primitive            #primitiveExpr
+    | ID                   #idExpr
     ;
 
-expr: prfOp expr        #prfExpr
-    | expr mult expr  #multExpr
-    | expr plus expr  #plusExpr
-    | expr comp expr  #compExpr
-    | expr ( AND | OR ) expr  #boolExpr
-    | LPAR expr RPAR    #parExpr
-    | ID                #idExpr
-    | NUM               #numExpr
-    | TRUE              #trueExpr
-    | FALSE             #falseExpr
-    ;
+declaration: access? type ID ASS expr? END;
 
-prfOp: MINUS | NOT;
+changeAss: ID ASS expr END  ;
+
+primitive : NUM | (TRUE|FALSE) ;
+
+prefixOp: MINUS | NOT;
 
 mult: STAR;
 
 plus: PLUS | MINUS;
 
+access: GLOBAL | SHARED ;
+
+booleanOp:  AND | OR ;
 
 comp: LE | LT | GE | GT | EQ | NE;
 
@@ -42,24 +53,23 @@ type: INTEGER  #intType
     | BOOLEAN  #boolType
     ;
 
-AND:    '&&';
+AND:    'and  ';
 BOOLEAN: 'bool' ;
 INTEGER: 'int' ;
 ELSE:    'else' ;
 END:     ';' ;
 FALSE:   'false';
 SHARED: 'shared';
+GLOBAL: 'global';
 IF:      'if' ;
-FORK:    'fork' ;
+THREAD:  'thread' ;
 NOT:     'not' ;
-OR:      '||' ;
+OR:      'or' ;
 TRUE:    'true' ;
 WHILE:  'while';
+PRINT: 'print';
 
-COLON:  ':';
-COMMA:  ',';
-DOT:    '.';
-DQUOTE: '"';
+ASS: '=';
 EQ:     '==';
 GE:     '>=';
 GT:     '>';
@@ -72,7 +82,6 @@ NE:     '<>';
 PLUS:   '+';
 RBRACE: '}';
 RPAR:   ')';
-SLASH:  '/';
 STAR:   '*';
 
 
