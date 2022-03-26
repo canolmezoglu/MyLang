@@ -10,7 +10,9 @@ instruction:
     | printConstruct                            #printInst
     ;
 
-statement: declaration | changeAss ;
+statement: declaration #declStat
+           | changeAss #changeStat
+           ;
 
 ifConstruct :  IF LPAR expr RPAR LBRACE instruction* RBRACE (ELSE LBRACE instruction* RBRACE)? ;
 
@@ -23,7 +25,7 @@ printConstruct : PRINT LPAR expr RPAR END;
 // all the first+ is same below, problem?
 expr: prefixOp expr        #prfExpr
     | expr mult expr       #multExpr
-    | expr plus expr       #plusExpr
+    | expr addOp expr       #addExpr
     | expr comp expr       #compExpr
     | expr booleanOp expr  #boolExpr
     | LPAR expr RPAR       #parExpr
@@ -35,13 +37,15 @@ declaration: access? type ID ASS expr? END;
 
 changeAss: ID ASS expr END  ;
 
-primitive : NUM | (TRUE|FALSE) ;
+primitive : NUM | booleanVal ;
+
+booleanVal :  (TRUE|FALSE);
 
 prefixOp: MINUS | NOT;
 
 mult: STAR;
 
-plus: PLUS | MINUS;
+addOp: PLUS | MINUS;
 
 access: GLOBAL | SHARED ;
 
@@ -49,8 +53,8 @@ booleanOp:  AND | OR ;
 
 comp: LE | LT | GE | GT | EQ | NE;
 
-type: INTEGER  #intType
-    | BOOLEAN  #boolType
+type: INTEGER
+    | BOOLEAN
     ;
 
 AND:    'and  ';

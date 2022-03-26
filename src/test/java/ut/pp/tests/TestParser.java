@@ -38,6 +38,6 @@ public class TestParser {
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
         ParseTree tree = parser.program();
-        assertEquals(3, tree.getChildCount());
+        assertEquals(6, tree.getChildCount());
     }
 }
