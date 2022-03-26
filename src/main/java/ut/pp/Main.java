@@ -19,7 +19,7 @@ public class Main {
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
-        ParseTree tree = parser.hellos();
+        ParseTree tree = parser.instruction();
 
         System.out.println("Children: " + tree.getChildCount() + ", parsed text: " + tree.getText());
     }

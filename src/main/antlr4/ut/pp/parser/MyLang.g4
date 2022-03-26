@@ -14,7 +14,7 @@ statement: declaration | changeAss ;
 
 ifConstruct :  IF LPAR expr RPAR LBRACE instruction* RBRACE (ELSE LBRACE instruction* RBRACE)? ;
 
-whileConstruct :  WHILE LPAR expr RPAR LBRACE instruction* RBRACE  ;
+whileConstruct :  WHILE LPAR (declaration+ COMMA)* expr RPAR LBRACE instruction* RBRACE  ;
 
 threadConstruct : THREAD LBRACE instruction+ RBRACE;
 
@@ -83,6 +83,7 @@ PLUS:   '+';
 RBRACE: '}';
 RPAR:   ')';
 STAR:   '*';
+COMMA:   ',';
 
 
 fragment LETTER: [a-zA-Z];

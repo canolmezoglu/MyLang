@@ -1,14 +1,11 @@
 shared int money = 0;
-thread {
-    int wait = 100;
-    while (wait > 0){
+thread {    while (int wait = 100, wait > 0){
         wait = wait - 1;
         money = money + 1;
     }
 }
 thread {
-    int wait = 100;
-    while (wait > 0){
+    while (int wait = 100, wait > 0){
         wait = wait - 1;
         money = money - 1;
     }
