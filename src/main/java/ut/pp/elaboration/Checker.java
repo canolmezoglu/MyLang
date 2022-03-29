@@ -1,15 +1,16 @@
 package ut.pp.elaboration;
+
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import ut.pp.parser.MyLangBaseListener;
-import org.antlr.v4.runtime.tree.ParseTree;
 import ut.pp.parser.MyLangParser;
 
-import java.sql.ResultSet;
 import java.util.List;
 
 public class Checker extends MyLangBaseListener {
     private List<String> errors;
     private Result result;
+    private ScopeTable scope=new ScopeTable();
     public Result check (ParseTree tree) throws Exception {
         new ParseTreeWalker().walk(this, tree);
         if (!this.errors.isEmpty()){
@@ -62,12 +63,12 @@ public class Checker extends MyLangBaseListener {
     @Override public void exitParExpr(MyLangParser.ParExprContext ctx){
         setType(ctx,getType(ctx.expr()));
     }
+
     @Override public void exitPrimitiveExpr(MyLangParser.PrimitiveExprContext ctx){
         result.setType(ctx,getType(ctx.primitive()));
     }
     //TODO getType should be done with scopetable
     @Override public void exitIdExpr(MyLangParser.IdExprContext ctx){
-        // I GET THE TYPE FROM SCOPETABLE HERE FROM THE ID OF THE VARIABLE
     }
 
     @Override public void exitPrimitive(MyLangParser.PrimitiveContext ctx) {
@@ -80,14 +81,17 @@ public class Checker extends MyLangBaseListener {
         }
     }
 
-
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
-        // I SHOULD GET THE TYPE FROM SCOPETABLE HERE
-        MyType magicalTypeFromScopeTable = MyType.BOOLEAN;
-        if (magicalTypeFromScopeTable != getType(ctx.expr())){
-            this.errors.add("you are changing a variable to an unexpected type");
+        MyType check = scope.check(ctx.ID().toString(),ctx.getStart());//check local scope first
+        if(check == null){
+            check = scope.checkGlobal(ctx.ID().toString(),ctx.getStart());//if local scope is null, check global scope
         }
-        setType(ctx,getType(ctx.expr()));
+        if(check!=null) {
+            if (check != getType(ctx.expr())) {
+                this.errors.add("you are changing a variable to an unexpected type");
+            }
+            setType(ctx, getType(ctx.expr()));
+        }
     }
 
     //TODO type should be set here to the id of the variable
@@ -97,34 +101,76 @@ public class Checker extends MyLangBaseListener {
                 this.errors.add("you are trying to assign an integer to a boolean variable");
             }
             setType(ctx, MyType.BOOLEAN);
+            scope.declare(ctx.ID().toString(),MyType.BOOLEAN,ctx.getStart());
         }
         else if (ctx.type().INTEGER() != null ) {
             if (getType(ctx.expr()) != MyType.NUM) {
                 this.errors.add("you are trying to assign an boolean to an integer variable");
             }
             setType(ctx, MyType.NUM);
+            scope.declare(ctx.ID().toString(),MyType.BOOLEAN,ctx.getStart());
+        }
+        else{
+            this.errors.add("Invalid type");
         }
     }
+
+    @Override
+    public void enterProgram(MyLangParser.ProgramContext ctx) {
+        scope.openScope();
+        super.enterProgram(ctx);
+    }
+
+    @Override
+    public void exitProgram(MyLangParser.ProgramContext ctx) {
+        scope.closeScope();
+        super.exitProgram(ctx);
+    }
+
+    @Override
+    public void enterIfConstruct(MyLangParser.IfConstructContext ctx) {
+        scope.openScope();
+        super.enterIfConstruct(ctx);
+    }
+
     @Override public void exitIfConstruct(MyLangParser.IfConstructContext ctx){
+        scope.closeScope();
         if (getType(ctx.expr()) != MyType.BOOLEAN ){
             this.errors.add("if statement can only check a boolean");
         }
     }
 
+    @Override
+    public void enterWhileConstruct(MyLangParser.WhileConstructContext ctx) {
+        scope.openScope();
+        super.enterWhileConstruct(ctx);
+    }
+
     @Override public void exitWhileConstruct(MyLangParser.WhileConstructContext ctx){
+        scope.closeScope();
         if (getType(ctx.expr()) != MyType.BOOLEAN ){
             this.errors.add("while statement can only check a boolean");
         }
     }
+
+    @Override
+    public void enterThreadConstruct(MyLangParser.ThreadConstructContext ctx) {
+        scope.openScope();
+        super.enterThreadConstruct(ctx);
+    }
+
+    @Override
+    public void exitThreadConstruct(MyLangParser.ThreadConstructContext ctx) {
+        scope.closeScope();
+        super.exitThreadConstruct(ctx);
+    }
+
     public void setType(ParseTree node, MyType type) {
         this.result.setType(node, type);
     }
     public MyType getType (ParseTree node) {
         return this.result.getType(node);
     }
-
-
-
 }
 
 
