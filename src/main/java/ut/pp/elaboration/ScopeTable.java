@@ -41,21 +41,34 @@ public class ScopeTable {
             this.errors.add(var+" already declared in this scope: "+tk.getLine());
         }
     }
+
+    public MyType check(String var,Token tk){
+        MyType check = checkLocal(var,tk);
+        if (check!=null){
+            return check;
+        }
+        check = checkGlobal(var,tk);
+        if(check==null){
+            errors.add(var+" not declared in this scope: "+tk.getLine());
+            return null;
+        }
+        return check;
+    }
     /*
     Checks the current scope if the variable exists and returns the type of the variable if it exists,
     and returns null if the variable does not exist in the current scope
      */
-    public MyType check(String var,Token tk){
+    public MyType checkLocal(String var,Token tk){
         if(this.scopes.get(this.scope_num).containsKey(var)){
             return this.scopes.get(this.scope_num).get(var);
         }
-        errors.add(var+" not declared in this scope: "+tk.getLine());
         return null;
     }
     /*
     Checks all scopes starting from the deepest level if the variable exists and returns the type of the variable if it exists,
     and returns null if the variable does not exist globally
      */
+
     public MyType checkGlobal(String var,Token tk){
         ListIterator<HashMap<String,MyType>> iterator= this.scopes.listIterator(this.scopes.size());
         while(iterator.hasPrevious()){
@@ -63,7 +76,6 @@ public class ScopeTable {
                 return iterator.previous().get(var);
             }
         }
-        this.errors.add(var+" has not been declared: "+tk.getLine());
         return null;
     }
     /*
@@ -82,7 +94,6 @@ public class ScopeTable {
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry)it.next();
                 System.out.println(pair.getKey() + " = " + pair.getValue());
-                it.remove();
             }
         }
     }
