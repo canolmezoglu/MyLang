@@ -10,6 +10,7 @@ import ut.pp.parser.MyLangParser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Checker extends MyLangBaseListener {
     private List<String> errors=new ArrayList<>();
@@ -18,23 +19,25 @@ public class Checker extends MyLangBaseListener {
 
     public static void main(String args[]) throws Exception {
         Checker c = new Checker();
-        String input = "while (int wait = 100, wait > 0){" +
-                "        wait = wait - 1;" +
-                "        money = money + 1;" +
-                "    }";
+        String input = "  int wait=1; while (wait > 0){\n" +
+                "        int c=0; wait = wait - 1;\n"+
+                "    } c=100;";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
         ParseTree tree = parser.instruction();
-        c.check(tree);
+        System.out.println(c.checkScope(tree));
+    }
 
+    public Set<String> checkScope(ParseTree tree){
+        new ParseTreeWalker().walk(this, tree);
+        return scope.errors;
     }
 
     public Result check (ParseTree tree) throws Exception {
         new ParseTreeWalker().walk(this, tree);
-        this.errors.addAll(scope.errors);
+        this.errors.addAll((scope.errors));
         if (!this.errors.isEmpty()){
-            scope.print();
             throw new Exception(this.errors.toString());
         }
         return this.result;
@@ -90,10 +93,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitIdExpr(MyLangParser.IdExprContext ctx){
-        MyType check = scope.check(ctx.ID().toString(),ctx.getStart());//check local scope first
-        if(check == null){
-            check = scope.checkGlobal(ctx.ID().toString(),ctx.getStart());//if local scope is null, check global scope
-        }
+        MyType check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
             setType(ctx,check);
         }
@@ -110,10 +110,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
-        MyType check = scope.check(ctx.ID().toString(),ctx.getStart());//check local scope first
-        if(check == null){
-            check = scope.checkGlobal(ctx.ID().toString(),ctx.getStart());//if local scope is null, check global scope
-        }
+        MyType check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
             if (check != getType(ctx.expr())) {
                 this.errors.add("you are changing a variable to an unexpected type");
@@ -123,7 +120,6 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
-
         if (ctx.type().BOOLEAN() != null) {
             if (getType(ctx.expr()) != MyType.BOOLEAN) {
                 this.errors.add("you are trying to assign an integer to a boolean variable");
@@ -141,18 +137,6 @@ public class Checker extends MyLangBaseListener {
         else{
             this.errors.add("Invalid type");
         }
-    }
-
-    @Override
-    public void enterProgram(MyLangParser.ProgramContext ctx) {
-        scope.openScope();
-        super.enterProgram(ctx);
-    }
-
-    @Override
-    public void exitProgram(MyLangParser.ProgramContext ctx) {
-        scope.closeScope();
-        super.exitProgram(ctx);
     }
 
     @Override
