@@ -5,12 +5,12 @@ import org.antlr.v4.runtime.Token;
 import java.util.*;
 
 public class ScopeTable {
-    List<String> errors;
+    Set<String> errors;
     List<HashMap<String,MyType>> scopes;
     int scope_num;
 
     public ScopeTable(){
-        this.errors = new ArrayList<>();
+        this.errors = new HashSet<>();
         this.scopes = new ArrayList<>();
         this.scope_num=0;
         this.scopes.add(new HashMap<>());
