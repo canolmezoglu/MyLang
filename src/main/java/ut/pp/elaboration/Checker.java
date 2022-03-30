@@ -7,30 +7,19 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import ut.pp.parser.MyLangBaseListener;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
-
+import ut.pp.elaboration.ScopeTable;
+import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Checker extends MyLangBaseListener {
-    private List<String> errors=new ArrayList<>();
-    private Result result=new Result();
-    private ScopeTable scope=new ScopeTable();
-
-    public static void main(String args[]) throws Exception {
-        Checker c = new Checker();
-        String input = "while (int wait = 100, wait > 0){" +
-                "        wait = wait - 1;" +
-                "        money = money + 1;" +
-                "    }";
-        MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
-        CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
-        MyLangParser parser = new MyLangParser(tokens);
-        ParseTree tree = parser.instruction();
-        c.check(tree);
-
-    }
-
+    private List<String> errors;
+    private Result result;
+    private ScopeTable scope;
     public Result check (ParseTree tree) throws Exception {
+        this.result = new Result();
+        this.errors = new ArrayList<String>();
+        this.scope = new ScopeTable();
         new ParseTreeWalker().walk(this, tree);
         this.errors.addAll(scope.errors);
         if (!this.errors.isEmpty()){
@@ -39,6 +28,7 @@ public class Checker extends MyLangBaseListener {
         }
         return this.result;
     }
+
 
     @Override public void exitPrfExpr(MyLangParser.PrfExprContext ctx){
         if (ctx.prefixOp().MINUS() != null && getType(ctx.expr() )!= MyType.NUM){
@@ -84,7 +74,6 @@ public class Checker extends MyLangBaseListener {
     @Override public void exitParExpr(MyLangParser.ParExprContext ctx){
         setType(ctx,getType(ctx.expr()));
     }
-
     @Override public void exitPrimitiveExpr(MyLangParser.PrimitiveExprContext ctx){
         result.setType(ctx,getType(ctx.primitive()));
     }
@@ -98,7 +87,6 @@ public class Checker extends MyLangBaseListener {
             setType(ctx,check);
         }
     }
-
     @Override public void exitPrimitive(MyLangParser.PrimitiveContext ctx) {
         if (ctx.NUM() != null) {
             result.setType(ctx,MyType.NUM);
@@ -108,6 +96,7 @@ public class Checker extends MyLangBaseListener {
             result.setType(ctx,MyType.BOOLEAN);
         }
     }
+
 
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
         MyType check = scope.check(ctx.ID().toString(),ctx.getStart());//check local scope first
@@ -199,6 +188,11 @@ public class Checker extends MyLangBaseListener {
     public MyType getType (ParseTree node) {
         return this.result.getType(node);
     }
+
+    public List<String> getErrors() {
+        return this.errors;
+    }
+
 }
 
 
