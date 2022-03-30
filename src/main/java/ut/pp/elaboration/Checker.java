@@ -70,7 +70,7 @@ public class Checker extends MyLangBaseListener {
         else if (leftType != MyType.NUM && leftType != rightType){
             this.errors.add("you cannot compare boolean types");
         }
-        setType(ctx, getType(ctx.expr(0)));
+        setType(ctx, MyType.BOOLEAN);
     }
     @Override public void exitBoolExpr(MyLangParser.BoolExprContext ctx){
         MyType leftType = getType(ctx.expr(0));
@@ -136,7 +136,6 @@ public class Checker extends MyLangBaseListener {
     @Override
     public void enterIfConstruct(MyLangParser.IfConstructContext ctx) {
         scope.openScope();
-        super.enterIfConstruct(ctx);
     }
 
     @Override public void exitIfConstruct(MyLangParser.IfConstructContext ctx){
@@ -149,7 +148,6 @@ public class Checker extends MyLangBaseListener {
     @Override
     public void enterWhileConstruct(MyLangParser.WhileConstructContext ctx) {
         scope.openScope();
-        super.enterWhileConstruct(ctx);
     }
 
     @Override public void exitWhileConstruct(MyLangParser.WhileConstructContext ctx){
@@ -162,13 +160,11 @@ public class Checker extends MyLangBaseListener {
     @Override
     public void enterThreadConstruct(MyLangParser.ThreadConstructContext ctx) {
         scope.openScope();
-        super.enterThreadConstruct(ctx);
     }
 
     @Override
     public void exitThreadConstruct(MyLangParser.ThreadConstructContext ctx) {
         scope.closeScope();
-        super.exitThreadConstruct(ctx);
     }
 
     public void setType(ParseTree node, MyType type) {

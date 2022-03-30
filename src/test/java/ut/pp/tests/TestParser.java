@@ -10,25 +10,31 @@ import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
 public class TestParser {
-//    @Test
-//    public void oneHello() {
-//        String input = "Hello";
-//        MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
-//        CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
-//        MyLangParser parser = new MyLangParser(tokens);
-//        ParseTree tree = parser.instruction();
-//        assertEquals(2, tree.getChildCount()); // 1 for Hello, 1 for EOF
-//    }
-//
-//    @Test
-//    public void helloNewlineHello() {
-//        String input = "Hello\nHello";
-//        MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
-//        CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
-//        MyLangParser parser = new MyLangParser(tokens);
-//        ParseTree tree = parser.instruction();
-//        assertEquals(3, tree.getChildCount()); // 2 for Hello, 1 for EOF
-//    }
+    @Test
+    public void oneHello() {
+        String input = "int wait=100; while (wait > 0){\n" +
+                "        wait = wait - 1;\n" +
+                "        money = money - 1;\n" +
+                "    }";
+        MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
+        CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
+        MyLangParser parser = new MyLangParser(tokens);
+        ParseTree tree = parser.program();
+        assertEquals(3, tree.getChildCount()); // 1 for Hello, 1 for EOF
+    }
+
+    @Test
+    public void helloNewlineHello() {
+         String input = "int wait= 100;int money=120; while (wait > 0){\n" +
+                "        wait = wait - 1;\n" +
+                "        money = money - 1;\n" +
+                "    }";
+        MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
+        CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
+        MyLangParser parser = new MyLangParser(tokens);
+        ParseTree tree = parser.program();
+        assertEquals(3, tree.getChildCount()); // 2 for Hello, 1 for EOF
+    }
 //
 //    @Test
 //    public void helloWorld() {

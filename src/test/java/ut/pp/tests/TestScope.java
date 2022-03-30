@@ -9,15 +9,10 @@ import org.junit.Test;
 import ut.pp.elaboration.Checker;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
+import ut.pp.tests.TestChecker;
 
 public class TestScope {
 
-    public ParseTree getTree(String input){
-        MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
-        CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
-        MyLangParser parser = new MyLangParser(tokens);
-        return parser.instruction();
-    }
     Checker c = new Checker();
 
     @Test
@@ -26,7 +21,8 @@ public class TestScope {
                 "        wait = wait - 1;\n" +
                 "        money = money - 1;\n" +
                 "    }";
-        c.check(getTree(input));
+
+        c.check(TestChecker.getParseTree(input));
         assertEquals(0,c.getScopeErrors().size());
     }
     @Test
@@ -35,8 +31,15 @@ public class TestScope {
                 "        wait = wait - 1;\n" +
                 "        money = money - 1;\n" +
                 "    }";
-        c.check(getTree(input));
-        assertEquals(1,c.getScopeErrors().size());
+        try {
+            c.check(TestChecker.getParseTree(input));
+        }
+        catch ( Exception e) {
+            System.out.println(e.getMessage());
+
+            assertEquals(1, c.getScopeErrors().size());
+
+        }
     }
     @Test
     public void test3() throws Exception {
@@ -44,8 +47,14 @@ public class TestScope {
                 "        wait = wait - 1;\n" +
                 "        int c=0;\n" +
                 "    } c=100;" ;
-        c.check(getTree(input));
-        assertEquals(1,c.getScopeErrors().size());
+        try {
+            c.check(TestChecker.getParseTree(input));
+        }
+        catch ( Exception e) {
+            System.out.println(e.getMessage());
+            assertEquals(1, c.getScopeErrors().size());
+
+        }
     }
     @Test
     public void test4() throws Exception {
@@ -57,7 +66,7 @@ public class TestScope {
                 "  bool numberofiterations = false;\n" +
                 "\n" +
                 "}";
-        c.check(getTree(input));
+        c.check(TestChecker.getParseTree(input));
         assertEquals(0,c.getScopeErrors().size());
     }
 
