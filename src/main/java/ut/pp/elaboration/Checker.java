@@ -1,19 +1,40 @@
 package ut.pp.elaboration;
 
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import ut.pp.parser.MyLangBaseListener;
+import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Checker extends MyLangBaseListener {
-    private List<String> errors;
-    private Result result;
+    private List<String> errors=new ArrayList<>();
+    private Result result=new Result();
     private ScopeTable scope=new ScopeTable();
+
+    public static void main(String args[]) throws Exception {
+        Checker c = new Checker();
+        String input = "while (int wait = 100, wait > 0){" +
+                "        wait = wait - 1;" +
+                "        money = money + 1;" +
+                "    }";
+        MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
+        CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
+        MyLangParser parser = new MyLangParser(tokens);
+        ParseTree tree = parser.instruction();
+        c.check(tree);
+
+    }
+
     public Result check (ParseTree tree) throws Exception {
         new ParseTreeWalker().walk(this, tree);
+        this.errors.addAll(scope.errors);
         if (!this.errors.isEmpty()){
+            scope.print();
             throw new Exception(this.errors.toString());
         }
         return this.result;
@@ -67,8 +88,15 @@ public class Checker extends MyLangBaseListener {
     @Override public void exitPrimitiveExpr(MyLangParser.PrimitiveExprContext ctx){
         result.setType(ctx,getType(ctx.primitive()));
     }
-    //TODO getType should be done with scopetable
+
     @Override public void exitIdExpr(MyLangParser.IdExprContext ctx){
+        MyType check = scope.check(ctx.ID().toString(),ctx.getStart());//check local scope first
+        if(check == null){
+            check = scope.checkGlobal(ctx.ID().toString(),ctx.getStart());//if local scope is null, check global scope
+        }
+        if(check!=null) {
+            setType(ctx,check);
+        }
     }
 
     @Override public void exitPrimitive(MyLangParser.PrimitiveContext ctx) {
@@ -94,8 +122,8 @@ public class Checker extends MyLangBaseListener {
         }
     }
 
-    //TODO type should be set here to the id of the variable
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
+
         if (ctx.type().BOOLEAN() != null) {
             if (getType(ctx.expr()) != MyType.BOOLEAN) {
                 this.errors.add("you are trying to assign an integer to a boolean variable");
@@ -108,7 +136,7 @@ public class Checker extends MyLangBaseListener {
                 this.errors.add("you are trying to assign an boolean to an integer variable");
             }
             setType(ctx, MyType.NUM);
-            scope.declare(ctx.ID().toString(),MyType.BOOLEAN,ctx.getStart());
+            scope.declare(ctx.ID().toString(),MyType.NUM,ctx.getStart());
         }
         else{
             this.errors.add("Invalid type");
