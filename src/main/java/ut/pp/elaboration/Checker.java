@@ -30,6 +30,7 @@ public class Checker extends MyLangBaseListener {
     }
 
 
+
     @Override public void exitPrfExpr(MyLangParser.PrfExprContext ctx){
         if (ctx.prefixOp().MINUS() != null && getType(ctx.expr() )!= MyType.NUM){
                 this.errors.add("Prefix operation has type mismatch, expected int, got bool");
@@ -180,6 +181,11 @@ public class Checker extends MyLangBaseListener {
     public List<String> getErrors() {
         return this.errors;
     }
+    public Set<String> getScopeErrors(){
+
+        return scope.errors;
+    }
+
 
 }
 
