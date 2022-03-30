@@ -59,8 +59,15 @@ public class Checker extends MyLangBaseListener {
 
     @Override public void exitCompExpr(MyLangParser.CompExprContext ctx){
         MyType leftType = getType(ctx.expr(0));
-        if (leftType != MyType.NUM && leftType != getType(ctx.expr(1))){
-            this.errors.add("compare expression does not compare booleans");
+        MyType rightType = getType(ctx.expr(1));
+        if (ctx.comp().EQ() != null || ctx.comp().NE() != null){
+            if (leftType!=rightType){
+                this.errors.add("you cannot compare different types in terms" +
+                        "of being equal");
+            }
+        }
+        else if (leftType != MyType.NUM && leftType != rightType){
+            this.errors.add("you cannot compare boolean types");
         }
         setType(ctx, getType(ctx.expr(0)));
     }
