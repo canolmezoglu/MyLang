@@ -37,7 +37,9 @@ declaration: access? type ID ASS expr? END;
 
 changeAss: ID ASS expr END  ;
 
-primitive : NUM | booleanVal ;
+primitive : NUM
+            | booleanVal
+            ;
 
 booleanVal :  (TRUE|FALSE);
 
@@ -82,7 +84,7 @@ LBRACE: '{';
 LPAR:   '(';
 LT:     '<';
 MINUS:  '-';
-NE:     '<>';
+NE:     '!=';
 PLUS:   '+';
 RBRACE: '}';
 RPAR:   ')';
