@@ -9,47 +9,55 @@ import org.junit.Test;
 import ut.pp.elaboration.Checker;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
+import ut.pp.tests.TestChecker;
 
 public class TestScope {
 
-    public ParseTree getTree(String input){
-        MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
-        CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
-        MyLangParser parser = new MyLangParser(tokens);
-        ParseTree tree = parser.instruction();
-        return tree;
-    }
+    Checker c = new Checker();
 
     @Test
-    public void test1() {
-        Checker c=new Checker();
-        String input = "int wait=100;int money=120; while (wait > 0){\n" +
+    public void test1() throws Exception {
+        String input = "int wait= 100;int money=120; while (wait > 0){\n" +
                 "        wait = wait - 1;\n" +
                 "        money = money - 1;\n" +
                 "    }";
-        assertEquals(0,c.checkScope(getTree(input)).size());
+
+        c.check(TestChecker.getParseTree(input));
+        assertEquals(0,c.getScopeErrors().size());
     }
     @Test
-    public void test2() {
-        Checker c=new Checker();
+    public void test2() throws Exception {
         String input = "int wait=100; while (wait > 0){\n" +
                 "        wait = wait - 1;\n" +
                 "        money = money - 1;\n" +
                 "    }";
-        assertEquals(1,c.checkScope(getTree(input)).size());
+        try {
+            c.check(TestChecker.getParseTree(input));
+        }
+        catch ( Exception e) {
+            System.out.println(e.getMessage());
+
+            assertEquals(1, c.getScopeErrors().size());
+
+        }
     }
     @Test
-    public void test3() {
-        Checker c=new Checker();
+    public void test3() throws Exception {
         String input = "int wait=100; while (wait > 0){\n" +
                 "        wait = wait - 1;\n" +
                 "        int c=0;\n" +
                 "    } c=100;" ;
-        assertEquals(1,c.checkScope(getTree(input)).size());
+        try {
+            c.check(TestChecker.getParseTree(input));
+        }
+        catch ( Exception e) {
+            System.out.println(e.getMessage());
+            assertEquals(1, c.getScopeErrors().size());
+
+        }
     }
     @Test
-    public void test4() {
-        Checker c=new Checker();
+    public void test4() throws Exception {
         String input = "int numberofiterations = 100;\n" +
                 "\n" +
                 "while (numberofiterations > 0) {\n" +
@@ -58,7 +66,8 @@ public class TestScope {
                 "  bool numberofiterations = false;\n" +
                 "\n" +
                 "}";
-        assertEquals(0,c.checkScope(getTree(input)).size());
+        c.check(TestChecker.getParseTree(input));
+        assertEquals(0,c.getScopeErrors().size());
     }
 
 

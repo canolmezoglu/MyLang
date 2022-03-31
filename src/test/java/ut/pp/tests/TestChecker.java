@@ -17,11 +17,11 @@ public class TestChecker {
 
     final Checker checker = new Checker();
 
-    public ParseTree getParseTree(String code){
+    public static ParseTree getParseTree(String code){
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
-        ParseTree tree = parser.instruction();
+        ParseTree tree = parser.program();
         return tree;
     }
     /**
