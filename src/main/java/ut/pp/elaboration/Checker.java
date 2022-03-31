@@ -19,14 +19,15 @@ public class Checker extends MyLangBaseListener {
 
     public static void main(String args[]) throws Exception {
         Checker c = new Checker();
-        String input = "  int wait=1; while (wait > 0){\n" +
-                "        int c=0; wait = wait - 1;\n"+
-                "    } c=100;";
+        String input = "int wait=100; while (wait > 0){\n" +
+                "        wait = wait - 1;\n" +
+                "        money = money - 1;\n" +
+                "    }";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
         ParseTree tree = parser.instruction();
-        System.out.println(c.checkScope(tree));
+        c.check(tree);
     }
 
     public Set<String> checkScope(ParseTree tree){
@@ -110,6 +111,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
+        System.out.println("hello");
         MyType check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
             if (check != getType(ctx.expr())) {
