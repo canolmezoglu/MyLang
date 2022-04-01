@@ -70,12 +70,6 @@ public class ScopeTable {
      */
 
     public MyType checkGlobal(String var,Token tk){
-//        ListIterator<HashMap<String,MyType>> iterator= this.scopes.listIterator(this.scopes.size());
-//        while(iterator.hasPrevious()){
-//            if(iterator.previous().containsKey(var)){
-//                return iterator.previous().get(var);
-//            }
-//        }
         for (int i = this.scopes.size()-1; i >= 0; i--){
             if (this.scopes.get(i).containsKey(var)){
                 return this.scopes.get(i).get(var);
@@ -84,7 +78,6 @@ public class ScopeTable {
 
         }
         return null;
-
     }
     /*
     Returns the current scope number in the program

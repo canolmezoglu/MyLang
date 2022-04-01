@@ -20,7 +20,7 @@ public class TestParser {
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
         ParseTree tree = parser.program();
-        assertEquals(3, tree.getChildCount()); // 1 for Hello, 1 for EOF
+        assertEquals(2, tree.getChildCount()); // 1 for Hello, 1 for EOF
     }
 
     @Test
