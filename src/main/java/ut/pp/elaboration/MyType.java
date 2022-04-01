@@ -1,6 +1,6 @@
 package ut.pp.elaboration;
 
-enum MyType {
+public enum MyType {
     BOOLEAN,
     NUM,
 }
