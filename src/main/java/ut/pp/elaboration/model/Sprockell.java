@@ -12,15 +12,28 @@ import java.util.List;
 
 public class Sprockell {
 
+    private int pointer;
     private List<Instruction> instructions;
     private  List<List<String>> memory; //list of variables in memory for each scope level
 
     public Sprockell(){
+        pointer=0;
         instructions=new ArrayList<>();
         memory = new ArrayList<>();
     }
 
+    public void setPointer(){
+        this.pointer = this.instructions.size();
+    }
+    public int getPointer() {
+        return this.pointer;
+    }
+
     public List<List<String>> getMemory(){return this.memory;}
+
+    public List<Instruction> getInstructions(){
+        return this.instructions;
+    }
 
     public void addInstruction (Instruction instr){
         instructions.add(instr);
@@ -44,7 +57,7 @@ public class Sprockell {
         }
         return address;
     }
-    public void addToMemory (String val,int scope, boolean shared){
+    public void addToMemory (String val,int scope){
         //TODO shared memory
         while (scope >= memory.size()) {
             memory.add(new ArrayList<>());

@@ -102,9 +102,7 @@ public class Checker extends MyLangBaseListener {
         }
     }
 
-
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
-        System.out.println("hello");
         MyType check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
             if (check != getType(ctx.expr())) {
