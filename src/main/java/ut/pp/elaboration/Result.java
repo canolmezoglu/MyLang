@@ -3,6 +3,7 @@ package ut.pp.elaboration;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import ut.pp.elaboration.model.ThreadSp;
 
 /** Class holding the results of the Simple Pascal checker. */
 public class Result {
@@ -13,6 +14,8 @@ public class Result {
     private final ParseTreeProperty<MyType> types = new ParseTreeProperty<>();
     /** Mapping from variables to coordinates. */
     private final ParseTreeProperty<Integer> offsets = new ParseTreeProperty<>();
+    private final ParseTreeProperty<ThreadSp> threads = new ParseTreeProperty<>();
+
 
     /** Adds an association from parse tree node to the flow graph entry. */
     public void setEntry(ParseTree node, ParserRuleContext entry) {
@@ -47,5 +50,16 @@ public class Result {
     /** Returns the type associated with a given parse tree node. */
     public MyType getType(ParseTree node) {
         return this.types.get(node);
+    }
+
+    /** Adds an association from a parse tree expression, type,
+     * or assignment target node to the corresponding (inferred) type. */
+    public void setThread(ParseTree node, ThreadSp thread) {
+        this.threads.put(node, thread);
+    }
+
+    /** Returns the type associated with a given parse tree node. */
+    public ThreadSp getThread(ParseTree node) {
+        return this.threads.get(node);
     }
 }

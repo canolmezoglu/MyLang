@@ -6,7 +6,7 @@ instruction:
       statement                                 #statementInst
     | ifConstruct                               #ifInst
     | whileConstruct                            #whileInst
-    | threadConstruct                           #threadInst
+    | parallelConstruct                         #parallelInst
     | printConstruct                            #printInst
     ;
 
@@ -14,14 +14,17 @@ statement: declaration #declStat
            | changeAss #changeStat
            ;
 
-ifConstruct :  IF LPAR expr RPAR LBRACE instruction* RBRACE (ELSE LBRACE instruction* RBRACE)? ;
+ifConstruct :  IF LPAR expr RPAR block (ELSE block)? ;
 
-whileConstruct :  WHILE LPAR (declaration+ COMMA)* expr RPAR LBRACE instruction* RBRACE  ;
+whileConstruct :  WHILE LPAR expr RPAR block  ;
+
+parallelConstruct: PARALLEL LBRACE threadConstruct+ RBRACE;
 
 threadConstruct : THREAD LBRACE instruction+ RBRACE;
 
 printConstruct : PRINT LPAR expr RPAR END;
 
+block: LBRACE instruction* RBRACE;
 // all the first+ is same below, problem?
 expr: prefixOp expr        #prfExpr
     | expr mult expr       #multExpr
@@ -74,6 +77,7 @@ OR:      'or' ;
 TRUE:    'true' ;
 WHILE:  'while';
 PRINT: 'print';
+PARALLEL: 'parallel';
 
 ASS: '=';
 EQ:     '==';
@@ -90,6 +94,7 @@ RBRACE: '}';
 RPAR:   ')';
 STAR:   '*';
 COMMA:   ',';
+
 
 
 fragment LETTER: [a-zA-Z];

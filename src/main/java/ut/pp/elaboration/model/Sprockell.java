@@ -1,10 +1,12 @@
 package ut.pp.elaboration.model;
 
 import ut.pp.elaboration.MyType;
+import ut.pp.elaboration.Result;
 import ut.pp.elaboration.ScopeTable;
 import ut.pp.elaboration.model.Instruction;
 import ut.pp.elaboration.model.enums.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,6 +59,7 @@ public class Sprockell {
         }
         return address;
     }
+    //TODO when you exit a scope
     public void addToMemory (String val,int scope){
         //TODO shared memory
         while (scope >= memory.size()) {
@@ -65,28 +68,45 @@ public class Sprockell {
         memory.get(scope).add(val);
     }
 
+
     //sprockell operations
 
-    public void branch (Registers reg, Target target){
-        addInstruction(new Instruction(Instructions.Branch, Arrays.asList(reg, target)));
+    public Instruction branch (Registers reg, Target target) {
+        return new Instruction(Instructions.Branch, Arrays.asList(reg, target));
     }
-    public void branch (Registers reg,int index, Target target){
-        addInstruction(index, new Instruction(Instructions.Branch, Arrays.asList(reg, target)));
+//    public void branch (Registers reg,int index, Target target){
+//        addInstruction(index, new Instruction(Instructions.Branch, Arrays.asList(reg, target)));
+//    }
+    public Instruction testAndSet (int addr){
+        return new Instruction(Instructions.TestAndSet, Arrays.asList(new MemoryAddr(MemoryAddrs.DirAddr,addr)));
     }
-    public void compute (Operators op, Registers reg1, Registers reg2, Registers reg3){
-        addInstruction(new Instruction(Instructions.Compute, Arrays.asList(op, reg1, reg2, reg3)));
+    public Instruction testAndSet (Registers addr){
+        return new Instruction(Instructions.TestAndSet, Arrays.asList(new MemoryAddr(MemoryAddrs.IndAddr,addr)));
     }
-    public void endProgram () {
-        addInstruction(new Instruction(Instructions.EndProg));
+    public Instruction compute (Operators op, Registers reg1, Registers reg2, Registers reg3){
+        return new Instruction(Instructions.Compute, Arrays.asList(op, reg1, reg2, reg3));
     }
-    public void writeToIO (Registers reg){
-        addInstruction(new Instruction(Instructions.WriteInstr, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.numberIO))));
+    public Instruction receive(Registers reg){
+        return new Instruction(Instructions.Receive,Arrays.asList(reg));
+    }
+    public Instruction endProgram () {
+        return new Instruction(Instructions.EndProg);
+    }
+    public Instruction writeToIO (Registers reg){
+        return new Instruction(Instructions.WriteInstr, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.numberIO)));
+    }
+    public Instruction writeToMemory (Registers reg,int addr){
+        return new Instruction(Instructions.WriteInstr, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.DirAddr,addr)));
+    }
+    public Instruction writeToMemory (Registers reg,Registers addr){
+        return new Instruction(Instructions.WriteInstr, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.IndAddr,addr)));
     }
     public Instruction relJump ( int line){
         return new Instruction(Instructions.Jump, Collections.singletonList(new Target(Targets.Rel, line)));
     }
-    public Registers loadToRegister (String val,int scope, Registers register){
+    public Instruction loadToRegister (String val, int scope, Registers register, int res){
         //TODO add instructions for shared memory - readinstr and recieve
+        Instruction inst;
         try {
                 int num = 0;
                 if (val.equals("true")) {
@@ -96,19 +116,16 @@ public class Sprockell {
                 } else {
                     num = Integer.parseInt(val);
                 }
-                addInstruction(new Instruction(Instructions.Load, Arrays.asList(new MemoryAddr(MemoryAddrs.ImmValue, num), register)));
+                 inst = new Instruction(Instructions.Load, Arrays.asList(new MemoryAddr(MemoryAddrs.ImmValue, num), register));
             } catch (NumberFormatException e) {
-                int slot = getAddressFromMemory(val, scope, memory);
-                addInstruction(new Instruction(Instructions.Load, Arrays.asList(new MemoryAddr(MemoryAddrs.DirAddr, slot), register)));
+                inst = new Instruction(Instructions.Load, Arrays.asList(new MemoryAddr(MemoryAddrs.DirAddr, res), register));
 
-            }
-        return register;
+        }
+        return inst;
     }
 
-    public Registers storeInMemory (String name, Registers reg,int scope){
-        int slot = getAddressFromMemory(name, scope, memory);
-        addInstruction(new Instruction(Instructions.Store, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.DirAddr, slot))));
-        return reg;
+    public Instruction storeInMemory (String name, Registers reg,int slot){
+        return new Instruction(Instructions.Store, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.DirAddr, slot)));
     }
 
 }

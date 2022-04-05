@@ -6,19 +6,31 @@ import java.util.*;
 
 public class ScopeTable {
     Set<String> errors;
-    List<HashMap<String,MyType>> scopes;
+    List<HashMap<String,VariableData>> scopes;
+    List<Integer> sizes;
     int scope_num;
 
     public ScopeTable(){
         this.errors = new HashSet<>();
         this.scopes = new ArrayList<>();
+        this.sizes = new ArrayList<>();
         this.scope_num=0;
         this.scopes.add(new HashMap<>());
+        this.sizes.add(0);
+
+    }
+    public int getPrevSizes(){
+        int total = 0;
+        for (int i : this.sizes){
+            total +=i;
+        }
+        return total;
     }
     /*
     Open a new Scope Level
      */
     public void openScope(){
+        this.sizes.add(getPrevSizes());
         this.scopes.add(new HashMap<>());
         this.scope_num++;
     }
@@ -27,23 +39,27 @@ public class ScopeTable {
      */
     public void closeScope(){
         this.scopes.remove(scope_num);
+        this.sizes.remove(scope_num);
         this.scope_num--;
     }
     /*
     Adds a variable to the current scope in the program and adds an error if a variable with the
     same name already exists in this scope
      */
-    public void declare(String var, MyType type, Token tk){
+    public int declare(String var, MyType type, Token tk){
         if (!this.scopes.get(this.scope_num).containsKey(var)) {
-            this.scopes.get(this.scope_num).put(var, type);
+            this.sizes.set(this.scope_num,this.sizes.get(this.scope_num)+1);
+            this.scopes.get(this.scope_num).put(var, new VariableData(type,this.sizes.get(this.scope_num)));
+            return this.sizes.get(this.scope_num);
         }
         else{
             this.errors.add(var+" already declared in this scope: "+tk.getLine());
         }
+        return 0;
     }
 
-    public MyType check(String var,Token tk){
-        MyType check = checkLocal(var,tk);
+    public VariableData check(String var,Token tk){
+        VariableData check = checkLocal(var,tk);
         if (check!=null){
             return check;
         }
@@ -58,7 +74,7 @@ public class ScopeTable {
     Checks the current scope if the variable exists and returns the type of the variable if it exists,
     and returns null if the variable does not exist in the current scope
      */
-    public MyType checkLocal(String var,Token tk){
+    public VariableData checkLocal(String var,Token tk){
         if(this.scopes.get(this.scope_num).containsKey(var)){
             return this.scopes.get(this.scope_num).get(var);
         }
@@ -69,7 +85,7 @@ public class ScopeTable {
     and returns null if the variable does not exist globally
      */
 
-    public MyType checkGlobal(String var,Token tk){
+    public VariableData checkGlobal(String var,Token tk){
         for (int i = this.scopes.size()-1; i >= 0; i--){
             if (this.scopes.get(i).containsKey(var)){
                 return this.scopes.get(i).get(var);

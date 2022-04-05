@@ -4,10 +4,13 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import ut.pp.elaboration.model.ThreadSp;
 import ut.pp.parser.MyLangBaseListener;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 import ut.pp.elaboration.ScopeTable;
+
+import javax.lang.model.element.VariableElement;
 import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +20,14 @@ public class Checker extends MyLangBaseListener {
     private List<String> errors;
     private Result result;
     private ScopeTable scope;
+    private ThreadSp active_thread;
+    private List<ThreadSp> threads;
+
     public Result check (ParseTree tree) throws Exception {
         this.result = new Result();
         this.errors = new ArrayList<String>();
         this.scope = new ScopeTable();
+        this.threads = new ArrayList<>();
         new ParseTreeWalker().walk(this, tree);
         this.errors.addAll((scope.errors));
         if (!this.errors.isEmpty()){
@@ -29,7 +36,10 @@ public class Checker extends MyLangBaseListener {
         return this.result;
     }
 
-
+    @Override public void enterProgram(MyLangParser.ProgramContext ctx){
+        active_thread = new ThreadSp(0,0);
+        threads.add(active_thread);
+    }
 
     @Override public void exitPrfExpr(MyLangParser.PrfExprContext ctx){
         if (ctx.prefixOp().MINUS() != null && getType(ctx.expr() )!= MyType.NUM){
@@ -87,9 +97,11 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitIdExpr(MyLangParser.IdExprContext ctx){
-        MyType check = scope.check(ctx.ID().toString(),ctx.getStart());
+        VariableData check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
-            setType(ctx,check);
+            setType(ctx,check.type);
+            setOffset(ctx,check.sizeCurr);
+
         }
     }
     @Override public void exitPrimitive(MyLangParser.PrimitiveContext ctx) {
@@ -103,12 +115,14 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
-        MyType check = scope.check(ctx.ID().toString(),ctx.getStart());
+        VariableData check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
-            if (check != getType(ctx.expr())) {
+            if (check.type != getType(ctx.expr())) {
                 this.errors.add("you are changing a variable to an unexpected type");
             }
             setType(ctx, getType(ctx.expr()));
+            setOffset(ctx,check.sizeCurr);
+
         }
     }
 
@@ -118,14 +132,15 @@ public class Checker extends MyLangBaseListener {
                 this.errors.add("you are trying to assign an integer to a boolean variable");
             }
             setType(ctx, MyType.BOOLEAN);
-            scope.declare(ctx.ID().toString(),MyType.BOOLEAN,ctx.getStart());
+
+            setOffset(ctx,scope.declare(ctx.ID().toString(),MyType.BOOLEAN,ctx.getStart()));
         }
         else if (ctx.type().INTEGER() != null ) {
             if (getType(ctx.expr()) != MyType.NUM) {
                 this.errors.add("you are trying to assign an boolean to an integer variable");
             }
             setType(ctx, MyType.NUM);
-            scope.declare(ctx.ID().toString(),MyType.NUM,ctx.getStart());
+            setOffset(ctx,scope.declare(ctx.ID().toString(),MyType.NUM,ctx.getStart()));
         }
         else{
             this.errors.add("Invalid type");
@@ -139,6 +154,8 @@ public class Checker extends MyLangBaseListener {
 
     @Override public void exitIfConstruct(MyLangParser.IfConstructContext ctx){
         scope.closeScope();
+        result.setThread(ctx,active_thread);
+
         if (getType(ctx.expr()) != MyType.BOOLEAN ){
             this.errors.add("if statement can only check a boolean");
         }
@@ -151,19 +168,39 @@ public class Checker extends MyLangBaseListener {
 
     @Override public void exitWhileConstruct(MyLangParser.WhileConstructContext ctx){
         scope.closeScope();
+        result.setThread(ctx,active_thread);
+
         if (getType(ctx.expr()) != MyType.BOOLEAN ){
             this.errors.add("while statement can only check a boolean");
         }
     }
+    @Override public void exitStatementInst(MyLangParser.StatementInstContext ctx){
+        result.setThread(ctx.statement(),active_thread);
+    }
+
+
 
     @Override
-    public void enterThreadConstruct(MyLangParser.ThreadConstructContext ctx) {
-        scope.openScope();
+    public void enterThreadConstruct(
+            MyLangParser.ThreadConstructContext ctx
+    ) {
+        active_thread = new ThreadSp(threads.size(),active_thread.getThreadnr());
+        threads.get(active_thread.getParentnr()).addchild(active_thread);
+        threads.add(active_thread);
     }
 
     @Override
     public void exitThreadConstruct(MyLangParser.ThreadConstructContext ctx) {
-        scope.closeScope();
+        result.setThread(ctx,active_thread);
+        active_thread = threads.get(active_thread.getParentnr());
+    }
+    @Override
+    public void exitPrintConstruct(MyLangParser.PrintConstructContext ctx){
+        result.setThread(ctx,active_thread);
+    }
+    @Override
+    public void exitProgram(MyLangParser.ProgramContext ctx){
+        result.setThread(ctx,active_thread);
     }
 
     public void setType(ParseTree node, MyType type) {
@@ -172,6 +209,10 @@ public class Checker extends MyLangBaseListener {
     public MyType getType (ParseTree node) {
         return this.result.getType(node);
     }
+    public void setOffset(ParseTree node, int offset) {
+        this.result.setOffset(node, offset);
+    }
+    public int getOffset(ParseTree node){return this.result.getOffset(node);}
 
     public List<String> getErrors() {
         return this.errors;
