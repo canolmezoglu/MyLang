@@ -31,19 +31,48 @@ public class CodeGen2 extends MyLangBaseVisitor<List<Instruction>> {
     Register reghandler;
     ScopeTable scope;
     Result res;
-    Thread activethread;
     Map<Integer,List<Instruction>> threads = new HashMap<>();
     List<Instruction> instructions = new ArrayList<>();
 
     public static void main(String args[]) throws Exception {
-        String code = "print (1); parallel {thread { print(2); } thread {print(3);}} print(4);";
+        String code = "shared int money = 0;\n" +
+                "parallel {\n" +
+                "thread {   int wait = 100; while (wait > 0){\n " +
+                "        wait = wait - 1;\n" +
+                "lock" +
+                "            money = money + 4;\n" +
+                "unlock" +
+                "    }\n" +
+                "}\n" +
+                "thread {\n" +
+                "    int wait = 100; while (wait > 0){\n" +
+                "        wait = wait - 1;\n" +
+                            "lock" +
+                "            money = money - 2;\n" +
+                            "unlock" +
+                "    }\n" +
+                "thread {\n" +
+                "    int wait = 100; while (wait > 0){\n" +
+                "        wait = wait - 5;\n" +
+                "lock" +
+                "            money = money + 5;\n" +
+                "unlock" +
+                "    }\n" +
+                "}\n" +
+                "thread { lock money = money + 31; unlock }" +
+                "thread { lock money = money + 89; unlock }" +
+                "}" +
+                "print(money);\n";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
         ParseTree tree = parser.program();
         CodeGen2 c = new CodeGen2();
         List<Instruction> instructions = c.genCode(tree);
-        System.out.println(instructions.toString());
+        for (Instruction i : instructions){
+            System.out.println(" ," + i.toString());
+        }
+//        System.out.println(instructions.toString());
 //        System.out.println(program.getMemory());
     }
 
@@ -84,8 +113,19 @@ public class CodeGen2 extends MyLangBaseVisitor<List<Instruction>> {
                 for (ThreadSp threadSp:
                      pss.getChildren()) {
                     InstructionList.add(sp.writeToMemory(Registers.reg0,threadSp.getThreadnr()));
-                    
+                    InstructionList.add(sp.testAndSet(0));
+                    Registers reg = reghandler.acquire();
+                    InstructionList.add(sp.receive(reg));
+                    InstructionList.add(sp.compute(Operators.Equal, reg,Registers.reg0, reg));
+                    InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-3)));
+                    InstructionList.add(sp.loadToRegister("1",0,reg,0));
+                    InstructionList.add(sp.writeToMemory(reg,0));
+
+                    reghandler.release(reg);
+
+
                 }
+
                 for (ThreadSp threadSp:
                         pss.getChildren()) {
                     InstructionList.add(sp.testAndSet(threadSp.getThreadnr()));
@@ -110,9 +150,14 @@ public class CodeGen2 extends MyLangBaseVisitor<List<Instruction>> {
             Set<Integer> threadList = threads.keySet();
             List<Instruction> ThreadInstructionList = new ArrayList<>();
             Registers reg = reghandler.acquire();
-            ThreadInstructionList.add(sp.testAndSet(Registers.regSprID));
 
+//            ThreadInstructionList.add(sp.compute(Operators.Equal, Registers.regSprID,Registers.reg0, reg));
+//            ThreadInstructionList.add(sp.branch(reg,new Target(Targets.Rel,5)));
+            ThreadInstructionList.add(sp.loadToRegister("1",0,reg,0));
+            ThreadInstructionList.add(sp.writeToMemory(reg,Registers.regSprID));
+//            ThreadInstructionList.add(sp.branch(reg,new Target(Targets.Rel,-3)));
             reghandler.release(reg);
+
             int below_up_size = 4 * (threads.size()-1);
             int downsize = 0;
             List<Integer> threadList2 = new ArrayList<>();
@@ -153,14 +198,19 @@ public class CodeGen2 extends MyLangBaseVisitor<List<Instruction>> {
         List<Instruction> InstructionList = new ArrayList<>();
         String varname = ctx.ID().toString();
         if (ctx.type().BOOLEAN() != null) {
-            scope.declare(varname, MyType.BOOLEAN, ctx.getStart());
+            scope.declare(varname, MyType.BOOLEAN, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
         }
         if (ctx.type().INTEGER() != null) {
-            scope.declare(varname, MyType.NUM, ctx.getStart());
+            scope.declare(varname, MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
         }
         InstructionList.addAll(visit(ctx.expr()));
         Registers reg = getRegister(ctx.expr());
-        InstructionList.add(sp.storeInMemory(varname, reg, res.getOffset(ctx)));
+        if (ctx.access() != null && ctx.access().SHARED() != null){
+            InstructionList.add(sp.writeToMemory(reg,res.getOffset(ctx)));
+        }
+        else {
+            InstructionList.add(sp.storeInMemory(varname, reg, res.getOffset(ctx)));
+        }
         reghandler.release(reg);
         return InstructionList;
     }
@@ -169,6 +219,26 @@ public class CodeGen2 extends MyLangBaseVisitor<List<Instruction>> {
     public List<Instruction> visitChangeStat(MyLangParser.ChangeStatContext ctx) {
         return visit(ctx.changeAss());
     }
+    @Override
+    public List<Instruction> visitLockInst(MyLangParser.LockInstContext ctx){
+        return visit(ctx.lockConstruct());
+    }
+    @Override
+    public List<Instruction> visitLockConstruct(MyLangParser.LockConstructContext ctx){
+        List<Instruction> InstructionList = new ArrayList<>();
+        Registers reg = reghandler.acquire();
+        InstructionList.add(sp.testAndSet(7));
+        InstructionList.add(sp.receive(reg));
+        InstructionList.add(sp.compute(Operators.Equal, reg,Registers.reg0, reg));
+        InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-3)));
+        reghandler.release(reg);
+        for (MyLangParser.InstructionContext context : ctx.instruction()) {
+            InstructionList.addAll(visit(context));
+        }
+        InstructionList.add(sp.writeToMemory(Registers.reg0,7));
+        return InstructionList;
+
+    }
 
     @Override
     public List<Instruction> visitChangeAss(MyLangParser.ChangeAssContext ctx) {
@@ -176,7 +246,13 @@ public class CodeGen2 extends MyLangBaseVisitor<List<Instruction>> {
         String varname = ctx.ID().toString();
         InstructionList.addAll(visit(ctx.expr()));
         Registers reg = getRegister(ctx.expr());
-        InstructionList.add(sp.storeInMemory(varname, reg, res.getOffset(ctx)));
+        if (res.getGlobal(ctx)){
+            InstructionList.add(sp.writeToMemory(reg,res.getOffset(ctx)));
+        }
+        else{
+            InstructionList.add(sp.storeInMemory(varname, reg, res.getOffset(ctx)));
+
+        }
         reghandler.release(reg);
         return InstructionList;
     }
@@ -224,7 +300,18 @@ public class CodeGen2 extends MyLangBaseVisitor<List<Instruction>> {
         Registers register = reghandler.acquire();
         List<Instruction> InstructionList = new ArrayList<>();
         String child = ctx.children.get(0).getText();
-        InstructionList.add(sp.loadToRegister(child, scope.scope_num, register,res.getOffset(ctx)));
+        if (res.getGlobal(ctx)){
+            Registers reg = reghandler.acquire();
+            InstructionList.add(sp.readInst( res.getOffset(ctx)));
+            InstructionList.add(sp.receive(register));
+//            InstructionList.add(sp.compute(Operators.Equal, register,Registers.reg0, reg));
+//            InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-3)));
+            reghandler.release(reg);
+
+        }
+        else {
+            InstructionList.add(sp.loadToRegister(child, scope.scope_num, register, res.getOffset(ctx)));
+        }
         registers.put(ctx, register);
         return InstructionList;
 
@@ -271,6 +358,7 @@ public class CodeGen2 extends MyLangBaseVisitor<List<Instruction>> {
         InstructionList.add(sp.compute(Operators.Equal, reg,Registers.reg0, reg));
         InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-3)));
         reghandler.release(reg);
+        InstructionList.add(sp.writeToMemory(Registers.reg0,0));
 
         for (MyLangParser.InstructionContext context : ctx.instruction()) {
             InstructionList.addAll(visit(context));
@@ -406,36 +494,3 @@ public class CodeGen2 extends MyLangBaseVisitor<List<Instruction>> {
 }
 
 
-//    @Override
-//    public void enterIfConstruct(MyLangParser.IfConstructContext ctx) {
-//        scope.openScope();
-//
-//    }
-//
-//    @Override public void exitIfConstruct(MyLangParser.IfConstructContext ctx){
-//        scope.closeScope();
-//    }
-//
-//    @Override
-//    public void enterWhileConstruct(MyLangParser.WhileConstructContext ctx) {
-//        scope.openScope();
-//    }
-//
-//    @Override public void exitWhileConstruct(MyLangParser.WhileConstructContext ctx){
-//        scope.closeScope();
-//    }
-//
-//    @Override
-//    public void enterThreadConstruct(MyLangParser.ThreadConstructContext ctx) {
-//        scope.openScope();
-//    }
-//
-//    @Override
-//    public void exitThreadConstruct(MyLangParser.ThreadConstructContext ctx) {
-//        scope.closeScope();
-//    }
-//
-//
-//
-//
-//}

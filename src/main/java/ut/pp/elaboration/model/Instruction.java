@@ -40,11 +40,16 @@ public class Instruction {
         StringBuilder arg = new StringBuilder();
         if(args!=null) {
             for (var i : args) {
-                arg.append(i.toString()).append(" ");
+                arg.append(" ");
+                arg.append(i.toString());
             }
-            return this.instr + " " + arg+"\n";
+            return this.instr + " " + arg;
+           // return this.instr + " " + arg+"\n";
+
         }
-        return this.instr+"\n";
+        //return this.instr+"\n";
+        return this.instr+"";
+
     }
 
 }

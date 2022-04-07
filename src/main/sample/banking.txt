@@ -1,15 +1,23 @@
 shared int money = 0;
-thread {    while (int wait = 100, wait > 0){
+parallel {
+thread {   int wait = 100; while (wait > 0){
         wait = wait - 1;
-        money = money + 1;
+        lock
+           money = money + 1;
+        unlock
     }
 }
 thread {
-    while (int wait = 100, wait > 0){
+    int wait = 100; while (wait > 0){
         wait = wait - 1;
-        money = money - 1;
+        lock
+            money = money - 1;
+        unlock
     }
 }
 thread {
-    money = money + 100;
+    lock
+         money = money + 100;
+    unlock
+}
 }

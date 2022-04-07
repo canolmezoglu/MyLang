@@ -15,6 +15,7 @@ public class Result {
     /** Mapping from variables to coordinates. */
     private final ParseTreeProperty<Integer> offsets = new ParseTreeProperty<>();
     private final ParseTreeProperty<ThreadSp> threads = new ParseTreeProperty<>();
+    private final ParseTreeProperty<Boolean> globals = new ParseTreeProperty<>();
 
 
     /** Adds an association from parse tree node to the flow graph entry. */
@@ -61,5 +62,15 @@ public class Result {
     /** Returns the type associated with a given parse tree node. */
     public ThreadSp getThread(ParseTree node) {
         return this.threads.get(node);
+    }
+    /** Adds an association from a parse tree expression, type,
+     * or assignment target node to the corresponding (inferred) type. */
+    public void setGlobal(ParseTree node, Boolean global) {
+        this.globals.put(node, global);
+    }
+
+    /** Returns the type associated with a given parse tree node. */
+    public Boolean getGlobal(ParseTree node) {
+        return this.globals.get(node);
     }
 }

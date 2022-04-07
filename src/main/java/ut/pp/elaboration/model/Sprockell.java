@@ -127,5 +127,8 @@ public class Sprockell {
     public Instruction storeInMemory (String name, Registers reg,int slot){
         return new Instruction(Instructions.Store, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.DirAddr, slot)));
     }
+    public Instruction readInst (int slot){
+        return new Instruction(Instructions.ReadInstr, Arrays.asList(new MemoryAddr(MemoryAddrs.DirAddr, slot)));
+    }
 
 }

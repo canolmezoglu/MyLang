@@ -8,20 +8,25 @@ public class ScopeTable {
     Set<String> errors;
     List<HashMap<String,VariableData>> scopes;
     List<Integer> sizes;
+    List<Integer> globalSizes;
     int scope_num;
 
     public ScopeTable(){
         this.errors = new HashSet<>();
         this.scopes = new ArrayList<>();
         this.sizes = new ArrayList<>();
+        this.globalSizes = new ArrayList<>();
         this.scope_num=0;
         this.scopes.add(new HashMap<>());
         this.sizes.add(0);
+        // TODO this is made for the banking example, its broken
+        // this is just here to have thread count
+        this.globalSizes.add(5);
 
     }
-    public int getPrevSizes(){
+    public int getPrevSizes(List<Integer> x){
         int total = 0;
-        for (int i : this.sizes){
+        for (int i : x){
             total +=i;
         }
         return total;
@@ -30,7 +35,8 @@ public class ScopeTable {
     Open a new Scope Level
      */
     public void openScope(){
-        this.sizes.add(getPrevSizes());
+        this.sizes.add(getPrevSizes( this.sizes));
+        this.globalSizes.add(getPrevSizes( this.globalSizes));
         this.scopes.add(new HashMap<>());
         this.scope_num++;
     }
@@ -40,22 +46,31 @@ public class ScopeTable {
     public void closeScope(){
         this.scopes.remove(scope_num);
         this.sizes.remove(scope_num);
+        this.globalSizes.remove(scope_num);
         this.scope_num--;
     }
     /*
     Adds a variable to the current scope in the program and adds an error if a variable with the
     same name already exists in this scope
      */
-    public int declare(String var, MyType type, Token tk){
+    public VariableData declare(String var, MyType type, Token tk,boolean shared){
+        if (shared){
+            this.globalSizes.set(this.scope_num,this.globalSizes.get(this.scope_num)+1);
+
+            this.scopes.get(this.scope_num).put(var, new VariableData(type,this.globalSizes.get(this.scope_num),shared));
+            return this.scopes.get(this.scope_num).get(var);
+
+
+        }
         if (!this.scopes.get(this.scope_num).containsKey(var)) {
             this.sizes.set(this.scope_num,this.sizes.get(this.scope_num)+1);
             this.scopes.get(this.scope_num).put(var, new VariableData(type,this.sizes.get(this.scope_num)));
-            return this.sizes.get(this.scope_num);
+            return this.scopes.get(this.scope_num).get(var);
         }
         else{
             this.errors.add(var+" already declared in this scope: "+tk.getLine());
         }
-        return 0;
+        return null;
     }
 
     public VariableData check(String var,Token tk){

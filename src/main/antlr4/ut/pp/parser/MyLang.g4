@@ -8,6 +8,7 @@ instruction:
     | whileConstruct                            #whileInst
     | parallelConstruct                         #parallelInst
     | printConstruct                            #printInst
+    | lockConstruct                             #lockInst
     ;
 
 statement: declaration #declStat
@@ -23,6 +24,8 @@ parallelConstruct: PARALLEL LBRACE threadConstruct+ RBRACE;
 threadConstruct : THREAD LBRACE instruction+ RBRACE;
 
 printConstruct : PRINT LPAR expr RPAR END;
+
+lockConstruct : LOCK instruction* UNLOCK;
 
 block: LBRACE instruction* RBRACE;
 // all the first+ is same below, problem?
@@ -78,6 +81,8 @@ TRUE:    'true' ;
 WHILE:  'while';
 PRINT: 'print';
 PARALLEL: 'parallel';
+LOCK : 'lock';
+UNLOCK : 'unlock';
 
 ASS: '=';
 EQ:     '==';

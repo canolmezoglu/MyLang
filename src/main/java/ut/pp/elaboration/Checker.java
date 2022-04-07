@@ -39,6 +39,7 @@ public class Checker extends MyLangBaseListener {
     @Override public void enterProgram(MyLangParser.ProgramContext ctx){
         active_thread = new ThreadSp(0,0);
         threads.add(active_thread);
+
     }
 
     @Override public void exitPrfExpr(MyLangParser.PrfExprContext ctx){
@@ -101,6 +102,7 @@ public class Checker extends MyLangBaseListener {
         if(check!=null) {
             setType(ctx,check.type);
             setOffset(ctx,check.sizeCurr);
+            result.setGlobal(ctx,check.global);
 
         }
     }
@@ -122,30 +124,30 @@ public class Checker extends MyLangBaseListener {
             }
             setType(ctx, getType(ctx.expr()));
             setOffset(ctx,check.sizeCurr);
-
+            result.setGlobal(ctx,check.global);
         }
     }
 
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
-        if (ctx.type().BOOLEAN() != null) {
-            if (getType(ctx.expr()) != MyType.BOOLEAN) {
-                this.errors.add("you are trying to assign an integer to a boolean variable");
-            }
-            setType(ctx, MyType.BOOLEAN);
 
-            setOffset(ctx,scope.declare(ctx.ID().toString(),MyType.BOOLEAN,ctx.getStart()));
-        }
-        else if (ctx.type().INTEGER() != null ) {
-            if (getType(ctx.expr()) != MyType.NUM) {
-                this.errors.add("you are trying to assign an boolean to an integer variable");
+            if (ctx.type().BOOLEAN() != null) {
+                if (getType(ctx.expr()) != MyType.BOOLEAN) {
+                    this.errors.add("you are trying to assign an integer to a boolean variable");
+                }
+                setType(ctx, MyType.BOOLEAN);
+
+                setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.BOOLEAN, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+            } else if (ctx.type().INTEGER() != null) {
+                if (getType(ctx.expr()) != MyType.NUM) {
+                    this.errors.add("you are trying to assign an boolean to an integer variable");
+                }
+                setType(ctx, MyType.NUM);
+                setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+            } else {
+                this.errors.add("Invalid type");
             }
-            setType(ctx, MyType.NUM);
-            setOffset(ctx,scope.declare(ctx.ID().toString(),MyType.NUM,ctx.getStart()));
-        }
-        else{
-            this.errors.add("Invalid type");
-        }
     }
+
 
     @Override
     public void enterIfConstruct(MyLangParser.IfConstructContext ctx) {
@@ -184,6 +186,8 @@ public class Checker extends MyLangBaseListener {
     public void enterThreadConstruct(
             MyLangParser.ThreadConstructContext ctx
     ) {
+        scope.openScope();
+
         active_thread = new ThreadSp(threads.size(),active_thread.getThreadnr());
         threads.get(active_thread.getParentnr()).addchild(active_thread);
         threads.add(active_thread);
@@ -193,6 +197,8 @@ public class Checker extends MyLangBaseListener {
     public void exitThreadConstruct(MyLangParser.ThreadConstructContext ctx) {
         result.setThread(ctx,active_thread);
         active_thread = threads.get(active_thread.getParentnr());
+        scope.closeScope();
+
     }
     @Override
     public void exitPrintConstruct(MyLangParser.PrintConstructContext ctx){
