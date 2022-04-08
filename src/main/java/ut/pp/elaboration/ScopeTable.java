@@ -19,9 +19,19 @@ public class ScopeTable {
         this.scope_num=0;
         this.scopes.add(new HashMap<>());
         this.sizes.add(0);
-        // TODO this is made for the banking example, its broken
-        // this is just here to have thread count
-        this.globalSizes.add(5);
+        this.globalSizes.add(0);
+
+    }
+
+    public ScopeTable(int globalSizes){
+        this.errors = new HashSet<>();
+        this.scopes = new ArrayList<>();
+        this.sizes = new ArrayList<>();
+        this.globalSizes = new ArrayList<>();
+        this.scope_num=0;
+        this.scopes.add(new HashMap<>());
+        this.sizes.add(0);
+        this.globalSizes.add(globalSizes);
 
     }
     public int getPrevSizes(List<Integer> x){

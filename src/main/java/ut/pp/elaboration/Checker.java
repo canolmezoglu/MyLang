@@ -22,11 +22,19 @@ public class Checker extends MyLangBaseListener {
     private ScopeTable scope;
     private ThreadSp active_thread;
     private List<ThreadSp> threads;
+    public static int getNumberOfThreads(ParseTree tree){
+        int occurences = 0;
+        String[] keywords = tree.toStringTree().split(" ");
+        for (String keyword : keywords){
+            if (keyword.equals("thread")) occurences++;
+        }
+        return occurences;
 
+    }
     public Result check (ParseTree tree) throws Exception {
         this.result = new Result();
         this.errors = new ArrayList<String>();
-        this.scope = new ScopeTable();
+        this.scope = new ScopeTable(getNumberOfThreads(tree));
         this.threads = new ArrayList<>();
         new ParseTreeWalker().walk(this, tree);
         this.errors.addAll((scope.errors));
@@ -178,6 +186,14 @@ public class Checker extends MyLangBaseListener {
     }
     @Override public void exitStatementInst(MyLangParser.StatementInstContext ctx){
         result.setThread(ctx.statement(),active_thread);
+    }
+    @Override public void exitParallelConstruct(MyLangParser.ParallelConstructContext ctx){
+        for (MyLangParser.ThreadConstructContext threadConstructContext : ctx.threadConstruct()){
+            result.addChild(ctx,result.getThread(threadConstructContext).getThreadnr());
+        }
+    }
+    @Override public void exitParallelInst(MyLangParser.ParallelInstContext ctx){
+        result.addChild(ctx,result.getChildren(ctx.parallelConstruct()));
     }
 
 

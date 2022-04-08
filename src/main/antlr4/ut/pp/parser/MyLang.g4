@@ -65,7 +65,7 @@ type: INTEGER
     | BOOLEAN
     ;
 
-AND:    'and  ';
+AND:    'and';
 BOOLEAN: 'bool' ;
 INTEGER: 'int' ;
 ELSE:    'else' ;

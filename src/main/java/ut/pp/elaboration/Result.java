@@ -5,6 +5,11 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import ut.pp.elaboration.model.ThreadSp;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /** Class holding the results of the Simple Pascal checker. */
 public class Result {
     /** Mapping from statements and expressions to the atomic
@@ -16,7 +21,7 @@ public class Result {
     private final ParseTreeProperty<Integer> offsets = new ParseTreeProperty<>();
     private final ParseTreeProperty<ThreadSp> threads = new ParseTreeProperty<>();
     private final ParseTreeProperty<Boolean> globals = new ParseTreeProperty<>();
-
+    private final ParseTreeProperty<Set<Integer>> childrenThreads = new ParseTreeProperty<>();
 
     /** Adds an association from parse tree node to the flow graph entry. */
     public void setEntry(ParseTree node, ParserRuleContext entry) {
@@ -73,4 +78,22 @@ public class Result {
     public Boolean getGlobal(ParseTree node) {
         return this.globals.get(node);
     }
+
+    public void addChild(ParseTree node, int childId){
+        if (this.childrenThreads.get(node) == null ){
+            this.childrenThreads.put(node,new HashSet<Integer>());
+        }
+        this.childrenThreads.get(node).add(childId);
+    }
+    public Set<Integer> getChildren(ParseTree node) {
+        return this.childrenThreads.get(node);
+    }
+    public void addChild(ParseTree node, Set<Integer> childId) {
+        if (this.childrenThreads.get(node) == null ){
+            this.childrenThreads.put(node,new HashSet<Integer>());
+        }
+        this.childrenThreads.get(node).addAll(childId);
+    }
+
+
 }

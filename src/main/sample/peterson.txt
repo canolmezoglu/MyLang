@@ -3,6 +3,7 @@ shared bool flag0 false;
 shared bool flag1 false;
 shared int change = 0;
 
+parallel{
 thread
 {
   flag0 = true;
@@ -18,3 +19,5 @@ thread {
   change = 2;
   flag1 = false;
 }
+}
+print (change);
