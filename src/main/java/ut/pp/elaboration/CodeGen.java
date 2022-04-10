@@ -5,14 +5,14 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import ut.pp.elaboration.model.*;
-import ut.pp.elaboration.model.enums.Operators;
-import ut.pp.elaboration.model.enums.Registers;
-import ut.pp.elaboration.model.enums.Targets;
+import ut.pp.elaboration.model.enums.*;
+import ut.pp.elaboration.model.interfaces.InstructionArgs;
 import ut.pp.parser.MyLangBaseVisitor;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
@@ -25,31 +25,13 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     Map<Integer,List<Instruction>> threads = new HashMap<>();
     Map<String,List<Instruction>> functions = new HashMap<>();
     FunctionData currentfunctionData = null;
+    int currentMemoryUsage;
 
     public static void main(String args[]) throws Exception {
-        String code = "shared int turn = 0;\n" +
-                "shared bool flag0 = false;\n" +
-                "shared bool flag1 = false;\n" +
-                "shared int change = 0;\n" +
-                "\n" +
-                "parallel{\n" +
-                "thread\n" +
-                "{\n" +
-                "  flag0 = true;\n" +
-                "  turn = 1;\n" +
-                "  while (flag1 and turn == 1) { }\n" +
-                "  change = change + 1;\n" +
-                "  flag0 = false;\n" +
-                "  }\n" +
-                "thread {\n" +
-                "  flag1 = true;\n" +
-                "  turn = 0;\n" +
-                "  while (flag0 and turn == 0) { }\n" +
-                "  change = change + 2;\n" +
-                "  flag1 = false;\n" +
-                "}\n" +
-                "}\n" +
-                "print (change);";
+        String code =
+                "function int addfive (int a) {" +
+                        "return a+5; } " +
+                "print (addfive(5););";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
@@ -118,7 +100,10 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         for (MyLangParser.InstructionContext context : ctx.instruction()) {
             // If the current block is parallel,
             // add the thread starting and stopping codes
-            if (context.getStart().getText().equals("parallel")){
+            if (context.getStart().getText().equals("function")){
+                visit(context);
+            }
+            else if (context.getStart().getText().equals("parallel")){
                 threaded = true;
 
                 // This for loop adds instructions for the main thread to spawn the threads in a parallel block
@@ -237,6 +222,19 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
         // If not threaded, it will just return the main threads instructions
         // and skip over all the jumps.
+        Map<String, Integer> jumpLocationsForFunctions = new HashMap<>();
+        for (String function_name : this.functions.keySet() ){
+            jumpLocationsForFunctions.put(function_name,InstructionList.size());
+            InstructionList.addAll(this.functions.get(function_name));
+        }
+        for (int i=0;i<InstructionList.size();i++){
+
+            if (InstructionList.get(i).getInstr() == Instructions.Fake){
+                FakeOperator of = (FakeOperator) InstructionList.get(i).getArgs().get(0);
+                InstructionList.set(i,sp.absJump(jumpLocationsForFunctions.get(of.getFunctionName())));
+
+            }
+        }
         return InstructionList;
     }
 
@@ -288,6 +286,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
         else {
             InstructionList.add(sp.storeInMemory(varname, reg, res.getOffset(ctx)));
+            currentMemoryUsage = res.getOffset(ctx) ;
         }
         reghandler.release(reg);
         return InstructionList;
@@ -360,6 +359,8 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
         else{
             InstructionList.add(sp.storeInMemory(varname, reg, res.getOffset(ctx)));
+            currentMemoryUsage = res.getOffset(ctx) ;
+
 
         }
         reghandler.release(reg);
@@ -423,11 +424,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             Registers memoryAddress = reghandler.acquire();
             if (variableData.isParameter){
                 // parameter is at the bottom of arp
-                InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx) + 8),0,memoryAddress,0));
+                InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx) + 7),0,memoryAddress,0));
                 InstructionList.add(sp.compute(Operators.Add,Registers.regF,memoryAddress,memoryAddress));
             }
             else{
-                InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx) ),0,memoryAddress,0));
+                InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx) + 1 ),0,memoryAddress,0));
                 InstructionList.add(sp.compute(Operators.Sub,Registers.regF,memoryAddress,memoryAddress));
 
             }
@@ -675,7 +676,10 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         reghandler.release(regReturnVal);
         return InstructionList;
     }
-    @Override public List<Instruction> visitFunction(MyLangParser.FunctionContext ctx){
+    @Override public List<Instruction> visitFunctionInst(MyLangParser.FunctionInstContext ctx){
+        return visit(ctx.functionConstruct());
+    }
+    @Override public List<Instruction> visitFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
         List<Instruction> InstructionList = new ArrayList<>();
         this.currentfunctionData = res.getFunctionData(ctx.ID(0).toString());
         InstructionList.addAll(visit(ctx.block()));
@@ -685,11 +689,67 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         InstructionList.add(sp.compute(Operators.Add,regReturnAddr,Registers.regF,regReturnAddr));
         InstructionList.add(sp.getFromIndAddr(regReturnAddr,regReturnAddr));
         InstructionList.add(sp.IndJump(regReturnAddr));
+        this.functions.put(ctx.ID(0).toString(),InstructionList);
         reghandler.release(regReturnAddr);
         this.currentfunctionData = null;
         return null;
     }
     @Override public List<Instruction> visitFuncCallExpr(MyLangParser.FuncCallExprContext ctx){
+        List<Instruction> InstructionList = new ArrayList<>();
+        //TODO Fake inst
+        if (this.currentfunctionData !=null){
+
+        }
+        // if we're in main thread dont need dynamic memory
+        else {
+            FunctionData calledFunction = res.getFunctionData(ctx.ID().toString());
+            int arpLocation = currentMemoryUsage +  calledFunction.localDataSize + 1 + 5 + 1;
+            for (int i=0;i<ctx.expr().size();i++){
+                InstructionList.addAll(visit(ctx.expr(i)));
+                Registers registers = reghandler.acquire();
+                InstructionList.add(sp.loadToRegister(Integer.toString(arpLocation+7+1+i),0,registers,0));
+                InstructionList.add(sp.storeInMemory(getRegister(ctx.expr(i)),registers));
+                reghandler.release(registers);
+                reghandler.release(getRegister(ctx.expr(i)));
+            }
+
+            //TODO SAVE REGHANDLER BEFORE GENERATING FUNCTION
+            Registers reg = reghandler.acquire();
+            InstructionList.add(sp.loadToRegister(Integer.toString(arpLocation),0,Registers.regF,0));
+            InstructionList.add(sp.storeInMemory(Registers.regA, currentMemoryUsage + 1));
+            InstructionList.add(sp.storeInMemory(Registers.regB, currentMemoryUsage + 2));
+            InstructionList.add(sp.storeInMemory(Registers.regC, currentMemoryUsage + 3));
+            InstructionList.add(sp.storeInMemory(Registers.regD, currentMemoryUsage + 4));
+            InstructionList.add(sp.storeInMemory(Registers.regE, currentMemoryUsage + 5));
+
+
+            InstructionList.add(sp.loadToRegister("1",0,Registers.regA,0));
+            InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regA,Registers.regA));
+
+            InstructionList.add(sp.loadToRegister("3",0,Registers.regB,0));
+            InstructionList.add(sp.compute(Operators.Add,Registers.regPC,Registers.regB,Registers.regB));
+            InstructionList.add(sp.storeInMemory(Registers.regB,Registers.regA));
+            // jump here
+            InstructionList.add(sp.fakeInst(ctx.ID().toString()));
+            // jump here
+            InstructionList.add(sp.loadToRegister("a",0,Registers.regA,currentMemoryUsage+1));
+            InstructionList.add(sp.loadToRegister("a",0,Registers.regB,currentMemoryUsage+2));
+            InstructionList.add(sp.loadToRegister("a",0,Registers.regC,currentMemoryUsage+3));
+            InstructionList.add(sp.loadToRegister("a",0,Registers.regD,currentMemoryUsage+4));
+            InstructionList.add(sp.loadToRegister("a",0,Registers.regE,currentMemoryUsage+5));
+
+            InstructionList.add(sp.loadToRegister("a",0,reg,arpLocation+2));
+            registers.put(ctx, reg);
+            return InstructionList;
+
+
+
+
+
+
+
+
+        }
         return null;
     }
 

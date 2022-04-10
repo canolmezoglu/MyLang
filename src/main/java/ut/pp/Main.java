@@ -23,29 +23,10 @@ public class Main {
          * Raise exception and show errors in code if there are any (excluding syntax errors) , in that case - no code generation
          * Generated Sprockell code can be seen in elaboration/haskell/output.hs
          */
-        String code = "shared int turn = 0;\n" +
-                "shared bool flag0 = false;\n" +
-                "shared bool flag1 = false;\n" +
-                "shared int change = 0;\n" +
-                "\n" +
-                "parallel{\n" +
-                "thread\n" +
-                "{\n" +
-                "  flag0 = true;\n" +
-                "  turn = 1;\n" +
-                "  while (flag1 and turn == 1) { }\n" +
-                "  change = change + 1;\n" +
-                "  flag0 = false;\n" +
-                "  }\n" +
-                "thread {\n" +
-                "  flag1 = true;\n" +
-                "  turn = 0;\n" +
-                "  while (flag0 and turn == 0) { }\n" +
-                "  change = change + 2;\n" +
-                "  flag1 = false;\n" +
-                "}\n" +
-                "}\n" +
-                "print (change);";
+        String code =  "function int addfive (int a) {" +
+                "print(8);" +
+                "return a*5; } " +
+                "print (addfive(5););";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);

@@ -13,5 +13,6 @@ public enum Instructions {
     WriteInstr,
     TestAndSet,
     EndProg,
-    Nop;
+    Nop,
+    Fake;
 }

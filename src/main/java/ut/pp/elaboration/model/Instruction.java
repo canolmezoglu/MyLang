@@ -30,6 +30,9 @@ public class Instruction {
     public Instructions getInstr() {
         return this.instr;
     }
+    public  List<InstructionArgs> getArgs() {
+        return this.args;
+    }
 
     /**
      * @return instructions as a string

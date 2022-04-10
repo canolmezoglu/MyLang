@@ -1,8 +1,8 @@
 grammar MyLang;
 
-program: instruction+ function* instruction*;
+program: instruction*;
 
-function: type ID LPAR ((type ID) (COMMA type ID )* )? RPAR block;
+functionConstruct: FUNCTION type ID LPAR ((type ID) (COMMA type ID )* )? RPAR block;
 
 instruction:
       statement                                 #statementInst
@@ -12,6 +12,7 @@ instruction:
     | printConstruct                            #printInst
     | lockConstruct                             #lockInst
     | returnConstruct                           #returnInst
+    | functionConstruct                         #functionInst
     ;
 
 statement: declaration #declStat
@@ -89,6 +90,7 @@ PARALLEL: 'parallel';
 LOCK : 'lock';
 UNLOCK : 'unlock';
 RETURN : 'return';
+FUNCTION: 'function';
 
 ASS: '=';
 EQ:     '==';

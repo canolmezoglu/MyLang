@@ -3,7 +3,7 @@ package ut.pp.elaboration.model.enums;
 import ut.pp.elaboration.model.interfaces.InstructionArgs;
 
 public enum Registers implements InstructionArgs {
-    regA,regB,regC,regD,regE,regF,reg0,regSprID;
+    regA,regB,regC,regD,regE,regF,reg0,regSprID,regPC;
 
     @Override
     public InstructionArgs get() {

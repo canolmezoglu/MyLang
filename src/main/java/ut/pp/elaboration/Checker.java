@@ -107,6 +107,13 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitIdExpr(MyLangParser.IdExprContext ctx){
+        if (this.currFunction !=null){
+            setType(ctx,this.currFunction.getVariable(ctx.ID().toString()).type);
+            setOffset(ctx,this.currFunction.getVariable(ctx.ID().toString()).getSizeCurr());
+            result.setGlobal(ctx,false);
+
+            return;
+        }
         VariableData check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
             setType(ctx,check.type);
@@ -133,6 +140,8 @@ public class Checker extends MyLangBaseListener {
                     this.errors.add("you are changing a variable to an unexpected type");
                 }
                 setType(ctx, getType(ctx.expr()));
+                result.setGlobal(ctx,false);
+
                 setOffset(ctx,this.currFunction.getLocalDataSize());
                 return;
 
@@ -264,14 +273,14 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override
-    public void enterFunction(MyLangParser.FunctionContext ctx){
-        this.currFunction = new FunctionData(ctx.type(0).toString() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN);
+    public void enterFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
+        this.currFunction = new FunctionData(ctx.type(0).getText() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN);
         if (ctx.ID() != null){
             //add enough offset to avoid register save + return addr + return val
             // 7 + arp will be the actual address
 
             for (int i=1; i < ctx.ID().size();i++){
-                MyType type = ctx.type(i).toString() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN;
+                MyType type = ctx.type(i).getText() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN;
                 this.currFunction.addParameter(ctx.ID(i).toString(),type);
             }
 
@@ -292,14 +301,14 @@ public class Checker extends MyLangBaseListener {
         setType(ctx,functionData.returnType);
         for (int i=0; i < ctx.expr().size();i++){
             if (getType(ctx.expr(0)) != functionData.getVariable(functionData.parameters.get(i)).type){
-                this.errors.add("the parameter type not equal to expectec type");
+                this.errors.add("the parameter type not equal to expected type");
             }
 
         }
 
     }
     @Override
-    public void exitFunction(MyLangParser.FunctionContext ctx){
+    public void exitFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
         if (this.result.functionDataHashMapContains(ctx.ID(0).toString())){
             this.errors.add("you cant have two functions with the same name");
         }

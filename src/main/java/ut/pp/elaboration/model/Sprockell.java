@@ -105,6 +105,9 @@ public class Sprockell {
     public Instruction relJump ( int line){
         return new Instruction(Instructions.Jump, Collections.singletonList(new Target(Targets.Rel, line)));
     }
+    public Instruction absJump ( int line){
+        return new Instruction(Instructions.Jump, Collections.singletonList(new Target(Targets.Abs, line)));
+    }
     public Instruction IndJump ( Registers reg){
         return new Instruction(Instructions.Jump, Collections.singletonList(new Target(Targets.Ind, reg)));
     }
@@ -133,6 +136,9 @@ public class Sprockell {
     public Instruction storeInMemory (String name, Registers reg,int slot){
         return new Instruction(Instructions.Store, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.DirAddr, slot)));
     }
+    public Instruction storeInMemory (Registers reg,int slot){
+        return new Instruction(Instructions.Store, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.DirAddr, slot)));
+    }
 
     public Instruction storeInMemory (Registers reg,Registers slot){
         return new Instruction(Instructions.Store, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.IndAddr, slot)));
@@ -141,5 +147,9 @@ public class Sprockell {
     public Instruction readInst (int slot){
         return new Instruction(Instructions.ReadInstr, Arrays.asList(new MemoryAddr(MemoryAddrs.DirAddr, slot)));
     }
+    public Instruction fakeInst (String functionName){
+        return new Instruction(Instructions.Fake,Arrays.asList(new FakeOperator(functionName)));
+    }
+
 
 }
