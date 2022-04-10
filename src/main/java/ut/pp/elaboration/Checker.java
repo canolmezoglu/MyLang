@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import ut.pp.elaboration.model.ThreadSp;
 import ut.pp.parser.MyLangBaseListener;
 import ut.pp.parser.MyLangLexer;
@@ -11,15 +12,15 @@ import ut.pp.parser.MyLangParser;
 import ut.pp.elaboration.ScopeTable;
 
 import javax.lang.model.element.VariableElement;
+import java.util.*;
 import java.util.ArrayList;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 public class Checker extends MyLangBaseListener {
     private List<String> errors;
     private Result result;
     private ScopeTable scope;
+    private HashMap<String, FunctionData> functionDataHashMap;
+    FunctionData currFunction;
     private ThreadSp active_thread;
     private List<ThreadSp> threads;
     public static int getNumberOfThreads(ParseTree tree){
@@ -109,7 +110,7 @@ public class Checker extends MyLangBaseListener {
         VariableData check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
             setType(ctx,check.type);
-            setOffset(ctx,check.sizeCurr);
+            setOffset(ctx,check.getSizeCurr());
             result.setGlobal(ctx,check.global);
 
         }
@@ -125,15 +126,31 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
+        if (this.currFunction !=null){
+            VariableData data = this.currFunction.getVariable(ctx.ID().toString());
+            if (data !=null){
+                if (data.type != getType(ctx.expr())) {
+                    this.errors.add("you are changing a variable to an unexpected type");
+                }
+                setType(ctx, getType(ctx.expr()));
+                setOffset(ctx,this.currFunction.getLocalDataSize());
+                return;
+
+            }
+        }
         VariableData check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
             if (check.type != getType(ctx.expr())) {
                 this.errors.add("you are changing a variable to an unexpected type");
             }
             setType(ctx, getType(ctx.expr()));
-            setOffset(ctx,check.sizeCurr);
+            setOffset(ctx,check.getSizeCurr());
             result.setGlobal(ctx,check.global);
+            return;
         }
+        this.errors.add("this variable you are changing does not exist");
+
+
     }
 
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
@@ -143,14 +160,23 @@ public class Checker extends MyLangBaseListener {
                     this.errors.add("you are trying to assign an integer to a boolean variable");
                 }
                 setType(ctx, MyType.BOOLEAN);
-
-                setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.BOOLEAN, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                if (this.currFunction == null){
+                    setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.BOOLEAN, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
+                }
+                else{
+                    setOffset(ctx,this.currFunction.declare(ctx.ID().toString(),MyType.BOOLEAN));
+                }
             } else if (ctx.type().INTEGER() != null) {
                 if (getType(ctx.expr()) != MyType.NUM) {
                     this.errors.add("you are trying to assign an boolean to an integer variable");
                 }
                 setType(ctx, MyType.NUM);
-                setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                if (this.currFunction == null){
+                    setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
+                }
+                else{
+                    setOffset(ctx,this.currFunction.declare(ctx.ID().toString(),MyType.NUM));
+                }
             } else {
                 this.errors.add("Invalid type");
             }
@@ -223,6 +249,38 @@ public class Checker extends MyLangBaseListener {
     @Override
     public void exitProgram(MyLangParser.ProgramContext ctx){
         result.setThread(ctx,active_thread);
+    }
+    @Override
+    public void exitReturnConstruct(MyLangParser.ReturnConstructContext ctx){
+        if (this.currFunction !=null){
+            if (this.currFunction.returnType != getType(ctx.expr())){
+                this.errors.add("this functions claims to return" + this.currFunction.returnType.toString() +
+                        " but actually returns" + getType(ctx.expr()));
+            }
+        }
+        else{
+            this.errors.add("a return statement is called outside a function");
+        }
+    }
+
+    @Override
+    public void enterFunction(MyLangParser.FunctionContext ctx){
+        this.currFunction = new FunctionData(ctx.type(0).toString() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN);
+        if (ctx.ID() != null){
+            //add enough offset to avoid register save + return addr + return val
+            // 7 + arp will be the actual address
+
+            for (int i=1; i < ctx.ID().size();i++){
+                MyType type = ctx.type(i).toString() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN;
+                this.currFunction.addParameter(ctx.ID(i).toString(),type);
+            }
+
+        }
+    }
+    @Override
+    public void exitFunction(MyLangParser.FunctionContext ctx){
+        this.functionDataHashMap.put(ctx.ID(0).toString(),this.currFunction);
+        this.currFunction = null;
     }
 
     public void setType(ParseTree node, MyType type) {

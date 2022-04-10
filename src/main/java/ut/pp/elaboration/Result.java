@@ -4,11 +4,13 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import ut.pp.elaboration.model.ThreadSp;
+import ut.pp.parser.MyLangParser;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 /** Class holding the results of the Simple Pascal checker. */
 public class Result {
@@ -21,6 +23,8 @@ public class Result {
     private final ParseTreeProperty<Integer> offsets = new ParseTreeProperty<>();
     private final ParseTreeProperty<ThreadSp> threads = new ParseTreeProperty<>();
     private final ParseTreeProperty<Boolean> globals = new ParseTreeProperty<>();
+    private final ParseTreeProperty<FunctionData> functionContexts = new ParseTreeProperty<>();
+
     private final ParseTreeProperty<Set<Integer>> childrenThreads = new ParseTreeProperty<>();
 
     /** Adds an association from parse tree node to the flow graph entry. */
@@ -94,6 +98,11 @@ public class Result {
         }
         this.childrenThreads.get(node).addAll(childId);
     }
-
+    public void setFunctionContext(ParseTree node, FunctionData data){
+        this.functionContexts.put(node,data);
+    }
+    public FunctionData getFunctionContext(ParseTree node){
+        return this.functionContexts.get(node);
+    }
 
 }

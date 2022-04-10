@@ -16,6 +16,8 @@ public class Register {
         this.registers.addAll(Arrays.asList(Registers.values()));
         this.registers.remove(6);
         this.registers.remove(6);
+        // remove regarp
+        this.registers.remove(5);
         this.reg0= Registers.reg0;
     }
 

@@ -26,44 +26,29 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     List<Instruction> instructions = new ArrayList<>();
 
     public static void main(String args[]) throws Exception {
-        String code = "shared int money = 0;\n" +
-                "parallel {\n" +
-                "thread {   int wait = 100; while (wait > 0){\n" +
-                "        wait = wait - 1;\n" +
-                "        lock\n" +
-                "           money = money + 1;\n" +
-                "        unlock\n" +
-                "    }\n" +
-                "}\n" +
-                "thread {\n" +
-                "    int wait = 100; while (wait > 0){\n" +
-                "        wait = wait - 1;\n" +
-                "        lock\n" +
-                "            money = money - 2;\n" +
-                "        unlock\n" +
-                "    }\n" +
-                "}\n" +
-                "}" +
-                "print(money);" +
+        String code = "shared int turn = 0;\n" +
+                "shared bool flag0 = false;\n" +
+                "shared bool flag1 = false;\n" +
+                "shared int change = 0;\n" +
                 "\n" +
-                "parallel {\n" +
-                "thread {   int wait = 100; while (wait > 0){\n" +
-                "        wait = wait - 1;\n" +
-                "        lock\n" +
-                "           money = money + 1;\n" +
-                "        unlock\n" +
-                "    }\n" +
-                "}\n" +
+                "parallel{\n" +
+                "thread\n" +
+                "{\n" +
+                "  flag0 = true;\n" +
+                "  turn = 1;\n" +
+                "  while (flag1 and turn == 1) { }\n" +
+                "  change = change + 1;\n" +
+                "  flag0 = false;\n" +
+                "  }\n" +
                 "thread {\n" +
-                "    int wait = 100; while (wait > 0){\n" +
-                "        wait = wait - 1;\n" +
-                "        lock\n" +
-                "            money = money - 2;\n" +
-                "        unlock\n" +
-                "    }\n" +
+                "  flag1 = true;\n" +
+                "  turn = 0;\n" +
+                "  while (flag0 and turn == 0) { }\n" +
+                "  change = change + 2;\n" +
+                "  flag1 = false;\n" +
                 "}\n" +
-                "}" +
-                "print(money);";
+                "}\n" +
+                "print (change);";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
