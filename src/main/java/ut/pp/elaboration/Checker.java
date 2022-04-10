@@ -14,6 +14,7 @@ import ut.pp.elaboration.ScopeTable;
 import javax.lang.model.element.VariableElement;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.function.Function;
 
 public class Checker extends MyLangBaseListener {
     private List<String> errors;
@@ -275,11 +276,32 @@ public class Checker extends MyLangBaseListener {
             }
 
         }
+        else{
+            this.errors.add("you have not named this function");
+        }
+    }
+    @Override
+    public void enterFuncCallExpr(MyLangParser.FuncCallExprContext ctx) {
+        if (!result.functionDataHashMapContains(ctx.ID().toString())) {
+            this.errors.add("you are calling a function that doesnt exist yet");
+        }
+    }
+    @Override
+    public void exitFuncCallExpr(MyLangParser.FuncCallExprContext ctx){
+        FunctionData functionData = result.getFunctionData(ctx.ID().toString());
+        setType(ctx,functionData.returnType);
+        for (int i=0; i < ctx.expr().size();i++){
+            if (getType(ctx.expr(0)) != functionData.getVariable(functionData.parameters.get(i)).type){
+                this.errors.add("the parameter type not equal to expectec type");
+            }
+
+        }
+
     }
     @Override
     public void exitFunction(MyLangParser.FunctionContext ctx){
         if (this.result.functionDataHashMapContains(ctx.ID(0).toString())){
-            this.errors.add("you cant have two functionss with the sma name");
+            this.errors.add("you cant have two functions with the same name");
         }
         this.result.putFunctionDataMap(ctx.ID(0).toString(),this.currFunction);
         this.currFunction = null;

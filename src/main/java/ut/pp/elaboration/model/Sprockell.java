@@ -101,11 +101,14 @@ public class Sprockell {
     public Instruction writeToMemory (Registers reg,Registers addr){
         return new Instruction(Instructions.WriteInstr, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.IndAddr,addr)));
     }
+
     public Instruction relJump ( int line){
         return new Instruction(Instructions.Jump, Collections.singletonList(new Target(Targets.Rel, line)));
     }
+    public Instruction IndJump ( Registers reg){
+        return new Instruction(Instructions.Jump, Collections.singletonList(new Target(Targets.Ind, reg)));
+    }
     public Instruction loadToRegister (String val, int scope, Registers register, int res){
-        //TODO add instructions for shared memory - readinstr and recieve
         Instruction inst;
         try {
                 int num = 0;
@@ -123,10 +126,18 @@ public class Sprockell {
         }
         return inst;
     }
+    public Instruction getFromIndAddr(Registers reg1,Registers reg2){
+        return new Instruction(Instructions.Load, Arrays.asList(new MemoryAddr(MemoryAddrs.IndAddr, reg2), reg1));
+    }
 
     public Instruction storeInMemory (String name, Registers reg,int slot){
         return new Instruction(Instructions.Store, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.DirAddr, slot)));
     }
+
+    public Instruction storeInMemory (Registers reg,Registers slot){
+        return new Instruction(Instructions.Store, Arrays.asList(reg, new MemoryAddr(MemoryAddrs.IndAddr, slot)));
+    }
+
     public Instruction readInst (int slot){
         return new Instruction(Instructions.ReadInstr, Arrays.asList(new MemoryAddr(MemoryAddrs.DirAddr, slot)));
     }
