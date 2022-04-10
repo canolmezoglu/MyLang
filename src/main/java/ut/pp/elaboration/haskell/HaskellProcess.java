@@ -1,5 +1,4 @@
 package ut.pp.elaboration.haskell;
-import ut.pp.elaboration.model.Sprockell;
 
 import java.io.*;
 
@@ -7,10 +6,12 @@ public class HaskellProcess {
     /**
      * Class to generate haskell code
      */
-    private static final String sourcePath = "src/haskell/sprockelConverter.hs";
-    private static final String path = "src/haskell/output.hs";
+    private static final String path = "src/main/java/ut/pp/elaboration/haskell/output.hs";
 
-    public static void runSprockel(){
+    /**
+     * Run sprockell code
+     */
+    public static void run_Sprockell(){
         try{
             ProcessBuilder b = new ProcessBuilder();
             b.command("cmd.exe ","/c","runhaskell ",path);
@@ -20,17 +21,20 @@ public class HaskellProcess {
             e.printStackTrace();
         }
     }
-
     /**
      * Build haskell code
      * @param p
+     * @param thread_count
      */
-    public static  void build (Sprockell p){
+    public static  void build_Sprockell(String p, int thread_count){
         try {
             FileWriter fileWriter = new FileWriter(path);
             StringBuilder setup = new StringBuilder("import Sprockell\n" +
-                    "prog :: [Instruction]\n" +
-                    p + "\n\n" + "main = run[prog ");
+                    "prog :: [Instruction]\n" + "prog = ["+
+                    p + "]"+"\n\n" + "main = run[prog");
+            for(int i = 0; i<thread_count;i++){
+                setup.append(",prog");
+            }
             setup.append("]");
             fileWriter.write(setup.toString());
             fileWriter.flush();
@@ -39,6 +43,4 @@ public class HaskellProcess {
             e.printStackTrace();
         }
     }
-
-
 }
