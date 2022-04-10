@@ -6,10 +6,7 @@ import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import ut.pp.elaboration.model.ThreadSp;
 import ut.pp.parser.MyLangParser;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 /** Class holding the results of the Simple Pascal checker. */
@@ -23,9 +20,9 @@ public class Result {
     private final ParseTreeProperty<Integer> offsets = new ParseTreeProperty<>();
     private final ParseTreeProperty<ThreadSp> threads = new ParseTreeProperty<>();
     private final ParseTreeProperty<Boolean> globals = new ParseTreeProperty<>();
-    private final ParseTreeProperty<FunctionData> functionContexts = new ParseTreeProperty<>();
-
     private final ParseTreeProperty<Set<Integer>> childrenThreads = new ParseTreeProperty<>();
+    private HashMap<String, FunctionData> functionDataHashMap = new HashMap<>();
+
 
     /** Adds an association from parse tree node to the flow graph entry. */
     public void setEntry(ParseTree node, ParserRuleContext entry) {
@@ -98,11 +95,14 @@ public class Result {
         }
         this.childrenThreads.get(node).addAll(childId);
     }
-    public void setFunctionContext(ParseTree node, FunctionData data){
-        this.functionContexts.put(node,data);
+    public void putFunctionDataMap(String id, FunctionData data){
+        this.functionDataHashMap.put(id,data);
     }
-    public FunctionData getFunctionContext(ParseTree node){
-        return this.functionContexts.get(node);
+    public FunctionData getFunctionData(String id){
+        return this.functionDataHashMap.get(id);
+    }
+    public boolean functionDataHashMapContains(String id){
+        return this.functionDataHashMap.containsKey(id);
     }
 
 }

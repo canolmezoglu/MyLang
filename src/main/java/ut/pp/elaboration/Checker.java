@@ -19,7 +19,6 @@ public class Checker extends MyLangBaseListener {
     private List<String> errors;
     private Result result;
     private ScopeTable scope;
-    private HashMap<String, FunctionData> functionDataHashMap;
     FunctionData currFunction;
     private ThreadSp active_thread;
     private List<ThreadSp> threads;
@@ -279,7 +278,10 @@ public class Checker extends MyLangBaseListener {
     }
     @Override
     public void exitFunction(MyLangParser.FunctionContext ctx){
-        this.functionDataHashMap.put(ctx.ID(0).toString(),this.currFunction);
+        if (this.result.functionDataHashMapContains(ctx.ID(0).toString())){
+            this.errors.add("you cant have two functionss with the sma name");
+        }
+        this.result.putFunctionDataMap(ctx.ID(0).toString(),this.currFunction);
         this.currFunction = null;
     }
 
