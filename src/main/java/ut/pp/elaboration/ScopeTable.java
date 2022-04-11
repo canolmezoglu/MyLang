@@ -138,5 +138,8 @@ public class ScopeTable {
             }
         }
     }
+    public void addOffset(int offset){
+        this.sizes.add(getPrevSizes(this.sizes) + offset);
+    }
 
 }

@@ -26,12 +26,13 @@ public class HaskellProcess {
      * @param p
      * @param thread_count
      */
-    public static  void build_Sprockell(String p, int thread_count){
+    public static  void build_Sprockell(String p, int thread_count,boolean debug){
         try {
             FileWriter fileWriter = new FileWriter(path);
+            String runWithDebug = debug ? "runWithDebugger (debuggerSimplePrint myShow) " : "run";
             StringBuilder setup = new StringBuilder("import Sprockell\n" +
                     "prog :: [Instruction]\n" + "prog = ["+
-                    p + "]"+"\n\n" + "main = run[prog");
+                    p + "]"+"\n\n" + "main = "   +runWithDebug +"[prog");
             for(int i = 0; i<thread_count;i++){
                 setup.append(",prog");
             }

@@ -1,4 +1,7 @@
 shared int money = 0;
+function int addfive(int a){
+    return a+5;
+}
 parallel {
 thread {   int wait = 100; while (wait > 0){
         wait = wait - 1;
@@ -17,7 +20,7 @@ thread {
 }
 thread {
     lock
-         money = money + 100;
+         money = addfive(money);;
     unlock
 }
 }

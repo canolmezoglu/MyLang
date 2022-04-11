@@ -525,6 +525,131 @@ public class TestChecker {
 
     }
 
+    /**
+     * Test if and operator rejects
+     * the wrong different types
+     */
+
+
+    @Test
+    public void test_bool1() throws Exception {
+        try {
+            checker.check(
+                    getParseTree("print(3232  and not false); ")
+            );
+        }
+        catch (Exception e){
+            Assert.assertEquals(1,checker.getErrors().size());
+        }
+
+    }
+
+    /**
+     * Test if and operator accepts
+     * the correct types
+     */
+
+
+    @Test
+    public void test_bool2() throws Exception {
+        try {
+            checker.check(
+                    getParseTree("print(true  and not false); ")
+            );
+        }
+        catch (Exception e){
+            Assert.assertEquals(0,checker.getErrors().size());
+        }
+
+    }
+
+    /**
+     * Test if or operator rejects
+     * the wrong different types
+     */
+
+
+    @Test
+    public void test_bool3() throws Exception {
+        try {
+            checker.check(
+                    getParseTree("print(3232  or not false); ")
+            );
+        }
+        catch (Exception e){
+            Assert.assertEquals(1,checker.getErrors().size());
+        }
+
+    }
+    /**
+     * Test if or operator accepts
+     * the correct types
+     */
+
+
+    @Test
+    public void test_bool4() throws Exception {
+        try {
+            checker.check(
+                    getParseTree("print(true  or not false); ")
+            );
+        }
+        catch (Exception e){
+            Assert.assertEquals(0,checker.getErrors().size());
+        }
+
+    }
+
+    /**
+     * Test if change assignment accepts the correct type
+     * with integers.
+     */
+    @Test
+    public void test_changeAss1() throws Exception{
+        try {
+            checker.check(
+                    getParseTree(" int a = 5; a = 16; ")
+            );
+        }
+        catch (Exception e){
+            Assert.assertEquals(0,checker.getErrors().size());
+        }
+    }
+
+    /**
+     * Test if change assignment accepts the correct type
+     * with booleans.
+     */
+    @Test
+    public void test_changeAss2() throws Exception{
+        try {
+            checker.check(
+                    getParseTree(" bool a = true; a = false; ")
+            );
+        }
+        catch (Exception e){
+            Assert.assertEquals(0,checker.getErrors().size());
+        }
+    }
+    /**
+     * Test if change assignment rejects the incorrect type.
+     */
+    @Test
+    public void test_changeAss3() throws Exception{
+        try {
+            checker.check(
+                    getParseTree(" bool a = true; a = 12; ")
+            );
+        }
+        catch (Exception e){
+            Assert.assertEquals(1,checker.getErrors().size());
+        }
+    }
+
+
+
+
+
 
 
 

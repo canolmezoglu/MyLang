@@ -14,8 +14,11 @@ public class Register {
     public Register(){
         this.registers = new ArrayList<>();
         this.registers.addAll(Arrays.asList(Registers.values()));
+        this.registers.remove(8);
         this.registers.remove(6);
         this.registers.remove(6);
+        // remove regarp
+        this.registers.remove(5);
         this.reg0= Registers.reg0;
     }
 

@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import ut.pp.elaboration.model.ThreadSp;
 import ut.pp.elaboration.model.enums.Registers;
 import ut.pp.parser.MyLangBaseListener;
@@ -12,15 +13,15 @@ import ut.pp.parser.MyLangParser;
 import ut.pp.elaboration.ScopeTable;
 
 import javax.lang.model.element.VariableElement;
+import java.util.*;
 import java.util.ArrayList;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.function.Function;
 
 public class Checker extends MyLangBaseListener {
     private List<String> errors;
     private Result result;
     private ScopeTable scope;
+    FunctionData currFunction;
     private ThreadSp active_thread;
     private List<ThreadSp> threads;
 
@@ -108,10 +109,17 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitIdExpr(MyLangParser.IdExprContext ctx){
+        if (this.currFunction !=null){
+            setType(ctx,this.currFunction.getVariable(ctx.ID().toString()).type);
+            setOffset(ctx,this.currFunction.getVariable(ctx.ID().toString()).getSizeCurr());
+            result.setGlobal(ctx,false);
+
+            return;
+        }
         VariableData check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
             setType(ctx,check.type);
-            setOffset(ctx,check.sizeCurr);
+            setOffset(ctx,check.getSizeCurr());
             result.setGlobal(ctx,check.global);
 
         }
@@ -127,15 +135,33 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
+        if (this.currFunction !=null){
+            VariableData data = this.currFunction.getVariable(ctx.ID().toString());
+            if (data !=null){
+                if (data.type != getType(ctx.expr())) {
+                    this.errors.add("you are changing a variable to an unexpected type");
+                }
+                setType(ctx, getType(ctx.expr()));
+                result.setGlobal(ctx,false);
+
+                setOffset(ctx,this.currFunction.getLocalDataSize());
+                return;
+
+            }
+        }
         VariableData check = scope.check(ctx.ID().toString(),ctx.getStart());
         if(check!=null) {
             if (check.type != getType(ctx.expr())) {
                 this.errors.add("you are changing a variable to an unexpected type");
             }
             setType(ctx, getType(ctx.expr()));
-            setOffset(ctx,check.sizeCurr);
+            setOffset(ctx,check.getSizeCurr());
             result.setGlobal(ctx,check.global);
+            return;
         }
+        this.errors.add("this variable you are changing does not exist");
+
+
     }
 
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
@@ -147,14 +173,23 @@ public class Checker extends MyLangBaseListener {
                     this.errors.add("you are trying to assign an integer to a boolean variable");
                 }
                 setType(ctx, MyType.BOOLEAN);
-
-                setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.BOOLEAN, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                if (this.currFunction == null){
+                    setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.BOOLEAN, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
+                }
+                else{
+                    setOffset(ctx,this.currFunction.declare(ctx.ID().toString(),MyType.BOOLEAN));
+                }
             } else if (ctx.type().INTEGER() != null) {
                 if (getType(ctx.expr()) != MyType.NUM) {
                     this.errors.add("you are trying to assign an boolean to an integer variable");
                 }
                 setType(ctx, MyType.NUM);
-                setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                if (this.currFunction == null){
+                    setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
+                }
+                else{
+                    setOffset(ctx,this.currFunction.declare(ctx.ID().toString(),MyType.NUM));
+                }
             } else {
                 this.errors.add("Invalid type");
             }
@@ -277,6 +312,66 @@ public class Checker extends MyLangBaseListener {
     @Override
     public void exitProgram(MyLangParser.ProgramContext ctx){
         result.setThread(ctx,active_thread);
+    }
+    @Override
+    public void exitReturnConstruct(MyLangParser.ReturnConstructContext ctx){
+//        if (this.currFunction !=null){
+//            if (this.currFunction.returnType != getType(ctx.expr())){
+//                this.errors.add("this functions claims to return" + this.currFunction.returnType.toString() +
+//                        " but actually returns" + getType(ctx.expr()));
+//            }
+//        }
+//        else{
+//            this.errors.add("a return statement is called outside a function");
+//        }
+    }
+
+    @Override
+    public void enterFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
+        this.currFunction = new FunctionData(ctx.type(0).getText() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN);
+        if (ctx.ID() != null){
+            //add enough offset to avoid register save + return addr + return val
+            // 7 + arp will be the actual address
+
+            for (int i=1; i < ctx.ID().size();i++){
+                MyType type = ctx.type(i).getText() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN;
+                this.currFunction.addParameter(ctx.ID(i).toString(),type);
+            }
+
+        }
+        else{
+            this.errors.add("you have not named this function");
+        }
+    }
+    @Override
+    public void enterFuncCallExpr(MyLangParser.FuncCallExprContext ctx) {
+        if (this.currFunction !=null) return;
+
+        if (!result.functionDataHashMapContains(ctx.ID().toString())) {
+            this.errors.add("you are calling a function that doesnt exist yet");
+        }
+    }
+    @Override
+    public void exitFuncCallExpr(MyLangParser.FuncCallExprContext ctx){
+        // todo below is broken
+        if (this.currFunction !=null) return;
+        FunctionData functionData = result.getFunctionData(ctx.ID().toString());
+        setType(ctx,functionData.returnType);
+        for (int i=0; i < ctx.expr().size();i++){
+            if (getType(ctx.expr(0)) != functionData.getVariable(functionData.parameters.get(i)).type){
+                this.errors.add("the parameter type not equal to expected type");
+            }
+
+        }
+
+    }
+    @Override
+    public void exitFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
+        if (this.result.functionDataHashMapContains(ctx.ID(0).toString())){
+            this.errors.add("you cant have two functions with the same name");
+        }
+        this.result.putFunctionDataMap(ctx.ID(0).toString(),this.currFunction);
+        this.currFunction = null;
     }
 
     public void setType(ParseTree node, MyType type) {

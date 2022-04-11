@@ -1,7 +1,9 @@
 grammar MyLang;
 
-program: instruction+
-    ;
+program: instruction*;
+
+functionConstruct: FUNCTION type ID LPAR ((type ID) (COMMA type ID )* )? RPAR block;
+
 instruction:
       statement                                 #statementInst
     | ifConstruct                               #ifInst
@@ -9,6 +11,8 @@ instruction:
     | parallelConstruct                         #parallelInst
     | printConstruct                            #printInst
     | lockConstruct                             #lockInst
+    | returnConstruct                           #returnInst
+    | functionConstruct                         #functionInst
     ;
 
 statement: declaration #declStat
@@ -35,6 +39,7 @@ printConstruct : PRINT LPAR expr RPAR END;
 
 lockConstruct : LOCK instruction* UNLOCK;
 
+returnConstruct : RETURN expr END;
 block: LBRACE instruction* RBRACE;
 // all the first+ is same below, problem?
 expr: prefixOp expr        #prfExpr
@@ -45,6 +50,7 @@ expr: prefixOp expr        #prfExpr
     | LPAR expr RPAR       #parExpr
     | primitive            #primitiveExpr
     | ID                   #idExpr
+    | ID LPAR (expr (COMMA expr)* )? RPAR END #funcCallExpr
     ;
 
 declaration: access? type ID ASS expr? END;
@@ -91,6 +97,8 @@ PRINT: 'print';
 PARALLEL: 'parallel';
 LOCK : 'lock';
 UNLOCK : 'unlock';
+RETURN : 'return';
+FUNCTION: 'function';
 
 ASS: '=';
 EQ:     '==';
