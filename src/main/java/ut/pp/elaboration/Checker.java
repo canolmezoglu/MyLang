@@ -225,6 +225,9 @@ public class Checker extends MyLangBaseListener {
         }
         String array_name = ctx.ID().toString();
         for(int i=0;i< rows_list.size();i++){
+            if(rows_list.get(i).expr().size()!=Integer.parseInt(ctx.NUM(1).getText())){
+                this.errors.add("The number of columns does not match");
+            }
             for(int j=0;j<rows_list.get(i).expr().size();j++){
                 if (ctx.type().BOOLEAN() != null) {
                     if (getType(ctx.darray(i).expr(j)) != MyType.BOOLEAN) {
