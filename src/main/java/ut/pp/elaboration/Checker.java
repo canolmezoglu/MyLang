@@ -261,15 +261,15 @@ public class Checker extends MyLangBaseListener {
     }
     @Override
     public void exitReturnConstruct(MyLangParser.ReturnConstructContext ctx){
-        if (this.currFunction !=null){
-            if (this.currFunction.returnType != getType(ctx.expr())){
-                this.errors.add("this functions claims to return" + this.currFunction.returnType.toString() +
-                        " but actually returns" + getType(ctx.expr()));
-            }
-        }
-        else{
-            this.errors.add("a return statement is called outside a function");
-        }
+//        if (this.currFunction !=null){
+//            if (this.currFunction.returnType != getType(ctx.expr())){
+//                this.errors.add("this functions claims to return" + this.currFunction.returnType.toString() +
+//                        " but actually returns" + getType(ctx.expr()));
+//            }
+//        }
+//        else{
+//            this.errors.add("a return statement is called outside a function");
+//        }
     }
 
     @Override
@@ -291,12 +291,16 @@ public class Checker extends MyLangBaseListener {
     }
     @Override
     public void enterFuncCallExpr(MyLangParser.FuncCallExprContext ctx) {
+        if (this.currFunction !=null) return;
+
         if (!result.functionDataHashMapContains(ctx.ID().toString())) {
             this.errors.add("you are calling a function that doesnt exist yet");
         }
     }
     @Override
     public void exitFuncCallExpr(MyLangParser.FuncCallExprContext ctx){
+        // todo below is broken
+        if (this.currFunction !=null) return;
         FunctionData functionData = result.getFunctionData(ctx.ID().toString());
         setType(ctx,functionData.returnType);
         for (int i=0; i < ctx.expr().size();i++){

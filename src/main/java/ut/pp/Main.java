@@ -23,10 +23,34 @@ public class Main {
          * Raise exception and show errors in code if there are any (excluding syntax errors) , in that case - no code generation
          * Generated Sprockell code can be seen in elaboration/haskell/output.hs
          */
-        String code =  "function int addfive (int a) {" +
-                "print(8);" +
-                "return a*5; } " +
-                "print (addfive(5););";
+        String code =
+                "shared int money = 0;\n" +
+                        "function int addfive(int a){\n" +
+                        "    return a+69;\n" +
+                        "}\n" +
+                        "parallel {\n" +
+                        "thread {   int wait = 100; while (wait > 0){\n" +
+                        "        wait = wait - 1;\n" +
+                        "        lock\n" +
+                        "           money = money + 1;\n" +
+                        "        unlock\n" +
+                        "    }\n" +
+                        "}\n" +
+                        "thread {\n" +
+                        "    int wait = 100; while (wait > 0){\n" +
+                        "        wait = wait - 1;\n" +
+                        "        lock\n" +
+                        "            money = addfive(money-70);;\n" +
+                        "        unlock\n" +
+                        "    }\n" +
+                        "}\n" +
+                        "thread {\n" +
+                        "    lock\n" +
+                        "         money = addfive(money);;\n" +
+                        "    unlock\n" +
+                        "}\n" +
+                        "}" +
+                        "print(money);\n";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
@@ -45,7 +69,7 @@ public class Main {
                     sprockell_code = sprockell_code + ',' + instructions.get(i).toString();
                 }
             }
-            HaskellProcess.build_Sprockell(sprockell_code,thread_count);
+            HaskellProcess.build_Sprockell(sprockell_code,thread_count,false);
             HaskellProcess.run_Sprockell();
         }
     }
