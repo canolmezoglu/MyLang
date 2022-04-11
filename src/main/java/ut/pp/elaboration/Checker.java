@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import ut.pp.elaboration.model.ThreadSp;
+import ut.pp.elaboration.model.enums.Registers;
 import ut.pp.parser.MyLangBaseListener;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
@@ -22,6 +23,7 @@ public class Checker extends MyLangBaseListener {
     private ScopeTable scope;
     private ThreadSp active_thread;
     private List<ThreadSp> threads;
+
     public static int getNumberOfThreads(ParseTree tree){
         int occurences = 0;
         String[] keywords = tree.toStringTree().split(" ");
@@ -137,7 +139,9 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
-
+            if (ctx.ID().toString().contains("%") || ctx.ID().toString().contains(",") ){
+                this.errors.add("Variable cannot contain special sign");
+            }
             if (ctx.type().BOOLEAN() != null) {
                 if (getType(ctx.expr()) != MyType.BOOLEAN) {
                     this.errors.add("you are trying to assign an integer to a boolean variable");
@@ -154,6 +158,56 @@ public class Checker extends MyLangBaseListener {
             } else {
                 this.errors.add("Invalid type");
             }
+    }
+    @Override
+    public void exitDeclareArray(MyLangParser.DeclareArrayContext ctx) {
+        if(ctx.darray().expr().size()!=Integer.parseInt(ctx.NUM().getText())){
+            this.errors.add("The size of the array does not match the number of elements you have listed");
+        }
+        for(int i=0;i<ctx.darray().expr().size();i++) {
+            if (ctx.type().BOOLEAN() != null) {
+                if (getType(ctx.darray().expr(i)) != MyType.BOOLEAN) {
+                    this.errors.add("you are trying to assign an integer to a boolean array");
+                }
+                setType(ctx.darray().expr(i), MyType.BOOLEAN);
+                setOffset(ctx.darray().expr(i), scope.declare(ctx.ID().toString()+"%"+i, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+            } else if (ctx.type().INTEGER() != null) {
+                if (getType(ctx.darray().expr(i)) != MyType.NUM) {
+                    this.errors.add("you are trying to assign an boolean to an integer array");
+                }
+                setType(ctx.darray().expr(i), MyType.NUM);
+                setOffset(ctx.darray().expr(i), scope.declare(ctx.ID().toString()+"%"+i, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+            } else {
+                this.errors.add("Invalid type");
+            }
+        }
+    }
+    @Override
+    public void exitDeclare2dArray(MyLangParser.Declare2dArrayContext ctx) {
+        List<MyLangParser.DarrayContext> rows_list = ctx.darray();
+        if(rows_list.size()!=Integer.parseInt(ctx.NUM(0).getText())){
+            this.errors.add("The number of rows does not match");
+        }
+        String array_name = ctx.ID().toString();
+        for(int i=0;i< rows_list.size();i++){
+            for(int j=0;j<rows_list.get(i).expr().size();j++){
+                if (ctx.type().BOOLEAN() != null) {
+                    if (getType(ctx.darray(i).expr(j)) != MyType.BOOLEAN) {
+                        this.errors.add("you are trying to assign an integer to a boolean array");
+                    }
+                    setType(ctx.darray(i).expr(j), MyType.BOOLEAN);
+                    setOffset(ctx.darray(i).expr(j), scope.declare(array_name+"%"+i+","+j, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                } else if (ctx.type().INTEGER() != null) {
+                    if (getType(ctx.darray(i).expr(j)) != MyType.NUM) {
+                        this.errors.add("you are trying to assign an boolean to an integer array");
+                    }
+                    setType(ctx.darray(i).expr(j), MyType.NUM);
+                    setOffset(ctx.darray(i).expr(j), scope.declare(array_name+"%"+i+","+j, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                } else {
+                    this.errors.add("Invalid type");
+                }
+            }
+        }
     }
 
 

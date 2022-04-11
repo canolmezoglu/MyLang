@@ -13,7 +13,15 @@ instruction:
 
 statement: declaration #declStat
            | changeAss #changeStat
+           | declareArray #declArray
+           | declare2dArray #decl2dArray
            ;
+
+declare2dArray: access? type ID LSQR NUM RSQR LSQR NUM RSQR ASS LBRACE darray (COMMA darray)* RBRACE END;
+
+declareArray: access? type ID LSQR NUM RSQR ASS darray END;
+
+darray: LBRACE expr (COMMA (expr))* RBRACE;
 
 ifConstruct :  IF LPAR expr RPAR block (ELSE block)? ;
 
@@ -91,14 +99,17 @@ GT:     '>';
 LE:     '<=';
 LBRACE: '{';
 LPAR:   '(';
+LSQR:   '[';
 LT:     '<';
 MINUS:  '-';
 NE:     '!=';
 PLUS:   '+';
 RBRACE: '}';
 RPAR:   ')';
+RSQR:   ']';
 STAR:   '*';
 COMMA:   ',';
+ARR_INDEX: '%';
 
 
 
@@ -106,5 +117,5 @@ fragment LETTER: [a-zA-Z];
 fragment DIGIT: [0-9];
 
 NUM: DIGIT+;
-ID: LETTER (LETTER | DIGIT)*;
+ID: LETTER (LETTER | DIGIT |ARR_INDEX |COMMA )*;
 WS: [ \t\r\n]+ -> skip;

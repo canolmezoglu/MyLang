@@ -26,44 +26,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     List<Instruction> instructions = new ArrayList<>();
 
     public static void main(String args[]) throws Exception {
-        String code = "shared int money = 0;\n" +
-                "parallel {\n" +
-                "thread {   int wait = 100; while (wait > 0){\n" +
-                "        wait = wait - 1;\n" +
-                "        lock\n" +
-                "           money = money + 1;\n" +
-                "        unlock\n" +
-                "    }\n" +
-                "}\n" +
-                "thread {\n" +
-                "    int wait = 100; while (wait > 0){\n" +
-                "        wait = wait - 1;\n" +
-                "        lock\n" +
-                "            money = money - 2;\n" +
-                "        unlock\n" +
-                "    }\n" +
-                "}\n" +
-                "}" +
-                "print(money);" +
-                "\n" +
-                "parallel {\n" +
-                "thread {   int wait = 100; while (wait > 0){\n" +
-                "        wait = wait - 1;\n" +
-                "        lock\n" +
-                "           money = money + 1;\n" +
-                "        unlock\n" +
-                "    }\n" +
-                "}\n" +
-                "thread {\n" +
-                "    int wait = 100; while (wait > 0){\n" +
-                "        wait = wait - 1;\n" +
-                "        lock\n" +
-                "            money = money - 2;\n" +
-                "        unlock\n" +
-                "    }\n" +
-                "}\n" +
-                "}" +
-                "print(money);";
+        String code = "int arr[2][2] = { { 1, 2 }, { 3, 4 } }; print(arr%1,1)";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
@@ -73,9 +36,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         for (Instruction i : instructions){
             System.out.println(" ," + i.toString());
         }
-
     }
-
 
     public List<Instruction> genCode(ParseTree tree) throws Exception {
         sp = new Sprockell();
@@ -84,6 +45,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         reghandler = new Register();
         Checker checker = new Checker();
         res = checker.check(tree);
+        System.out.println(sp.getMemory());
         return this.visit(tree);
     }
 
@@ -298,11 +260,68 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         reghandler.release(reg);
         return InstructionList;
     }
+    @Override
+    public List<Instruction> visitDeclareArray(MyLangParser.DeclareArrayContext ctx) {
+        List<Instruction> InstructionList = new ArrayList<>();
+        String array_name = ctx.ID().toString();
+        MyType type =null;
+        if (ctx.type().BOOLEAN() != null) {
+            type = MyType.BOOLEAN;
+        }
+        if (ctx.type().INTEGER() != null) {
+            type = MyType.NUM;
+        }
+        List<MyLangParser.ExprContext> values = ctx.darray().expr();
+        for(int i=0;i<values.size();i++){
+            scope.declare(array_name+"%"+i, type, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
+            InstructionList.addAll(visit(ctx.darray().expr(i)));
+            Registers reg = getRegister(ctx.darray().expr(i));
+            if (ctx.access() != null && ctx.access().SHARED() != null){
+                InstructionList.add(sp.writeToMemory(reg,res.getOffset(ctx.darray().expr(i))));
+            }
+            else {
+                InstructionList.add(sp.storeInMemory(array_name+"%"+i, reg, res.getOffset(ctx.darray().expr(i))));
+            }
+            reghandler.release(reg);
+        }
+        return InstructionList;
+
+    }
+    @Override
+    public List<Instruction> visitDeclare2dArray(MyLangParser.Declare2dArrayContext ctx) {
+        List<Instruction> InstructionList = new ArrayList<>();
+        String array_name = ctx.ID().toString();
+        MyType type =null;
+        if (ctx.type().BOOLEAN() != null) {
+            type = MyType.BOOLEAN;
+        }
+        if (ctx.type().INTEGER() != null) {
+            type = MyType.NUM;
+        }
+        List<MyLangParser.DarrayContext> rows_list = ctx.darray();
+        for(int i=0;i< rows_list.size();i++){
+            for(int j=0;j<rows_list.get(i).expr().size();j++){
+                scope.declare(array_name+"%"+i+","+j, type, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
+                InstructionList.addAll(visit(ctx.darray(i).expr(j)));
+                Registers reg = getRegister(ctx.darray(i).expr(j));
+                if (ctx.access() != null && ctx.access().SHARED() != null){
+                    InstructionList.add(sp.writeToMemory(reg,res.getOffset(ctx.darray(i).expr(j))));
+                }
+                else {
+                    InstructionList.add(sp.storeInMemory(array_name+"%"+i+","+j, reg, res.getOffset(ctx.darray(i).expr(j))));
+                }
+                reghandler.release(reg);
+            }
+        }
+        return InstructionList;
+    }
 
     @Override
     public List<Instruction> visitChangeStat(MyLangParser.ChangeStatContext ctx) {
         return visit(ctx.changeAss());
     }
+
+
     @Override
     public List<Instruction> visitLockInst(MyLangParser.LockInstContext ctx){
         return visit(ctx.lockConstruct());
