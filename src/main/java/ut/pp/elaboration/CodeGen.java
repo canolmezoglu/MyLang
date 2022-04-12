@@ -28,7 +28,49 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     int currentMemoryUsage;
 
     public static void main(String args[]) throws Exception {
-        String code = "int arr[2][2] = { { 1, 2 }, { 3, 4 } }; print(arr%1,1)";
+        String code =
+                "shared int money = 0;\n" +
+                        "function int addfive(int a){\n" +
+                        "    return a+5;\n" +
+                        "}\n" +
+                        "parallel {\n" +
+                        "thread {   int wait = 100; while (wait > 0){\n" +
+                        "        wait = wait - 1;\n" +
+                        "        lock\n" +
+                        "           money = money + 1;\n" +
+                        "        unlock\n" +
+                        "    }\n" +
+                        "}\n" +
+                        "thread {\n" +
+                        "    int wait = 100; while (wait > 0){\n" +
+                        "        wait = wait - 1;\n" +
+                        "        lock\n" +
+                        "            money = money - 1;\n" +
+                        "        unlock\n" +
+                        "    }\n" +
+                        "}\n" +
+                        "thread {\n" +
+                        "    lock\n" +
+                        "         money = addfive(money);;\n" +
+                        "    unlock\n" +
+                        "}\n" +
+                        "thread {\n" +
+                        "    lock\n" +
+                        "         money = addfive(money);;\n" +
+                        "    unlock\n" +
+                        "}\n" +
+                        "thread {\n" +
+                        "    lock\n" +
+                        "         money = addfive(money);;\n" +
+                        "    unlock\n" +
+                        "}\n" +
+                        "thread {\n" +
+                        "    lock\n" +
+                        "         money = addfive(money);;\n" +
+                        "    unlock\n" +
+                        "}\n" +
+                        "}" +
+                        "print(money);\n";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
@@ -109,12 +151,16 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
                     // Inform the child thread that they can start
                     InstructionList.add(sp.writeToMemory(Registers.reg0,thread_number));
                     // Wait for the child thread to start ( the child thread will set memory addr 0 to be 1)
-                    InstructionList.add(sp.testAndSet(0));
+                    Registers reg2 = reghandler.acquire();
+                    InstructionList.add(sp.readInst(thread_number));
                     InstructionList.add(sp.receive(reg));
-                    InstructionList.add(sp.compute(Operators.Equal, reg,Registers.reg0, reg));
-                    InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-3)));
+                    InstructionList.add(sp.loadToRegister("2",0,reg2,0));
+                    InstructionList.add(sp.compute(Operators.Sub,reg2,reg,reg2));
+                    InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-4)));
 
                     reghandler.release(reg);
+                    reghandler.release(reg2);
+
                 }
 
                 // This for loop adds instructions for the main thread to wait for the spawned threads to end
@@ -158,6 +204,8 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
             // The shared memory location of every thread is their Sprockell ID
             // Set the shared memory location to 1 so the thread loops until triggered.
+            ThreadInstructionList.add(sp.compute(Operators.Equal, Registers.regSprID,Registers.reg0, reg));
+            ThreadInstructionList.add(sp.branch(reg,new Target(Targets.Rel,3)));
 
             ThreadInstructionList.add(sp.loadToRegister("1",0,reg,0));
             ThreadInstructionList.add(sp.writeToMemory(reg,Registers.regSprID));
@@ -380,7 +428,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         Registers reg = reghandler.acquire();
 
         // Waits/loops/spins until it receives the lock.
-        InstructionList.add(sp.testAndSet(7));
+        InstructionList.add(sp.testAndSet(0));
         InstructionList.add(sp.receive(reg));
         InstructionList.add(sp.compute(Operators.Equal, reg,Registers.reg0, reg));
         InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-3)));
@@ -392,7 +440,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.addAll(visit(context));
         }
         // Frees up the lock.
-        InstructionList.add(sp.writeToMemory(Registers.reg0,7));
+        InstructionList.add(sp.writeToMemory(Registers.reg0,0));
         return InstructionList;
 
     }
@@ -563,10 +611,13 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         InstructionList.add(sp.compute(Operators.Equal, reg,Registers.reg0, reg));
         InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-3)));
 
-        reghandler.release(reg);
+
 
         // Allow the main thread to go on by writing 0 to its shared location.
-        InstructionList.add(sp.writeToMemory(Registers.reg0,0));
+        InstructionList.add(sp.loadToRegister("2",0,reg,0));
+        InstructionList.add(sp.writeToMemory(reg,res.getThread(ctx).getThreadnr()));
+        reghandler.release(reg);
+
 
         for (MyLangParser.InstructionContext context : ctx.instruction()) {
             InstructionList.addAll(visit(context));
