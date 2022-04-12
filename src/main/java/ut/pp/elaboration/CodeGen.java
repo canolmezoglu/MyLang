@@ -22,6 +22,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     Register reghandler;
     ScopeTable scope;
     Result res;
+    boolean threaded = false;
     Map<Integer,List<Instruction>> threads = new HashMap<>();
     Map<String,List<Instruction>> functions = new HashMap<>();
     FunctionData currentfunctionData = null;
@@ -125,7 +126,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     // the main thread then loops until the shared location of the spawned thread is 0. || the spawned thread, after code block is executed, sets its memory location to 0
     @Override
     public List<Instruction> visitProgram(MyLangParser.ProgramContext ctx) {
-        boolean threaded = false;
 
         // small explanation for the shared memory:
         // 0 -> lock used for blocking the main thread
@@ -141,52 +141,9 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             if (context.getStart().getText().equals("function")){
                 visit(context);
             }
-            else if (context.getStart().getText().equals("parallel")){
-                threaded = true;
-
-                // This for loop adds instructions for the main thread to spawn the threads in a parallel block
-                for (Integer thread_number:
-                     res.getChildren(context)) {
-                    Registers reg = reghandler.acquire();
-                    // Inform the child thread that they can start
-                    InstructionList.add(sp.writeToMemory(Registers.reg0,thread_number));
-                    // Wait for the child thread to start ( the child thread will set memory addr 0 to be 1)
-                    Registers reg2 = reghandler.acquire();
-                    InstructionList.add(sp.readInst(thread_number));
-                    InstructionList.add(sp.receive(reg));
-                    InstructionList.add(sp.loadToRegister("2",0,reg2,0));
-                    InstructionList.add(sp.compute(Operators.Sub,reg2,reg,reg2));
-                    InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-4)));
-
-                    reghandler.release(reg);
-                    reghandler.release(reg2);
-
-                }
-
-                // This for loop adds instructions for the main thread to wait for the spawned threads to end
-                for (Integer thread_number:
-                        res.getChildren(context)) {
-                    if (!res.getChildren(context).contains(thread_number)){
-                        continue;
-                    }
-                    Registers reg = reghandler.acquire();
-                    // Wait until the spawned thread to set it's share memory location to 0
-                    // by testing if it is 0 or not
-                    InstructionList.add(sp.testAndSet(thread_number));
-                    InstructionList.add(sp.receive(reg));
-                    InstructionList.add(sp.compute(Operators.Equal, reg,Registers.reg0, reg));
-                    InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-3)));
-
-                    reghandler.release(reg);
-                }
-                // Visit the code blocks for the thread
-                // the visited code block is not added to the instructionList,
-                // therefore it will not be executed by the main thread
-                // the instructions that the thread will execute will be added
-                // as a key-value (thread number -> list of instructions)
-                // pair in the "threads" hashMap.
-                visit(context);
-            }
+//            else if (context.getStart().getText().equals("parallel")){
+//                visit(context);
+//            }
             // If it is not related , visit and to the instructionList.
             else{
                 InstructionList.addAll(visit(context));
@@ -818,6 +775,54 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         reghandler.release(regReturnAddr);
         this.currentfunctionData = null;
         return null;
+    }
+    @Override public List<Instruction> visitParallelInst(MyLangParser.ParallelInstContext context){
+        threaded = true;
+        List<Instruction> InstructionList = new ArrayList<>();
+
+        // This for loop adds instructions for the main thread to spawn the threads in a parallel block
+        for (Integer thread_number:
+                res.getChildren(context)) {
+            Registers reg = reghandler.acquire();
+            // Inform the child thread that they can start
+            InstructionList.add(sp.writeToMemory(Registers.reg0,thread_number));
+            // Wait for the child thread to start ( the child thread will set memory addr 0 to be 1)
+            Registers reg2 = reghandler.acquire();
+            InstructionList.add(sp.readInst(thread_number));
+            InstructionList.add(sp.receive(reg));
+            InstructionList.add(sp.loadToRegister("2",0,reg2,0));
+            InstructionList.add(sp.compute(Operators.Sub,reg2,reg,reg2));
+            InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-4)));
+
+            reghandler.release(reg);
+            reghandler.release(reg2);
+
+        }
+
+        // This for loop adds instructions for the main thread to wait for the spawned threads to end
+        for (Integer thread_number:
+                res.getChildren(context)) {
+            if (!res.getChildren(context).contains(thread_number)){
+                continue;
+            }
+            Registers reg = reghandler.acquire();
+            // Wait until the spawned thread to set it's share memory location to 0
+            // by testing if it is 0 or not
+            InstructionList.add(sp.testAndSet(thread_number));
+            InstructionList.add(sp.receive(reg));
+            InstructionList.add(sp.compute(Operators.Equal, reg,Registers.reg0, reg));
+            InstructionList.add(sp.branch(reg,new Target(Targets.Rel,-3)));
+
+            reghandler.release(reg);
+        }
+        // Visit the code blocks for the thread
+        // the visited code block is not added to the instructionList,
+        // therefore it will not be executed by the main thread
+        // the instructions that the thread will execute will be added
+        // as a key-value (thread number -> list of instructions)
+        // pair in the "threads" hashMap.
+        visit(context.parallelConstruct());
+        return InstructionList;
     }
     @Override public List<Instruction> visitFuncCallExpr(MyLangParser.FuncCallExprContext ctx){
         List<Instruction> InstructionList = new ArrayList<>();

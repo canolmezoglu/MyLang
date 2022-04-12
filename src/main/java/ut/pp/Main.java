@@ -25,45 +25,39 @@ public class Main {
          */
         String code =
                         "shared int money = 0;\n" +
-                                "function int addfive(int a){\n" +
-                                "    return a+5;\n" +
-                                "}\n" +
                                 "parallel {\n" +
+                                "thread {"
+                                        +
+                                "lock money = money +50 unlock " +
+                                        "parallel {" +
+                                        "thread{ " +
+                        "int wait = 100; while (wait > 0){\n" +
+            "                    wait = wait - 1;\n" +
+                                "lock\n" +
+                                         "money = money + 1;" +
+                                "unlock" +
+                                "}" +
+                                "}" +
+                                "thread{ " +
+                                "int wait = 50; while (wait > 0){\n" +
+                                "                    wait = wait - 1;\n" +
+                                "lock\n" +
+                                "money = money - 2;" +
+                                "unlock" +
+                                "}" +
+                                "}" +
+
+                                "}" +
+
+                                "    }\n" +
                                 "thread {   int wait = 100; while (wait > 0){\n" +
                                 "        wait = wait - 1;\n" +
                                 "        lock\n" +
-                                "           money = money + 1;\n" +
+                                "           money = money - 1;\n" +
                                 "        unlock\n" +
                                 "    }\n" +
                                 "}\n" +
-                                "thread {\n" +
-                                "    int wait = 100; while (wait > 0){\n" +
-                                "        wait = wait - 1;\n" +
-                                "        lock\n" +
-                                "            money = money - 1;\n" +
-                                "        unlock\n" +
-                                "    }\n" +
-                                "}\n" +
-                                "thread {\n" +
-                                "    lock\n" +
-                                "         money = addfive(money);;\n" +
-                                "    unlock\n" +
-                                "}\n" +
-                                "thread {\n" +
-                                "    lock\n" +
-                                "         money = addfive(money);;\n" +
-                                "    unlock\n" +
-                                "}\n" +
-                                "thread {\n" +
-                                "    lock\n" +
-                                "         money = addfive(money);;\n" +
-                                "    unlock\n" +
-                                "}\n" +
-                                "thread {\n" +
-                                "    lock\n" +
-                                "         money = addfive(money);;\n" +
-                                "    unlock\n" +
-                                "}\n" +
+
                                 "}" +
                                 "print(money);\n";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
