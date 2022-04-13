@@ -19,11 +19,16 @@ statement: declaration #declStat
            | changeAss #changeStat
            | declareArray #declArray
            | declare2dArray #decl2dArray
+           | declareEnum #declEnum
            ;
+
+declareEnum: access? type ENUM ID enumAssign END;
 
 declare2dArray: access? type ID LSQR NUM RSQR LSQR NUM RSQR ASS LBRACE darray (COMMA darray)* RBRACE END;
 
 declareArray: access? type ID LSQR NUM RSQR ASS darray END;
+
+enumAssign: LBRACE ID (ASS (expr))? (COMMA ID (ASS (expr))?)* RBRACE;
 
 darray: LBRACE expr (COMMA (expr))* RBRACE;
 
@@ -99,6 +104,7 @@ LOCK : 'lock';
 UNLOCK : 'unlock';
 RETURN : 'return';
 FUNCTION: 'function';
+ENUM: 'enum';
 
 ASS: '=';
 EQ:     '==';
@@ -118,6 +124,7 @@ RSQR:   ']';
 STAR:   '*';
 COMMA:   ',';
 ARR_INDEX: '%';
+DOT: '.';
 
 
 
@@ -125,5 +132,5 @@ fragment LETTER: [a-zA-Z];
 fragment DIGIT: [0-9];
 
 NUM: DIGIT+;
-ID: LETTER (LETTER | DIGIT |ARR_INDEX |COMMA )*;
+ID: LETTER (LETTER | DIGIT | ARR_INDEX | COMMA| DOT)*;
 WS: [ \t\r\n]+ -> skip;

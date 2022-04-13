@@ -165,8 +165,8 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
-            if (ctx.ID().toString().contains("%") || ctx.ID().toString().contains(",") ){
-                this.errors.add("Variable cannot contain special sign");
+            if (ctx.ID().toString().contains("%") || ctx.ID().toString().contains(",") || ctx.ID().toString().contains(".")){
+                this.errors.add("Variable cannot contain special character");
             }
             if (ctx.type().BOOLEAN() != null) {
                 if (getType(ctx.expr()) != MyType.BOOLEAN) {
@@ -247,6 +247,26 @@ public class Checker extends MyLangBaseListener {
             }
         }
     }
+    @Override
+    public void exitDeclareEnum(MyLangParser.DeclareEnumContext ctx) {
+        for(int i=0;i<ctx.enumAssign().expr().size();i++) {
+            if (ctx.type().BOOLEAN() != null) {
+                if (getType(ctx.enumAssign().expr(i)) != MyType.BOOLEAN) {
+                    this.errors.add("you are trying to assign an invalid type to a boolean enum");
+                }
+                setType(ctx.enumAssign().expr(i), MyType.BOOLEAN);
+                setOffset(ctx.enumAssign().expr(i), scope.declare(ctx.ID().toString()+"."+ctx.enumAssign().ID(i).getText(), MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+            } else if (ctx.type().INTEGER() != null) {
+                if (getType(ctx.enumAssign().expr(i)) != MyType.NUM) {
+                    this.errors.add("you are trying to assign an invalid type to an integer enum");
+                }
+                setType(ctx.enumAssign().expr(i), MyType.NUM);
+                setOffset(ctx.enumAssign().expr(i), scope.declare(ctx.ID().toString()+"."+ctx.enumAssign().ID(i).getText(), MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+            } else {
+                this.errors.add("Invalid type");
+            }
+        }
+    }
 
 
     @Override
@@ -287,7 +307,6 @@ public class Checker extends MyLangBaseListener {
     @Override public void exitParallelInst(MyLangParser.ParallelInstContext ctx){
         result.addChild(ctx,result.getChildren(ctx.parallelConstruct()));
     }
-
 
 
     @Override

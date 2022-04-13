@@ -28,6 +28,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     int currentMemoryUsage;
 
     public static void main(String args[]) throws Exception {
+//        String code = "int a[1] = {100}; print(a%1);";
         String code = "int arr[2][2] = { { 1, 2 }, { 3, 4 } }; print(arr%1,1)";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
@@ -253,6 +254,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return visit(ctx.statement());
     }
 
+    @Override
+    public List<Instruction> visitIfInst(MyLangParser.IfInstContext ctx) {
+        return super.visitIfInst(ctx);
+    }
+
 
     @Override
     public List<Instruction> visitDeclStat(MyLangParser.DeclStatContext ctx) {
@@ -298,6 +304,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             currentMemoryUsage = res.getOffset(ctx) ;
         }
         reghandler.release(reg);
+        System.out.println("declared");
         return InstructionList;
     }
     @Override
@@ -320,7 +327,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
                 InstructionList.add(sp.writeToMemory(reg,res.getOffset(ctx.darray().expr(i))));
             }
             else {
-                InstructionList.add(sp.storeInMemory(array_name+"%"+i, reg, res.getOffset(ctx.darray().expr(i))));
+                InstructionList.add(sp.storeInMemory(reg, res.getOffset(ctx.darray().expr(i))));
             }
             reghandler.release(reg);
         }
@@ -348,7 +355,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
                     InstructionList.add(sp.writeToMemory(reg,res.getOffset(ctx.darray(i).expr(j))));
                 }
                 else {
-                    InstructionList.add(sp.storeInMemory(array_name+"%"+i+","+j, reg, res.getOffset(ctx.darray(i).expr(j))));
+                    InstructionList.add(sp.storeInMemory( reg, res.getOffset(ctx.darray(i).expr(j))));
                 }
                 reghandler.release(reg);
             }
@@ -357,10 +364,35 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     }
 
     @Override
+    public List<Instruction> visitDeclareEnum(MyLangParser.DeclareEnumContext ctx) {
+        List<Instruction> InstructionList = new ArrayList<>();
+        String enum_name = ctx.ID().toString();
+        MyType type =null;
+        if (ctx.type().BOOLEAN() != null) {
+            type = MyType.BOOLEAN;
+        }
+        if (ctx.type().INTEGER() != null) {
+            type = MyType.NUM;
+        }
+        for(int i=0;i<ctx.enumAssign().ID().size();i++) {
+            String enum_val_id = ctx.enumAssign().ID(0).getText();
+            scope.declare(enum_name + "." + enum_val_id, type, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null);
+            InstructionList.addAll(visit(ctx.enumAssign().expr(i)));
+            Registers reg = getRegister(ctx.enumAssign().expr(i));
+            if (ctx.access() != null && ctx.access().SHARED() != null) {
+                InstructionList.add(sp.writeToMemory(reg, res.getOffset(ctx.enumAssign().expr(i))));
+            } else {
+                InstructionList.add(sp.storeInMemory(reg, res.getOffset(ctx.enumAssign().expr(i))));
+            }
+            reghandler.release(reg);
+        }
+        return InstructionList;
+    }
+
+    @Override
     public List<Instruction> visitChangeStat(MyLangParser.ChangeStatContext ctx) {
         return visit(ctx.changeAss());
     }
-
 
     @Override
     public List<Instruction> visitLockInst(MyLangParser.LockInstContext ctx){
