@@ -267,7 +267,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             currentMemoryUsage = res.getOffset(ctx) ;
         }
         reghandler.release(reg);
-        System.out.println("declared");
         return InstructionList;
     }
     @Override
@@ -289,8 +288,16 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             if (ctx.access() != null && ctx.access().SHARED() != null){
                 InstructionList.add(sp.writeToMemory(reg,res.getOffset(ctx.darray().expr(i))));
             }
+            else if (this.currentfunctionData != null) {
+                Registers memoryAddress = reghandler.acquire();
+                InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx.darray().expr(i))),0,memoryAddress,0));
+                InstructionList.add(sp.compute(Operators.Sub,Registers.regF,memoryAddress,memoryAddress));
+                InstructionList.add(sp.writeToMemory(reg,memoryAddress));
+                reghandler.release(memoryAddress);
+            }
             else {
                 InstructionList.add(sp.storeInMemory(reg, res.getOffset(ctx.darray().expr(i))));
+                currentMemoryUsage = res.getOffset(ctx.darray().expr(i));
             }
             reghandler.release(reg);
         }
@@ -317,8 +324,16 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
                 if (ctx.access() != null && ctx.access().SHARED() != null){
                     InstructionList.add(sp.writeToMemory(reg,res.getOffset(ctx.darray(i).expr(j))));
                 }
+                else if (this.currentfunctionData != null) {
+                    Registers memoryAddress = reghandler.acquire();
+                    InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx.darray(i).expr(j))),0,memoryAddress,0));
+                    InstructionList.add(sp.compute(Operators.Sub,Registers.regF,memoryAddress,memoryAddress));
+                    InstructionList.add(sp.writeToMemory(reg,memoryAddress));
+                    reghandler.release(memoryAddress);
+                }
                 else {
                     InstructionList.add(sp.storeInMemory( reg, res.getOffset(ctx.darray(i).expr(j))));
+                    currentMemoryUsage = res.getOffset(ctx.darray(i).expr(j));
                 }
                 reghandler.release(reg);
             }
@@ -344,8 +359,17 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             Registers reg = getRegister(ctx.enumAssign().expr(i));
             if (ctx.access() != null && ctx.access().SHARED() != null) {
                 InstructionList.add(sp.writeToMemory(reg, res.getOffset(ctx.enumAssign().expr(i))));
-            } else {
+            }
+            else if (this.currentfunctionData != null) {
+                Registers memoryAddress = reghandler.acquire();
+                InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx.enumAssign().expr(i))),0,memoryAddress,0));
+                InstructionList.add(sp.compute(Operators.Sub,Registers.regF,memoryAddress,memoryAddress));
+                InstructionList.add(sp.writeToMemory(reg,memoryAddress));
+                reghandler.release(memoryAddress);
+            }
+            else {
                 InstructionList.add(sp.storeInMemory(reg, res.getOffset(ctx.enumAssign().expr(i))));
+                currentMemoryUsage = res.getOffset(ctx.enumAssign().expr(i));
             }
             reghandler.release(reg);
         }

@@ -24,7 +24,7 @@ public class Main {
          * Generated Sprockell code can be seen in elaboration/haskell/output.hs
          */
         String code =
-                "bool enum cars { merc = true , bmw = false }; print(cars.bmw);";
+                "int enum cars { merc = 100 , bmw = 200 }; if ( cars.merc != cars.bmw ){print(cars.bmw+500);}";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
