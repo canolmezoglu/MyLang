@@ -20,7 +20,10 @@ statement: declaration #declStat
            | declareArray #declArray
            | declare2dArray #decl2dArray
            | declareEnum #declEnum
+           | declarePointer #declPointer
            ;
+
+declarePointer: access? POINTER ID ASS expr END;
 
 declareEnum: access? type ENUM ID enumAssign END;
 
@@ -105,6 +108,7 @@ UNLOCK : 'unlock';
 RETURN : 'return';
 FUNCTION: 'function';
 ENUM: 'enum';
+POINTER: 'pointer';
 
 ASS: '=';
 EQ:     '==';
@@ -132,5 +136,5 @@ fragment LETTER: [a-zA-Z];
 fragment DIGIT: [0-9];
 
 NUM: DIGIT+;
-ID: LETTER (LETTER | DIGIT | ARR_INDEX | COMMA| DOT)*;
+ID: LETTER (LETTER | DIGIT | ARR_INDEX | COMMA| DOT | STAR )*;
 WS: [ \t\r\n]+ -> skip;

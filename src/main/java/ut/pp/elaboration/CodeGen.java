@@ -30,7 +30,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
     public static void main(String args[]) throws Exception {
 //        String code = "int a[1] = {100}; print(a%1);";
-        String code = "int arr[2][2] = { { 1, 2 }, { 3, 4 } }; print(arr%1,1)";
+        String code = "int a =100; int b =200; pointer b = a; print(b*);";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
@@ -49,7 +49,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         reghandler = new Register();
         Checker checker = new Checker();
         res = checker.check(tree);
-        System.out.println(sp.getMemory());
         return this.visit(tree);
     }
 
@@ -258,7 +257,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.add(sp.compute(Operators.Sub,Registers.regF,memoryAddress,memoryAddress));
             InstructionList.add(sp.writeToMemory(reg,memoryAddress));
             reghandler.release(memoryAddress);
-
         }
         // If the variable is not shared, write it to the local memory.
 
@@ -375,6 +373,32 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
         return InstructionList;
     }
+    @Override
+    public List<Instruction> visitDeclarePointer(MyLangParser.DeclarePointerContext ctx) {
+        List<Instruction> InstructionList = new ArrayList<>();
+        String pointer_name = ctx.ID().getText();
+        scope.declare(pointer_name+"*", MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
+        InstructionList.addAll(visit(ctx.expr()));
+        Registers reg = getRegister(ctx.expr());
+        if (ctx.access() != null && ctx.access().SHARED() != null){
+            InstructionList.add(sp.writeToMemory(reg,res.getOffset(ctx)));
+        }
+        else if (this.currentfunctionData != null) {
+            Registers memoryAddress = reghandler.acquire();
+            InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx)), 0, memoryAddress, 0));
+            InstructionList.add(sp.compute(Operators.Sub,Registers.regF,memoryAddress,memoryAddress));
+            InstructionList.add(sp.writeToMemory(reg,memoryAddress));
+            reghandler.release(memoryAddress);
+        }
+        else {
+            InstructionList.add(sp.storeInMemory(reg, res.getOffset(ctx)));
+            currentMemoryUsage = res.getOffset(ctx);
+        }
+        reghandler.release(reg);
+        System.out.println();
+        return InstructionList;
+    }
+
 
     @Override
     public List<Instruction> visitChangeStat(MyLangParser.ChangeStatContext ctx) {

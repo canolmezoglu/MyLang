@@ -195,6 +195,20 @@ public class Checker extends MyLangBaseListener {
             }
     }
     @Override
+    public void exitDeclarePointer(MyLangParser.DeclarePointerContext ctx) {
+        if(ctx.expr() instanceof MyLangParser.IdExprContext){
+            if (this.currFunction == null){
+                setOffset(ctx, scope.declare(ctx.ID().toString()+"*", MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
+            }
+            else{
+                setOffset(ctx,this.currFunction.declare(ctx.ID().toString()+"*",MyType.NUM));
+            }
+        }
+        else{
+            this.errors.add("Pointer should be assigned to a variable");
+        }
+    }
+    @Override
     public void exitDeclareArray(MyLangParser.DeclareArrayContext ctx) {
         if(ctx.darray().expr().size()!=Integer.parseInt(ctx.NUM().getText())){
             this.errors.add("The size of the array does not match the number of elements you have listed");
