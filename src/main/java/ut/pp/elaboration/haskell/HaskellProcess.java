@@ -1,6 +1,8 @@
 package ut.pp.elaboration.haskell;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HaskellProcess {
     /**
@@ -11,7 +13,7 @@ public class HaskellProcess {
     /**
      * Run sprockell code
      */
-    public static String run_Sprockell(){
+    public static List<String> run_Sprockell(){
         try{
             StringBuilder sBuilder = new StringBuilder();
             ProcessBuilder b = new ProcessBuilder();
@@ -20,13 +22,14 @@ public class HaskellProcess {
             Process process= b.start();
             BufferedReader bReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = "";
+            List<String> output = new ArrayList<>();
             while ((line = bReader.readLine()) != null) {
-                sBuilder.append(line);
-                sBuilder.append(System.getProperty("line.separator"));
+                output.add(line);
             }
-            String can =  sBuilder.toString();
             process.waitFor();
-            return can.replace("\n", "").replace("\r", "");
+            return output;
+
+
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

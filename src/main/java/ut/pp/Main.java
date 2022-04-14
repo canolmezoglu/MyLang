@@ -23,7 +23,7 @@ public class Main {
          * Raise exception and show errors in code if there are any (excluding syntax errors) , in that case - no code generation
          * Generated Sprockell code can be seen in elaboration/haskell/output.hs
          */
-        String path ="src/main/sample/banking.txt";
+        String path ="src/main/sample/threadRunningOrder.txt";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromPath(new File(path).toPath()));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
@@ -43,13 +43,13 @@ public class Main {
                 }
             }
             HaskellProcess.build_Sprockell(sprockell_code,thread_count,false);
-            String can  = HaskellProcess.run_Sprockell();
+            String can  = HaskellProcess.run_Sprockell().toString();
             System.out.println(can);
         }
 
 
     }
-    public static String runSprockell(String filename) throws Exception {
+    public static List<String> runSprockell(String filename) throws Exception {
         /**
          * Parsing, Code generation and running sprockell code
          * Raise exception and show errors in code if there are any (excluding syntax errors) , in that case - no code generation

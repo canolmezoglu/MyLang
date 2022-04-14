@@ -1,0 +1,19 @@
+shared int money = 0;
+
+parallel {
+thread {   int wait = 100; while (wait > 0){
+        wait = wait - 1;
+        money = money + 1;
+    }
+}
+thread {
+    int wait = 100; while (wait > 0){
+        wait = wait - 1;
+        money = money - 2;
+    }
+}
+thread {
+    money = money + 5;
+}
+}
+print(money);
