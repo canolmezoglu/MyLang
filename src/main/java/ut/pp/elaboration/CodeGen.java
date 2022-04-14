@@ -335,7 +335,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
                 InstructionList.addAll(visit(ctx.darray(i).expr(j)));
                 InstructionList.add(sp.pop(Registers.regA));
                 var_address.put(array_name+"%"+i+","+j,res.getOffset(ctx.darray(i).expr(j)));
-                if(res.getGlobal(ctx.darray(i).expr(j))) {
+                if(res.getGlobal(ctx.darray(i).expr(j))!=null) {
                     var_global.put(array_name+"%"+i+","+j,res.getGlobal(ctx.darray(i).expr(j)));
                 }
                 else{
