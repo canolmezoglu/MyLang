@@ -145,6 +145,14 @@ public class Checker extends MyLangBaseListener {
         if(ctx.ID().getText().contains(".")){
             this.errors.add("Enum values are fixed: they cannot be updated");
         }
+        String iden = ctx.ID().toString();
+        if(iden.contains("&")){ //this is a pointer
+            VariableData type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
+            if(type.type != MyType.POINTER){
+                this.errors.add("This pointer is not defined");
+            }
+            return;
+        }
         if (this.currFunction !=null){
             VariableData data = this.currFunction.getVariable(ctx.ID().toString());
             if (data !=null){
@@ -153,7 +161,6 @@ public class Checker extends MyLangBaseListener {
                 }
                 setType(ctx, getType(ctx.expr()));
                 result.setGlobal(ctx,false);
-
                 setOffset(ctx,this.currFunction.getLocalDataSize());
                 return;
 

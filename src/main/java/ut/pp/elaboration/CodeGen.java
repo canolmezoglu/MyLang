@@ -34,7 +34,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     public static void main(String args[]) throws Exception {
 //        String code = "int a[1] = {100}; print(a%1);";
         String code =
-                "int a =100; int b=200;";
+                "int a[2] = {100,200} print(a%1);";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
@@ -259,7 +259,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             var_global.put(varname,false);
         }
 
-
         // If the variable is shared, write it to the shared memory.
         if (ctx.access() != null && ctx.access().SHARED() != null){
             InstructionList.add(sp.writeToMemory(Registers.regA,res.getOffset(ctx)));
@@ -456,24 +455,36 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     @Override
     public List<Instruction> visitChangeAss(MyLangParser.ChangeAssContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
-        String varname = ctx.ID().toString();
+        String child = ctx.ID().toString();
         InstructionList.addAll(visit(ctx.expr()));
         InstructionList.add(sp.pop(Registers.regA));
 
         // If the variable is shared, write it to the shared memory.
+        int offset =0;
+        Boolean global=false;
 
-        if (res.getGlobal(ctx)){
-            InstructionList.add(sp.writeToMemory(Registers.regA,res.getOffset(ctx)));
+        if(child.contains("&")){// this is a pointer
+            child = pointer_map.get(child.substring(0,child.length()-1));
+            offset = var_address.get(child);
+            global = var_global.get(child);
+        }
+        else{
+            offset = res.getOffset(ctx);
+            global = res.getGlobal(ctx);
+        }
+
+        if (global){
+            InstructionList.add(sp.writeToMemory(Registers.regA,offset));
         }
         else if (this.currentfunctionData != null) {
-            InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx)),0,Registers.regB,0));
+            InstructionList.add(sp.loadToRegister(Integer.toString(offset),0,Registers.regB,0));
             InstructionList.add(sp.compute(Operators.Sub,Registers.regF,Registers.regB,Registers.regB));
             InstructionList.add(sp.writeToMemory(Registers.regA,Registers.regB));
 
         }
         else{
-            InstructionList.add(sp.storeInMemory(varname, Registers.regA, res.getOffset(ctx)));
-            currentMemoryUsage = res.getOffset(ctx) ;
+            InstructionList.add(sp.storeInMemory(child, Registers.regA, offset));
+            currentMemoryUsage = offset ;
 
 
         }
