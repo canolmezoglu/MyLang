@@ -18,28 +18,28 @@ import java.util.List;
 public class TestSemantic {
 
     @Test
-    public void test1() throws Exception {
+    public void testBanking() throws Exception {
         String input = "banking";
         Assert.assertEquals("Sprockell 0 says -95",ut.pp.Main.runSprockell(input).get(0));
     }
     @Test
-    public void test2() throws Exception {
+    public void testBankingNoLocks() throws Exception {
+        String input = "bankingNoLocks";
+        Assert.assertNotEquals("Sprockell 0 says -95",ut.pp.Main.runSprockell(input).get(0));
+    }
+    @Test
+    public void testPeterson() throws Exception {
         String input = "peterson";
         Assert.assertEquals("Sprockell 0 says 3",ut.pp.Main.runSprockell(input).get(0));
     }
     @Test
-    public void test3() throws Exception {
+    public void testNestedConcurrency() throws Exception {
         String input = "nestedConcurrency";
         Assert.assertEquals("Sprockell 0 says -87",ut.pp.Main.runSprockell(input).get(0));
     }
+
     @Test
-    public void test4() throws Exception {
-        String input = "bankingNoLocks";
-        // TODO write something logical here
-        Assert.assertNotEquals("Sprockell 0 says -95",ut.pp.Main.runSprockell(input).get(0));
-    }
-    @Test
-    public void test5() throws Exception {
+    public void testThreadRunningOrder() throws Exception {
         String input = "threadRunningOrder";
         List<String> output = ut.pp.Main.runSprockell(input);
         Assert.assertEquals("Sprockell 0 says 0",output.get(0));
@@ -50,6 +50,15 @@ public class TestSemantic {
         Assert.assertEquals("Sprockell 4 says 5",output.get(5));
         Assert.assertEquals("Sprockell 0 says 6",output.get(6));
 
+    }
+
+    @Test
+    public void testWhile() throws Exception {
+        String input = "while";
+        List<String> output = ut.pp.Main.runSprockell(input);
+        for (int i = 99; i >= 0;i--){
+            Assert.assertEquals("Sprockell 0 says " + Integer.toString(i), output.get(99 - i));
+        }
 
     }
 

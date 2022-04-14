@@ -1,0 +1,13 @@
+function bool belowSpeedLimit ( int speedLimit , int currentSpeed ) {
+     if  ( currentSpeed >= speedLimit ) {
+            return false;
+            }
+     else {
+        return true;
+     }
+}
+
+int fine = 500;
+
+if ( not belowSpeedLimit(100,101) ) { print(fine);} else {print(0);}
+if ( not belowSpeedLimit(100,99) ) { print(fine);} else {print(0);}

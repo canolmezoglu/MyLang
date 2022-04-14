@@ -677,7 +677,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         InstructionList.addAll(visit(ctx.expr()));
         InstructionList.add(sp.pop(Registers.regA));
         if (ctx.prefixOp().NOT() != null){
-            InstructionList.add(sp.loadToRegister("false",scope.scope_num,Registers.regB,0));
+            InstructionList.add(sp.loadToRegister("true",scope.scope_num,Registers.regB,0));
             InstructionList.add(sp.compute(Operators.Xor,Registers.regA,Registers.regB,Registers.regA));
         }
         else if (ctx.prefixOp().MINUS() != null){
@@ -708,12 +708,12 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         List<Instruction> InstructionList = new ArrayList<>();
         // Visit the expr that controls the main flow.
         InstructionList.addAll(visit(ctx.expr()));
-        InstructionList.add(sp.pop(Registers.regC));
+        InstructionList.add(sp.pop(Registers.regA));
         // Visit the blocks but do not add them.
         List<Instruction> firstBlock = visit(ctx.block(0));
         List<Instruction> secondBlock = ctx.block().size() > 1 ? visit(ctx.block(1)) : new ArrayList<>();
         // Create the jump based on the sizes of the blocks.
-        InstructionList.add(sp.branch(Registers.regC,new Target(Targets.Rel,2)));
+        InstructionList.add(sp.branch(Registers.regA,new Target(Targets.Rel,2)));
         InstructionList.add(sp.relJump(firstBlock.size()+2));
         InstructionList.addAll(firstBlock);
         InstructionList.add(sp.relJump(secondBlock.size()+1));
@@ -733,11 +733,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         scope.openScope();
         List<Instruction> InstructionList = new ArrayList<>();
         InstructionList.addAll(visit(ctx.expr()));
-        InstructionList.add(sp.pop(Registers.regD));
+        InstructionList.add(sp.pop(Registers.regA));
         int exprsize = InstructionList.size();
         List<Instruction> block = visit(ctx.block());
         // Jump out the block if while loop is false
-        InstructionList.add(sp.branch(Registers.regD,new Target(Targets.Rel,2)));
+        InstructionList.add(sp.branch(Registers.regA,new Target(Targets.Rel,2)));
         InstructionList.add(sp.relJump(block.size()+2));
 
         InstructionList.addAll(block);
