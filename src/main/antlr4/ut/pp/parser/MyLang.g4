@@ -58,7 +58,7 @@ expr: prefixOp expr        #prfExpr
     | LPAR expr RPAR       #parExpr
     | primitive            #primitiveExpr
     | ID                   #idExpr
-    | ID LPAR (expr (COMMA expr)* )? RPAR END #funcCallExpr
+    | ID LPAR (expr (COMMA expr)* )? RPAR  #funcCallExpr
     ;
 
 declaration: access? type ID ASS expr? END;

@@ -24,7 +24,16 @@ public class Main {
          * Generated Sprockell code can be seen in elaboration/haskell/output.hs
          */
         String code =
-                "int a =100; int c=200; pointer d = c; pointer b = a; print(b*); print(d*+b*);";
+                        "function int fib(int a ){" +
+                                " if (a==0){" +
+                                "return 0; " +
+                                "}" +
+                                " if (a==1){" +
+                                "return 1; " +
+                                "}" +
+                                "return fib(a-1) + fib(a-2);" +
+                                "}" +
+                        "print(fib(6));";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);

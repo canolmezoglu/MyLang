@@ -150,6 +150,13 @@ public class Sprockell {
     public Instruction fakeInst (String functionName){
         return new Instruction(Instructions.Fake,Arrays.asList(new FakeOperator(functionName)));
     }
+    public Instruction pop (Registers registers){
+        return new Instruction(Instructions.Pop,Arrays.asList(registers));
+    }
+    public Instruction push (Registers registers){
+        return new Instruction(Instructions.Push,Arrays.asList(registers));
+    }
+
 
 
 }
