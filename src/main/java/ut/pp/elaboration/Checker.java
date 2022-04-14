@@ -110,25 +110,34 @@ public class Checker extends MyLangBaseListener {
 
     @Override public void exitIdExpr(MyLangParser.IdExprContext ctx){
         String iden = ctx.ID().toString();
-        if(iden.contains("&")){ //this is a pointer
-            VariableData type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
-            if(type.type != MyType.POINTER){
-                this.errors.add("This pointer is not defined");
-            }
-            return;
-        }
+        VariableData type = null;
         if (this.currFunction !=null){
+            if(iden.contains("&")){ //this is a pointer
+                type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
+                if(type.type != MyType.POINTER){
+                    this.errors.add("This pointer is not defined");
+                }
+                return;
+            }
             setType(ctx,this.currFunction.getVariable(iden).type);
             setOffset(ctx,this.currFunction.getVariable(iden).getSizeCurr());
             result.setGlobal(ctx,false);
-
             return;
         }
-        VariableData check = scope.check(iden,ctx.getStart());
-        if(check!=null) {
-            setType(ctx,check.type);
-            setOffset(ctx,check.getSizeCurr());
-            result.setGlobal(ctx,check.global);
+        else{
+            if(iden.contains("&")){ //this is a pointer
+                type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
+                if(type.type != MyType.POINTER){
+                    this.errors.add("This pointer is not defined");
+                }
+                return;
+            }
+            type = scope.check(iden,ctx.getStart());
+            if(type!=null) {
+                setType(ctx,type.type);
+                setOffset(ctx,type.getSizeCurr());
+                result.setGlobal(ctx,type.global);
+            }
         }
     }
     @Override public void exitPrimitive(MyLangParser.PrimitiveContext ctx) {
@@ -146,37 +155,46 @@ public class Checker extends MyLangBaseListener {
             this.errors.add("Enum values are fixed: they cannot be updated");
         }
         String iden = ctx.ID().toString();
-        if(iden.contains("&")){ //this is a pointer
-            VariableData type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
-            if(type.type != MyType.POINTER){
-                this.errors.add("This pointer is not defined");
-            }
-            return;
-        }
+        VariableData type = null;
         if (this.currFunction !=null){
-            VariableData data = this.currFunction.getVariable(ctx.ID().toString());
-            if (data !=null){
-                if (data.type != getType(ctx.expr())) {
+            if(iden.contains("&")){ //this is a pointer
+                type = this.currFunction.getVariable(iden.substring(0,iden.length()-1));
+                if(type.type != MyType.POINTER){
+                    this.errors.add("Pointer is not defined");
+                }
+                return;
+            }
+            type = this.currFunction.getVariable(iden);
+            if (type !=null){
+                if (type.type != getType(ctx.expr())) {
                     this.errors.add("you are changing a variable to an unexpected type");
                 }
                 setType(ctx, getType(ctx.expr()));
                 result.setGlobal(ctx,false);
                 setOffset(ctx,this.currFunction.getLocalDataSize());
                 return;
-
             }
         }
-        VariableData check = scope.check(ctx.ID().toString(),ctx.getStart());
-        if(check!=null) {
-            if (check.type != getType(ctx.expr())) {
-                this.errors.add("you are changing a variable to an unexpected type");
+        else{
+            if(iden.contains("&")){ //this is a pointer
+                type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
+                if(type.type != MyType.POINTER){
+                    this.errors.add("Pointer is not defined");
+                }
+                return;
             }
-            setType(ctx, getType(ctx.expr()));
-            setOffset(ctx,check.getSizeCurr());
-            result.setGlobal(ctx,check.global);
-            return;
+            type = scope.check(ctx.ID().toString(),ctx.getStart());
+            if(type!=null) {
+                if (type.type != getType(ctx.expr())) {
+                    this.errors.add("you are changing a variable to an unexpected type");
+                }
+                setType(ctx, getType(ctx.expr()));
+                setOffset(ctx,type.getSizeCurr());
+                result.setGlobal(ctx,type.global);
+                return;
+            }
+            this.errors.add("this variable you are changing does not exist");
         }
-        this.errors.add("this variable you are changing does not exist");
 
 
     }
