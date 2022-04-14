@@ -11,15 +11,27 @@ public class HaskellProcess {
     /**
      * Run sprockell code
      */
-    public static void run_Sprockell(){
+    public static String run_Sprockell(){
         try{
+            StringBuilder sBuilder = new StringBuilder();
             ProcessBuilder b = new ProcessBuilder();
             b.command("cmd.exe ","/c","runhaskell ",path);
-            b.inheritIO();
-            b.start();
-        } catch (IOException e) {
+//            b.inheritIO();
+            Process process= b.start();
+            BufferedReader bReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = "";
+            while ((line = bReader.readLine()) != null) {
+                sBuilder.append(line);
+                sBuilder.append(System.getProperty("line.separator"));
+            }
+            String can =  sBuilder.toString();
+            process.waitFor();
+            return can.replace("\n", "").replace("\r", "");
+
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+        return null;
     }
     /**
      * Build haskell code

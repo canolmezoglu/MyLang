@@ -11,6 +11,7 @@ import ut.pp.elaboration.model.Instruction;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -23,9 +24,8 @@ public class Main {
          * Raise exception and show errors in code if there are any (excluding syntax errors) , in that case - no code generation
          * Generated Sprockell code can be seen in elaboration/haskell/output.hs
          */
-        String code =
-                      "";
-        MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
+        String path ="src/main/sample/peterson.txt";
+        MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromPath(new File(path).toPath()));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
         ParseTree tree = parser.program();
@@ -44,7 +44,8 @@ public class Main {
                 }
             }
             HaskellProcess.build_Sprockell(sprockell_code,thread_count,false);
-            HaskellProcess.run_Sprockell();
+            String can  = HaskellProcess.run_Sprockell();
+            System.out.println(can);
         }
 
 
