@@ -27,15 +27,14 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     Map<String,List<Instruction>> functions = new HashMap<>();
     FunctionData currentfunctionData = null;
     int currentMemoryUsage;
+    HashMap<String,String> pointer_map;
+    HashMap<String,Integer> var_address;
+    HashMap<String,Boolean> var_global;
 
     public static void main(String args[]) throws Exception {
 //        String code = "int a[1] = {100}; print(a%1);";
         String code =
-                "function int addfive(int a ){" +
-                        "print(a);" +
-                        "return a +5 ;" +
-                        "}" +
-                        "print(addfive(4));";
+                "int a =100; int b=200;";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
@@ -52,6 +51,9 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         scope = new ScopeTable();
         registers = new ParseTreeProperty<>();
         reghandler = new Register();
+        pointer_map=new HashMap<>();
+        var_address=new HashMap<>();
+        var_global=new HashMap<>();
         Checker checker = new Checker();
         res = checker.check(tree);
         return this.visit(tree);
@@ -249,6 +251,15 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         InstructionList.addAll(visit(ctx.expr()));
         InstructionList.add(sp.pop(Registers.regA));
 
+        var_address.put(varname,res.getOffset(ctx));
+        if(res.getGlobal(ctx)!=null){
+            var_global.put(varname,res.getGlobal(ctx));
+        }
+        else{
+            var_global.put(varname,false);
+        }
+
+
         // If the variable is shared, write it to the shared memory.
         if (ctx.access() != null && ctx.access().SHARED() != null){
             InstructionList.add(sp.writeToMemory(Registers.regA,res.getOffset(ctx)));
@@ -282,6 +293,14 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             scope.declare(array_name+"%"+i, type, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
             InstructionList.addAll(visit(ctx.darray().expr(i)));
             InstructionList.add(sp.pop(Registers.regA));
+            var_address.put(array_name+"%"+i,res.getOffset(ctx.darray().expr(i)));
+            if(res.getGlobal(ctx.darray().expr(i))!=null) {
+                var_global.put(array_name + "%" + i, res.getGlobal(ctx.darray().expr(i)));
+            }
+            else{
+                var_global.put(array_name + "%" + i,false);
+            }
+
             if (ctx.access() != null && ctx.access().SHARED() != null){
                 InstructionList.add(sp.writeToMemory(Registers.regA,res.getOffset(ctx.darray().expr(i))));
             }
@@ -315,6 +334,14 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
                 scope.declare(array_name+"%"+i+","+j, type, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
                 InstructionList.addAll(visit(ctx.darray(i).expr(j)));
                 InstructionList.add(sp.pop(Registers.regA));
+                var_address.put(array_name+"%"+i+","+j,res.getOffset(ctx.darray(i).expr(j)));
+                if(res.getGlobal(ctx.darray(i).expr(j))) {
+                    var_global.put(array_name+"%"+i+","+j,res.getGlobal(ctx.darray(i).expr(j)));
+                }
+                else{
+                    var_global.put(array_name+"%"+i+","+j,false);
+                }
+
                 if (ctx.access() != null && ctx.access().SHARED() != null){
                     InstructionList.add(sp.writeToMemory(Registers.regA,res.getOffset(ctx.darray(i).expr(j))));
                 }
@@ -349,6 +376,14 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             scope.declare(enum_name + "." + enum_val_id, type, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null);
             InstructionList.addAll(visit(ctx.enumAssign().expr(i)));
             InstructionList.add(sp.pop(Registers.regA));
+            var_address.put(enum_name + "." + enum_val_id,res.getOffset(ctx.enumAssign().expr(i)));
+            if(res.getGlobal(ctx.enumAssign().expr(i))!=null){
+                var_global.put(enum_name + "." + enum_val_id,res.getGlobal(ctx.enumAssign().expr(i)));
+            }
+            else{
+                var_global.put(enum_name + "." + enum_val_id,false);
+            }
+
             if (ctx.access() != null && ctx.access().SHARED() != null) {
                 InstructionList.add(sp.writeToMemory(Registers.regA, res.getOffset(ctx.enumAssign().expr(i))));
             }
@@ -368,25 +403,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     public List<Instruction> visitDeclarePointer(MyLangParser.DeclarePointerContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
         String pointer_name = ctx.ID().getText();
-        scope.declare(pointer_name+"*", MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
-        InstructionList.addAll(visit(ctx.expr()));
-        InstructionList.add(sp.pop(Registers.regA));
-        if (ctx.access() != null && ctx.access().SHARED() != null){
-            InstructionList.add(sp.writeToMemory(Registers.regA,res.getOffset(ctx)));
-        }
-        else if (this.currentfunctionData != null) {
-            InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx)), 0, Registers.regB, 0));
-            InstructionList.add(sp.compute(Operators.Sub,Registers.regF,Registers.regB,Registers.regB));
-            InstructionList.add(sp.writeToMemory(Registers.regA,Registers.regB));
-        }
-        else {
-            InstructionList.add(sp.storeInMemory(Registers.regA, res.getOffset(ctx)));
-            currentMemoryUsage = res.getOffset(ctx);
-        }
-        System.out.println();
+        String varname = ctx.expr().getText();
+        scope.declare(pointer_name, MyType.POINTER, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
+        pointer_map.put(pointer_name,varname);
         return InstructionList;
     }
-
 
     @Override
     public List<Instruction> visitChangeStat(MyLangParser.ChangeStatContext ctx) {
@@ -500,9 +521,23 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     public List<Instruction> visitIdExpr(MyLangParser.IdExprContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
         String child = ctx.children.get(0).toString();
+
+        int offset =0;
+        Boolean global=false;
+
+        if(child.contains("&")){// this is a pointer
+            child = pointer_map.get(child.substring(0,child.length()-1));
+            offset = var_address.get(child);
+            global = var_global.get(child);
+        }
+        else{
+            offset = res.getOffset(ctx);
+            global = res.getGlobal(ctx);
+        }
+
         // if variable is shared
-        if (res.getGlobal(ctx)){
-            InstructionList.add(sp.readInst( res.getOffset(ctx)));
+        if (global){
+            InstructionList.add(sp.readInst(offset));
             InstructionList.add(sp.receive(Registers.regA));
             InstructionList.add(sp.push(Registers.regA));
 
@@ -513,11 +548,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             VariableData variableData = this.currentfunctionData.getVariable(child);
             if (variableData.isParameter){
                 // parameter is at the bottom of arp
-                InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx) + 1),0,Registers.regB,0));
+                InstructionList.add(sp.loadToRegister(Integer.toString(offset + 1),0,Registers.regB,0));
                 InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regB,Registers.regB));
             }
             else{
-                InstructionList.add(sp.loadToRegister(Integer.toString(res.getOffset(ctx) + 1 ),0,Registers.regB,0));
+                InstructionList.add(sp.loadToRegister(Integer.toString(offset + 1 ),0,Registers.regB,0));
                 InstructionList.add(sp.compute(Operators.Sub,Registers.regF,Registers.regB,Registers.regB));
 
             }
@@ -528,7 +563,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
         // if we're in main thread
         else {
-            InstructionList.add(sp.loadToRegister(child, scope.scope_num, Registers.regA, res.getOffset(ctx)));
+            InstructionList.add(sp.loadToRegister(child, scope.scope_num, Registers.regA, offset));
             InstructionList.add(sp.push(Registers.regA));
         }
         return InstructionList;

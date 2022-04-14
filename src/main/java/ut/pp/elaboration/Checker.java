@@ -109,19 +109,26 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitIdExpr(MyLangParser.IdExprContext ctx){
+        String iden = ctx.ID().toString();
+        if(iden.contains("&")){ //this is a pointer
+            VariableData type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
+            if(type.type != MyType.POINTER){
+                this.errors.add("This pointer is not defined");
+            }
+            return;
+        }
         if (this.currFunction !=null){
-            setType(ctx,this.currFunction.getVariable(ctx.ID().toString()).type);
-            setOffset(ctx,this.currFunction.getVariable(ctx.ID().toString()).getSizeCurr());
+            setType(ctx,this.currFunction.getVariable(iden).type);
+            setOffset(ctx,this.currFunction.getVariable(iden).getSizeCurr());
             result.setGlobal(ctx,false);
 
             return;
         }
-        VariableData check = scope.check(ctx.ID().toString(),ctx.getStart());
+        VariableData check = scope.check(iden,ctx.getStart());
         if(check!=null) {
             setType(ctx,check.type);
             setOffset(ctx,check.getSizeCurr());
             result.setGlobal(ctx,check.global);
-
         }
     }
     @Override public void exitPrimitive(MyLangParser.PrimitiveContext ctx) {
@@ -197,11 +204,15 @@ public class Checker extends MyLangBaseListener {
     @Override
     public void exitDeclarePointer(MyLangParser.DeclarePointerContext ctx) {
         if(ctx.expr() instanceof MyLangParser.IdExprContext){
-            if (this.currFunction == null){
-                setOffset(ctx, scope.declare(ctx.ID().toString()+"*", MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
+            VariableData check = scope.check(ctx.expr().getText(),ctx.getStart());
+            if(check==null){
+                this.errors.add("Pointer is pointing to an undefined variable");
+            }
+            else if (this.currFunction == null){
+                scope.declare(ctx.ID().toString(), MyType.POINTER, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
             }
             else{
-                setOffset(ctx,this.currFunction.declare(ctx.ID().toString()+"*",MyType.NUM));
+                this.currFunction.declare(ctx.ID().toString(),MyType.POINTER);
             }
         }
         else{

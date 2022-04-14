@@ -129,6 +129,7 @@ STAR:   '*';
 COMMA:   ',';
 ARR_INDEX: '%';
 DOT: '.';
+POINT: '&';
 
 
 
@@ -136,5 +137,5 @@ fragment LETTER: [a-zA-Z];
 fragment DIGIT: [0-9];
 
 NUM: DIGIT+;
-ID: LETTER (LETTER | DIGIT | ARR_INDEX | COMMA| DOT | STAR )*;
+ID: LETTER (LETTER | DIGIT | ARR_INDEX | COMMA| DOT | POINT )*;
 WS: [ \t\r\n]+ -> skip;
