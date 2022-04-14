@@ -142,6 +142,9 @@ public class Checker extends MyLangBaseListener {
     }
 
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
+        if(ctx.ID().getText().contains(".")){
+            this.errors.add("Enum values are fixed: they cannot be updated");
+        }
         if (this.currFunction !=null){
             VariableData data = this.currFunction.getVariable(ctx.ID().toString());
             if (data !=null){
