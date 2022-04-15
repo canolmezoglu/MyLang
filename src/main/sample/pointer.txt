@@ -8,3 +8,4 @@ if(b&<c&){
 }
 print(b&);
 print(c&);
+print(8);

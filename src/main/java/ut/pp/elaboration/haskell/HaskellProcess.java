@@ -17,6 +17,7 @@ public class HaskellProcess {
         try{
             StringBuilder sBuilder = new StringBuilder();
             ProcessBuilder b = new ProcessBuilder();
+            // TODO WRITE FOR LINUX
             b.command("cmd.exe ","/c","runhaskell ",path);
 //            b.inheritIO();
             Process process= b.start();
