@@ -128,13 +128,6 @@ public class Checker extends MyLangBaseListener {
         setType(ctx,getType(ctx.primitive()));
     }
 
-//    @Override
-//    public void exitDivExpr(MyLangParser.DivExprContext ctx) {
-//        if (getType(ctx.expr(0)) != getType(ctx.expr(1)) && getType(ctx.expr(0))!=MyType.NUM){
-//            this.errors.add("Invalid types in division");
-//        }
-//        setType(ctx, getType(ctx.expr(0)));
-//    }
 
     @Override public void exitIdFactor(MyLangParser.IdFactorContext ctx){
         String iden = ctx.ID().toString();
@@ -170,6 +163,12 @@ public class Checker extends MyLangBaseListener {
     }
     @Override public void exitPrimitive(MyLangParser.PrimitiveContext ctx) {
         if (ctx.NUM() != null) {
+            try{
+                Integer.parseInt(ctx.getText());
+            }
+            catch (NumberFormatException e){
+                this.errors.add("This int defined is larger than the limits");
+            }
             result.setType(ctx,MyType.NUM);
 
         }

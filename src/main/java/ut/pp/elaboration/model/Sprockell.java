@@ -111,23 +111,21 @@ public class Sprockell {
     public Instruction IndJump ( Registers reg){
         return new Instruction(Instructions.Jump, Collections.singletonList(new Target(Targets.Ind, reg)));
     }
-    public Instruction loadToRegister (String val, int scope, Registers register, int res){
+    public Instruction loadToMemory (String val, Registers register){
         Instruction inst;
-        try {
-                int num = 0;
-                if (val.equals("true")) {
-                    num = 1;
-                } else if (val.equals("false")) {
-                    num = 0;
-                } else {
-                    num = Integer.parseInt(val);
-                }
-                 inst = new Instruction(Instructions.Load, Arrays.asList(new MemoryAddr(MemoryAddrs.ImmValue, num), register));
-            } catch (NumberFormatException e) {
-                inst = new Instruction(Instructions.Load, Arrays.asList(new MemoryAddr(MemoryAddrs.DirAddr, res), register));
-
+        double num = 0;
+        if (val.equals("true")) {
+            num = 1;
+        } else if (val.equals("false")) {
+            num = 0;
+        } else {
+            num = Double.parseDouble(val);
         }
+        inst = new Instruction(Instructions.Load, Arrays.asList(new MemoryAddr(MemoryAddrs.ImmValue, num), register));
         return inst;
+    }
+    public Instruction loadToMemory(Registers reg1, int slot){
+        return new Instruction(Instructions.Load, Arrays.asList(new MemoryAddr(MemoryAddrs.DirAddr, slot), reg1));
     }
     public Instruction getFromIndAddr(Registers reg1,Registers reg2){
         return new Instruction(Instructions.Load, Arrays.asList(new MemoryAddr(MemoryAddrs.IndAddr, reg2), reg1));
