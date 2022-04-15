@@ -34,7 +34,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     public static void main(String args[]) throws Exception {
 //        String code = "int a[1] = {100}; print(a%1);";
         String code =
-                "int a[2] = {100,200} print(a%1);";
+                "int a=100; int b=500; int c = b/a; print(c); print(a);";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
@@ -516,6 +516,24 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         InstructionList.addAll(visitPrimitive(ctx.primitive()));
         return InstructionList;
 
+    }
+
+    @Override
+    public List<Instruction> visitDivExpr(MyLangParser.DivExprContext ctx) {
+        List<Instruction> InstructionList = new ArrayList<>();
+        List<Instruction> expr0 = visit(ctx.expr(0));
+        List<Instruction> expr1 = visit(ctx.expr(1));
+        InstructionList.addAll(expr0);
+        InstructionList.addAll(expr1);
+        InstructionList.add(sp.pop(Registers.regB));
+        InstructionList.add(sp.pop(Registers.regA));
+        InstructionList.add(sp.compute(Operators.Sub,Registers.regA,Registers.regB,Registers.regA));
+        InstructionList.add(sp.compute(Operators.Incr, Registers.regC, Registers.regC, Registers.regC));
+        InstructionList.add(sp.compute(Operators.GtE, Registers.regA, Registers.regB, Registers.regE));
+        InstructionList.add(sp.branch(Registers.regE,new Target(Targets.Rel,-3)));
+        InstructionList.add(sp.compute(Operators.Add, Registers.regC, Registers.regE, Registers.regA));
+        InstructionList.add(sp.push(Registers.regA));
+        return InstructionList;
     }
 
     @Override

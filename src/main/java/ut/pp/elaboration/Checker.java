@@ -108,6 +108,14 @@ public class Checker extends MyLangBaseListener {
         result.setType(ctx,getType(ctx.primitive()));
     }
 
+    @Override
+    public void exitDivExpr(MyLangParser.DivExprContext ctx) {
+        if (getType(ctx.expr(0)) != getType(ctx.expr(1)) && getType(ctx.expr(0))!=MyType.NUM){
+            this.errors.add("Invalid types in division");
+        }
+        setType(ctx, getType(ctx.expr(0)));
+    }
+
     @Override public void exitIdExpr(MyLangParser.IdExprContext ctx){
         String iden = ctx.ID().toString();
         VariableData type = null;
@@ -149,6 +157,8 @@ public class Checker extends MyLangBaseListener {
             result.setType(ctx,MyType.BOOLEAN);
         }
     }
+
+
 
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
         if(ctx.ID().getText().contains(".")){

@@ -53,6 +53,7 @@ block: LBRACE instruction* RBRACE;
 expr: prefixOp expr        #prfExpr
     | expr mult expr       #multExpr
     | expr addOp expr       #addExpr
+    | <assoc= right> expr DIV expr #divExpr
     | expr comp expr       #compExpr
     | expr booleanOp expr  #boolExpr
     | LPAR expr RPAR       #parExpr
@@ -87,6 +88,7 @@ type: INTEGER
     | BOOLEAN
     ;
 
+DIV: '/';
 AND:    'and';
 BOOLEAN: 'bool' ;
 INTEGER: 'int' ;
@@ -133,9 +135,10 @@ POINT: '&';
 
 
 
+
 fragment LETTER: [a-zA-Z];
 fragment DIGIT: [0-9];
 
 NUM: DIGIT+;
-ID: LETTER (LETTER | DIGIT | ARR_INDEX | COMMA| DOT | POINT )*;
+ID: LETTER (LETTER | DIGIT | ARR_INDEX | COMMA | DOT | POINT )*;
 WS: [ \t\r\n]+ -> skip;
