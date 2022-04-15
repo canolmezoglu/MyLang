@@ -2,14 +2,9 @@ package ut.pp.tests;
 
 import static org.junit.Assert.assertEquals;
 
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.Test;
 import ut.pp.elaboration.Checker;
-import ut.pp.parser.MyLangLexer;
-import ut.pp.parser.MyLangParser;
-import ut.pp.tests.TestChecker;
+import ut.pp.tests.checker.TestChecker;
 
 public class TestScope {
 

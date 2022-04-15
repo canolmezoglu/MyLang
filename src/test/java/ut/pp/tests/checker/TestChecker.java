@@ -1,4 +1,4 @@
-package ut.pp.tests;
+package ut.pp.tests.checker;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
