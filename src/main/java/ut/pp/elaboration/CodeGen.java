@@ -526,23 +526,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
     }
 
-    @Override
-    public List<Instruction> visitDivExpr(MyLangParser.DivExprContext ctx) {
-        List<Instruction> InstructionList = new ArrayList<>();
-        List<Instruction> expr0 = visit(ctx.expr(0));
-        List<Instruction> expr1 = visit(ctx.expr(1));
-        InstructionList.addAll(expr0);
-        InstructionList.addAll(expr1);
-        InstructionList.add(sp.pop(Registers.regB));
-        InstructionList.add(sp.pop(Registers.regA));
-        InstructionList.add(sp.compute(Operators.Sub,Registers.regA,Registers.regB,Registers.regA));
-        InstructionList.add(sp.compute(Operators.Incr, Registers.regC, Registers.regC, Registers.regC));
-        InstructionList.add(sp.compute(Operators.GtE, Registers.regA, Registers.regB, Registers.regE));
-        InstructionList.add(sp.branch(Registers.regE,new Target(Targets.Rel,-3)));
-        InstructionList.add(sp.compute(Operators.Add, Registers.regC, Registers.regE, Registers.regA));
-        InstructionList.add(sp.push(Registers.regA));
-        return InstructionList;
-    }
 
     @Override
     public List<Instruction> visitPrimitive(MyLangParser.PrimitiveContext ctx) {
@@ -631,14 +614,24 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.addAll(expr0);
         }
         else {
-
             List<Instruction> expr1 = visit(ctx.term());
             InstructionList.addAll(expr0);
             InstructionList.addAll(expr1);
-            InstructionList.add(sp.pop(Registers.regB));
             InstructionList.add(sp.pop(Registers.regA));
+            InstructionList.add(sp.pop(Registers.regB));
             if (ctx.mult() != null) {
-                InstructionList.add(sp.compute(Operators.Mul, Registers.regA, Registers.regB, Registers.regA));
+                if(ctx.mult().DIV()!=null){
+                    InstructionList.add(sp.compute(Operators.Add,Registers.reg0,Registers.reg0,Registers.regC));
+                    InstructionList.add(sp.compute(Operators.Add,Registers.reg0,Registers.reg0,Registers.regE));
+                    InstructionList.add(sp.compute(Operators.Sub,Registers.regA,Registers.regB,Registers.regA));
+                    InstructionList.add(sp.compute(Operators.Incr, Registers.regC, Registers.regC, Registers.regC));
+                    InstructionList.add(sp.compute(Operators.GtE, Registers.regA, Registers.regB, Registers.regE));
+                    InstructionList.add(sp.branch(Registers.regE,new Target(Targets.Rel,-3)));
+                    InstructionList.add(sp.compute(Operators.Add, Registers.regC, Registers.regE, Registers.regA));
+                }
+                else {
+                    InstructionList.add(sp.compute(Operators.Mul, Registers.regA, Registers.regB, Registers.regA));
+                }
             } else {
                 InstructionList.add(sp.compute(Operators.And, Registers.regA, Registers.regB, Registers.regA));
             }

@@ -68,7 +68,6 @@ public class Checker extends MyLangBaseListener {
             if (getType(ctx.factor()) != getType(ctx.term())) {
                 if (ctx.AND()!=null ){
                     this.errors.add("AND has type mismatch");
-
                 }
                 else {
                     this.errors.add("Multiplication has type mismatch");
@@ -76,7 +75,7 @@ public class Checker extends MyLangBaseListener {
             }
             else{
                 if (getType(ctx.factor()) != MyType.NUM && ctx.mult() != null){
-                    this.errors.add("Multiplication only takes integers");
+                    this.errors.add("Multiplication or division only takes integers");
                 }
                 else if (getType(ctx.factor()) != MyType.BOOLEAN && ctx.AND() != null){
                     this.errors.add("AND only takes booleans");
@@ -129,13 +128,13 @@ public class Checker extends MyLangBaseListener {
         setType(ctx,getType(ctx.primitive()));
     }
 
-    @Override
-    public void exitDivExpr(MyLangParser.DivExprContext ctx) {
-        if (getType(ctx.expr(0)) != getType(ctx.expr(1)) && getType(ctx.expr(0))!=MyType.NUM){
-            this.errors.add("Invalid types in division");
-        }
-        setType(ctx, getType(ctx.expr(0)));
-    }
+//    @Override
+//    public void exitDivExpr(MyLangParser.DivExprContext ctx) {
+//        if (getType(ctx.expr(0)) != getType(ctx.expr(1)) && getType(ctx.expr(0))!=MyType.NUM){
+//            this.errors.add("Invalid types in division");
+//        }
+//        setType(ctx, getType(ctx.expr(0)));
+//    }
 
     @Override public void exitIdFactor(MyLangParser.IdFactorContext ctx){
         String iden = ctx.ID().toString();

@@ -85,7 +85,7 @@ booleanVal :  (TRUE|FALSE);
 
 prefixOp: MINUS | NOT;
 
-mult: STAR;
+mult: STAR | DIV;
 
 addOp: PLUS | MINUS;
 
