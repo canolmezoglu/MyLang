@@ -23,7 +23,7 @@ statement: declaration #declStat
            | declarePointer #declPointer
            ;
 
-declarePointer: access? POINTER ID ASS expr END;
+declarePointer: access? POINTER ID ASS factor END;
 
 declareEnum: access? type ENUM ID enumAssign END;
 
@@ -49,18 +49,29 @@ lockConstruct : LOCK instruction* UNLOCK;
 
 returnConstruct : RETURN expr END;
 block: LBRACE instruction* RBRACE;
-// all the first+ is same below, problem?
-expr: prefixOp expr        #prfExpr
-    | expr mult expr       #multExpr
-    | expr addOp expr       #addExpr
-    | <assoc= right> expr DIV expr #divExpr
-    | expr comp expr       #compExpr
-    | expr booleanOp expr  #boolExpr
-    | LPAR expr RPAR       #parExpr
-    | primitive            #primitiveExpr
-    | ID                   #idExpr
-    | ID LPAR (expr (COMMA expr)* )? RPAR  #funcCallExpr
+
+expr: superiorExpr
+    | superiorExpr comp superiorExpr
+
     ;
+
+superiorExpr:  term
+            |  superiorExpr addOp term
+            |  superiorExpr OR term
+            ;
+
+term: factor
+    | term mult  factor
+    | term AND  factor
+
+    ;
+factor : prefixOp factor                     #prefixFactor
+       |  LPAR expr RPAR                     #parFactor
+       |  ID                                 #idFactor
+       |  primitive                          #primitiveFactor
+       | ID LPAR (expr (COMMA expr)* )? RPAR #funcCall
+        ;
+
 
 declaration: access? type ID ASS expr? END;
 
@@ -80,7 +91,6 @@ addOp: PLUS | MINUS;
 
 access: GLOBAL | SHARED ;
 
-booleanOp:  AND | OR ;
 
 comp: LE | LT | GE | GT | EQ | NE;
 

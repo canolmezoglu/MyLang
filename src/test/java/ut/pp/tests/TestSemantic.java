@@ -61,6 +61,13 @@ public class TestSemantic {
         }
 
     }
+    @Test
+    public void testFib() throws Exception {
+        String input = "fib";
+        List<String> output = ut.pp.Main.runSprockell(input);
+        Assert.assertEquals("Sprockell 0 says 13", output.get(0));
+
+    }
 
 
 }

@@ -402,7 +402,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     public List<Instruction> visitDeclarePointer(MyLangParser.DeclarePointerContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
         String pointer_name = ctx.ID().getText();
-        String varname = ctx.expr().getText();
+        String varname = ctx.factor().getText();
         scope.declare(pointer_name, MyType.POINTER, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
         pointer_map.put(pointer_name,varname);
         return InstructionList;
@@ -492,26 +492,34 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     }
 
     @Override
-    public List<Instruction> visitAddExpr(MyLangParser.AddExprContext ctx) {
+    public List<Instruction> visitSuperiorExpr(MyLangParser.SuperiorExprContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
-        List<Instruction> expr0 = visit(ctx.expr(0));
-        List<Instruction> expr1 = visit(ctx.expr(1));
-        InstructionList.addAll(expr0);
-        InstructionList.addAll(expr1);
-        InstructionList.add(sp.pop(Registers.regB));
-        InstructionList.add(sp.pop(Registers.regA));
-
-        if (ctx.addOp().PLUS() != null) {
-            InstructionList.add(sp.compute(Operators.Add, Registers.regA, Registers.regB, Registers.regA));
-        } else {
-            InstructionList.add(sp.compute(Operators.Sub, Registers.regA, Registers.regB, Registers.regA));
+        List<Instruction> expr0 = visit(ctx.term());
+        if (ctx.superiorExpr() == null){
+            InstructionList.addAll(expr0);
         }
-        InstructionList.add(sp.push(Registers.regA));
+        else {
+            List<Instruction> expr1 = visit(ctx.superiorExpr());
+            InstructionList.addAll(expr1);
+            InstructionList.addAll(expr0);
+            InstructionList.add(sp.pop(Registers.regB));
+            InstructionList.add(sp.pop(Registers.regA));
+            if (ctx.addOp() != null) {
+                if (ctx.addOp().PLUS()!= null) {
+                    InstructionList.add(sp.compute(Operators.Add, Registers.regA, Registers.regB, Registers.regA));
+                } else if (ctx.addOp().MINUS() != null) {
+                    InstructionList.add(sp.compute(Operators.Sub, Registers.regA, Registers.regB, Registers.regA));
+                }
+            } else {
+                InstructionList.add(sp.compute(Operators.Or, Registers.regA, Registers.regB, Registers.regA));
+            }
+            InstructionList.add(sp.push(Registers.regA));
+        }
         return InstructionList;
     }
 
     @Override
-    public List<Instruction> visitPrimitiveExpr(MyLangParser.PrimitiveExprContext ctx) {
+    public List<Instruction> visitPrimitiveFactor(MyLangParser.PrimitiveFactorContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
         InstructionList.addAll(visitPrimitive(ctx.primitive()));
         return InstructionList;
@@ -542,12 +550,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         String child = ctx.NUM() !=null ? ctx.NUM().getText() : ctx.booleanVal().getText();
         InstructionList.add(sp.loadToRegister(child, scope.scope_num, Registers.regA,0));
         InstructionList.add(sp.push(Registers.regA));
-
         return InstructionList;
     }
 
     @Override
-    public List<Instruction> visitIdExpr(MyLangParser.IdExprContext ctx) {
+    public List<Instruction> visitIdFactor(MyLangParser.IdFactorContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
         String child = ctx.children.get(0).toString();
 
@@ -617,16 +624,26 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
 
     @Override
-    public List<Instruction> visitMultExpr(MyLangParser.MultExprContext ctx) {
+    public List<Instruction> visitTerm(MyLangParser.TermContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
-        List<Instruction> expr0 = visit(ctx.expr(0));
-        List<Instruction> expr1 = visit(ctx.expr(1));
-        InstructionList.addAll(expr0);
-        InstructionList.addAll(expr1);
-        InstructionList.add(sp.pop(Registers.regB));
-        InstructionList.add(sp.pop(Registers.regA));
-        InstructionList.add(sp.compute(Operators.Mul, Registers.regA, Registers.regB, Registers.regA));
-        InstructionList.add(sp.push(Registers.regA));
+        List<Instruction> expr0 = visit(ctx.factor());
+        if (ctx.term() ==null){
+            InstructionList.addAll(expr0);
+        }
+        else {
+
+            List<Instruction> expr1 = visit(ctx.term());
+            InstructionList.addAll(expr0);
+            InstructionList.addAll(expr1);
+            InstructionList.add(sp.pop(Registers.regB));
+            InstructionList.add(sp.pop(Registers.regA));
+            if (ctx.mult() != null) {
+                InstructionList.add(sp.compute(Operators.Mul, Registers.regA, Registers.regB, Registers.regA));
+            } else {
+                InstructionList.add(sp.compute(Operators.And, Registers.regA, Registers.regB, Registers.regA));
+            }
+            InstructionList.add(sp.push(Registers.regA));
+        }
         return InstructionList;
     }
 
@@ -670,83 +687,71 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     }
 
     @Override
-    public List<Instruction> visitCompExpr(MyLangParser.CompExprContext ctx) {
+    public List<Instruction> visitExpr(MyLangParser.ExprContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
-        List<Instruction> expr0 = visit(ctx.expr(0));
-        List<Instruction> expr1 = visit(ctx.expr(1));
-        InstructionList.addAll(expr0);
-        InstructionList.addAll(expr1);
-        InstructionList.add(sp.pop(Registers.regB));
-        InstructionList.add(sp.pop(Registers.regA));
-        switch (ctx.getChild(1).getText()) {
-            case "==":
-                InstructionList.add(sp.compute(Operators.Equal, Registers.regA, Registers.regB, Registers.regA));
+        List<Instruction> expr0 = visit(ctx.superiorExpr(0));
+        if (ctx.superiorExpr().size() ==1){
+            InstructionList.addAll(expr0);
+        }
+        else {
+            List<Instruction> expr1 = visit(ctx.superiorExpr(1));
+            InstructionList.addAll(expr0);
+            InstructionList.addAll(expr1);
+            InstructionList.add(sp.pop(Registers.regB));
+            InstructionList.add(sp.pop(Registers.regA));
+            switch (ctx.getChild(1).getText()) {
+                case "==":
+                    InstructionList.add(sp.compute(Operators.Equal, Registers.regA, Registers.regB, Registers.regA));
 
-                break;
-            case "!=":
-                InstructionList.add(sp.compute(Operators.NEq, Registers.regA, Registers.regB, Registers.regA));
+                    break;
+                case "!=":
+                    InstructionList.add(sp.compute(Operators.NEq, Registers.regA, Registers.regB, Registers.regA));
 
-                break;
-            case ">":
-                InstructionList.add(sp.compute(Operators.Gt, Registers.regA, Registers.regB, Registers.regA));
+                    break;
+                case ">":
+                    InstructionList.add(sp.compute(Operators.Gt, Registers.regA, Registers.regB, Registers.regA));
 
-                break;
-            case "<":
-                InstructionList.add(sp.compute(Operators.Lt, Registers.regA, Registers.regB, Registers.regA));
+                    break;
+                case "<":
+                    InstructionList.add(sp.compute(Operators.Lt, Registers.regA, Registers.regB, Registers.regA));
 
-                break;
-            case ">=":
-                InstructionList.add(sp.compute(Operators.GtE, Registers.regA, Registers.regB, Registers.regA));
+                    break;
+                case ">=":
+                    InstructionList.add(sp.compute(Operators.GtE, Registers.regA, Registers.regB, Registers.regA));
 
-                break;
-            case "<=":
-                InstructionList.add(sp.compute(Operators.LtE, Registers.regA, Registers.regB, Registers.regA));
+                    break;
+                case "<=":
+                    InstructionList.add(sp.compute(Operators.LtE, Registers.regA, Registers.regB, Registers.regA));
 
-                break;
+                    break;
+
+            }
+            InstructionList.add(sp.push(Registers.regA));
 
         }
-        InstructionList.add(sp.push(Registers.regA));
         return InstructionList;
     }
 
-    @Override
-    public List<Instruction> visitBoolExpr(MyLangParser.BoolExprContext ctx) {
-        List<Instruction> InstructionList = new ArrayList<>();
-        List<Instruction> expr0 = visit(ctx.expr(0));
-        List<Instruction> expr1 = visit(ctx.expr(1));
-        InstructionList.addAll(expr0);
-        InstructionList.addAll(expr1);
-        InstructionList.add(sp.pop(Registers.regB));
-        InstructionList.add(sp.pop(Registers.regA));
-        if (ctx.booleanOp().AND() != null) {
-            InstructionList.add(sp.compute(Operators.And, Registers.regA, Registers.regB, Registers.regA));
-        } else {
-            InstructionList.add(sp.compute(Operators.Or, Registers.regA, Registers.regB, Registers.regA));
-        }
-        InstructionList.add(sp.push(Registers.regA));
-        return InstructionList;
 
-    }
 
     @Override
-    public List<Instruction> visitParExpr(MyLangParser.ParExprContext ctx) {
+    public List<Instruction> visitParFactor(MyLangParser.ParFactorContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
         InstructionList.addAll(visit(ctx.expr()));
         return InstructionList;
     }
 
     @Override
-    public List<Instruction> visitPrfExpr(MyLangParser.PrfExprContext ctx){
+    public List<Instruction> visitPrefixFactor(MyLangParser.PrefixFactorContext ctx){
         List<Instruction> InstructionList = new ArrayList<>();
-        InstructionList.addAll(visit(ctx.expr()));
+        InstructionList.addAll(visit(ctx.factor()));
         InstructionList.add(sp.pop(Registers.regA));
         if (ctx.prefixOp().NOT() != null){
             InstructionList.add(sp.loadToRegister("true",scope.scope_num,Registers.regB,0));
             InstructionList.add(sp.compute(Operators.Xor,Registers.regA,Registers.regB,Registers.regA));
         }
         else if (ctx.prefixOp().MINUS() != null){
-            InstructionList.add(sp.loadToRegister("0",scope.scope_num,Registers.regB,0));
-            InstructionList.add(sp.compute(Operators.Sub,Registers.regA,Registers.regB,Registers.regA));
+            InstructionList.add(sp.compute(Operators.Sub,Registers.reg0,Registers.regA,Registers.regA));
         }
         InstructionList.add(sp.push(Registers.regA));
 
@@ -896,7 +901,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         visit(context.parallelConstruct());
         return InstructionList;
     }
-    @Override public List<Instruction> visitFuncCallExpr(MyLangParser.FuncCallExprContext ctx){
+    @Override public List<Instruction> visitFuncCall(MyLangParser.FuncCallContext ctx){
         List<Instruction> InstructionList = new ArrayList<>();
         if (this.currentfunctionData !=null){
             FunctionData calledFunction = res.getFunctionData(ctx.ID().toString());
@@ -932,11 +937,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.add(sp.storeInMemory(Registers.regB,Registers.regA));
             // jump here
             InstructionList.add(sp.fakeInst(ctx.ID().toString()));
-            // jump here
-//            InstructionList.add(sp.loadToRegister("2",0,Registers.regA,0));
-//            InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regA,Registers.regA));
-//            InstructionList.add(sp.getFromIndAddr(Registers.regA,Registers.regA));
-//            InstructionList.add(sp.push(Registers.regA));
 
 
 
@@ -966,7 +966,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
                 InstructionList.add(sp.storeInMemory(Registers.regA,Registers.regB));
             }
 
-            //TODO SAVE REGHANDLER BEFORE GENERATING FUNCTION
 
             InstructionList.add(sp.loadToRegister(Integer.toString(arpLocation),0,Registers.regF,0));
 
@@ -976,13 +975,8 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.add(sp.loadToRegister("3",0,Registers.regB,0));
             InstructionList.add(sp.compute(Operators.Add,Registers.regPC,Registers.regB,Registers.regB));
             InstructionList.add(sp.storeInMemory(Registers.regB,Registers.regA));
-            // jump here
             InstructionList.add(sp.fakeInst(ctx.ID().toString()));
-//            // jump here
-//            InstructionList.add(sp.loadToRegister("2",0,Registers.regA,0));
-//            InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regA,Registers.regA));
-//            InstructionList.add(sp.getFromIndAddr(Registers.regA,Registers.regA));
-//            InstructionList.add(sp.push(Registers.regA));
+
 
            return InstructionList;
 

@@ -485,6 +485,7 @@ public class TestChecker {
             );
         }
         catch (Exception e){
+            checker.getErrors();
             Assert.assertEquals(0,checker.getErrors().size());
         }
 

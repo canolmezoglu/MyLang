@@ -53,59 +53,80 @@ public class Checker extends MyLangBaseListener {
 
     }
 
-    @Override public void exitPrfExpr(MyLangParser.PrfExprContext ctx){
-        if (ctx.prefixOp().MINUS() != null && getType(ctx.expr() )!= MyType.NUM){
+    @Override public void exitPrefixFactor(MyLangParser.PrefixFactorContext ctx){
+        if (ctx.prefixOp().MINUS() != null && getType(ctx.factor())!= MyType.NUM){
+
                 this.errors.add("Prefix operation has type mismatch, expected int, got bool");
         }
-        else if (ctx.prefixOp().NOT() != null && getType(ctx.expr() )!= MyType.BOOLEAN){
+        else if (ctx.prefixOp().NOT() != null && getType(ctx.factor() )!= MyType.BOOLEAN){
             this.errors.add("Prefix operation has type mismatch, expected bool, got int");
         }
-        setType(ctx, getType(ctx.expr()));
+        setType(ctx, getType(ctx.factor()));
     }
-    @Override public void exitMultExpr(MyLangParser.MultExprContext ctx){
-        if (getType(ctx.expr(0)) != getType(ctx.expr(1))){
-            this.errors.add("Multiplication has type mismatch");
+    @Override public void exitTerm(MyLangParser.TermContext ctx){
+        if (ctx.mult()!=null || ctx.AND()!=null)  {
+            if (getType(ctx.factor()) != getType(ctx.term())) {
+                if (ctx.AND()!=null ){
+                    this.errors.add("AND has type mismatch");
+
+                }
+                else {
+                    this.errors.add("Multiplication has type mismatch");
+                }
+            }
+            else{
+                if (getType(ctx.factor()) != MyType.NUM && ctx.mult() != null){
+                    this.errors.add("Multiplication only takes integers");
+                }
+                else if (getType(ctx.factor()) != MyType.BOOLEAN && ctx.AND() != null){
+                    this.errors.add("AND only takes booleans");
+                }
+            }
         }
-        setType(ctx, getType(ctx.expr(0)));
+        setType(ctx, getType(ctx.factor()));
     }
-    @Override public void exitAddExpr(MyLangParser.AddExprContext ctx){
-        if (getType(ctx.expr(0)) != getType(ctx.expr(1))){
-            if (ctx.addOp().PLUS() != null){
+    @Override public void exitSuperiorExpr(MyLangParser.SuperiorExprContext ctx){
+        if (ctx.addOp() != null) {
+            if (getType(ctx.term()) != getType(ctx.superiorExpr())) {
+                if (ctx.addOp().PLUS() != null && getType(ctx.term()) != MyType.NUM) {
+                    this.errors.add("addition has type mismatch");
+                } else if (ctx.addOp().MINUS() != null && getType(ctx.term()) != MyType.NUM)  {
+                    this.errors.add("subtraction has type mismatch");
+                }
+            }
+        }
+        if (ctx.OR() != null && getType(ctx.term()) != MyType.BOOLEAN){
                 this.errors.add("addition has type mismatch");
-            }
-            else if (ctx.addOp().MINUS() != null){
-                this.errors.add("subtraction has type mismatch");
-            }
         }
-        setType(ctx, getType(ctx.expr(0)));
+        setType(ctx, getType(ctx.term()));
     }
 
-    @Override public void exitCompExpr(MyLangParser.CompExprContext ctx){
-        MyType leftType = getType(ctx.expr(0));
-        MyType rightType = getType(ctx.expr(1));
-        if (ctx.comp().EQ() != null || ctx.comp().NE() != null){
-            if (leftType!=rightType){
-                this.errors.add("you cannot compare different types in terms" +
-                        "of being equal");
+    @Override public void exitExpr(MyLangParser.ExprContext ctx){
+        if (ctx.superiorExpr().size() == 1 ){
+            setType(ctx,getType(ctx.superiorExpr(0)));
+
+        }
+        else  {
+            MyType leftType = getType(ctx.superiorExpr(0));
+            MyType rightType = getType(ctx.superiorExpr(1));
+            if (ctx.comp().EQ() != null || ctx.comp().NE() != null) {
+                if (leftType != rightType) {
+                    this.errors.add("you cannot compare different types in terms" +
+                            "of being equal");
+                }
+            } else if (leftType != MyType.NUM && leftType != rightType) {
+                this.errors.add("you cannot compare boolean types");
             }
+            setType(ctx, MyType.BOOLEAN);
         }
-        else if (leftType != MyType.NUM && leftType != rightType){
-            this.errors.add("you cannot compare boolean types");
-        }
-        setType(ctx, MyType.BOOLEAN);
+
     }
-    @Override public void exitBoolExpr(MyLangParser.BoolExprContext ctx){
-        MyType leftType = getType(ctx.expr(0));
-        if (leftType != MyType.BOOLEAN && leftType != getType(ctx.expr(1))){
-            this.errors.add("boolean expression does not work with integers");
-        }
-        setType(ctx, getType(ctx.expr(0)));
-    }
-    @Override public void exitParExpr(MyLangParser.ParExprContext ctx){
+
+    @Override public void exitParFactor(MyLangParser.ParFactorContext ctx){
         setType(ctx,getType(ctx.expr()));
     }
-    @Override public void exitPrimitiveExpr(MyLangParser.PrimitiveExprContext ctx){
-        result.setType(ctx,getType(ctx.primitive()));
+    @Override public void exitPrimitiveFactor(MyLangParser.PrimitiveFactorContext ctx){
+        setType(ctx,getType(ctx.primitive()));
     }
 
     @Override
@@ -116,7 +137,7 @@ public class Checker extends MyLangBaseListener {
         setType(ctx, getType(ctx.expr(0)));
     }
 
-    @Override public void exitIdExpr(MyLangParser.IdExprContext ctx){
+    @Override public void exitIdFactor(MyLangParser.IdFactorContext ctx){
         String iden = ctx.ID().toString();
         VariableData type = null;
         if (this.currFunction !=null){
@@ -241,8 +262,8 @@ public class Checker extends MyLangBaseListener {
     }
     @Override
     public void exitDeclarePointer(MyLangParser.DeclarePointerContext ctx) {
-        if(ctx.expr() instanceof MyLangParser.IdExprContext){
-            VariableData check = scope.check(ctx.expr().getText(),ctx.getStart());
+        if(ctx.factor() instanceof MyLangParser.IdFactorContext){
+            VariableData check = scope.check(ctx.factor().getText(),ctx.getStart());
             if(check==null){
                 this.errors.add("Pointer is pointing to an undefined variable");
             }
@@ -400,23 +421,21 @@ public class Checker extends MyLangBaseListener {
     }
     @Override
     public void exitReturnConstruct(MyLangParser.ReturnConstructContext ctx){
-//        if (this.currFunction !=null){
-//            if (this.currFunction.returnType != getType(ctx.expr())){
-//                this.errors.add("this functions claims to return" + this.currFunction.returnType.toString() +
-//                        " but actually returns" + getType(ctx.expr()));
-//            }
-//        }
-//        else{
-//            this.errors.add("a return statement is called outside a function");
-//        }
+        if (this.currFunction !=null){
+            if (this.currFunction.returnType != getType(ctx.expr())){
+                this.errors.add("this functions claims to return" + this.currFunction.returnType.toString() +
+                        " but actually returns" + getType(ctx.expr()));
+            }
+        }
+        else{
+            this.errors.add("a return statement is called outside a function");
+        }
     }
 
     @Override
     public void enterFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
         this.currFunction = new FunctionData(ctx.type(0).getText() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN);
         if (ctx.ID() != null){
-            //add enough offset to avoid register save + return addr + return val
-            // 7 + arp will be the actual address
 
             for (int i=1; i < ctx.ID().size();i++){
                 MyType type = ctx.type(i).getText() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN;
@@ -429,18 +448,23 @@ public class Checker extends MyLangBaseListener {
         }
     }
     @Override
-    public void enterFuncCallExpr(MyLangParser.FuncCallExprContext ctx) {
+    public void enterFuncCall(MyLangParser.FuncCallContext ctx) {
         if (this.currFunction !=null) return;
+
 
         if (!result.functionDataHashMapContains(ctx.ID().toString())) {
             this.errors.add("you are calling a function that doesnt exist yet");
         }
     }
     @Override
-    public void exitFuncCallExpr(MyLangParser.FuncCallExprContext ctx){
-        // todo below is broken
-        if (this.currFunction !=null) return;
-        FunctionData functionData = result.getFunctionData(ctx.ID().toString());
+    public void exitFuncCall(MyLangParser.FuncCallContext ctx){
+        FunctionData functionData = null;
+        if (this.currFunction !=null) {
+            functionData = this.currFunction;
+        }
+        else{
+            functionData = result.getFunctionData(ctx.ID().toString());
+        }
         setType(ctx,functionData.returnType);
         for (int i=0; i < ctx.expr().size();i++){
             if (getType(ctx.expr(0)) != functionData.getVariable(functionData.parameters.get(i)).type){
