@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import ut.pp.elaboration.Checker;
-import ut.pp.tests.checker.TestChecker;
+import ut.pp.tests.checker.SimpleExpr;
 
 public class TestScope {
 
@@ -17,7 +17,7 @@ public class TestScope {
                 "        money = money - 1;\n" +
                 "    }";
 
-        c.check(TestChecker.getParseTree(input));
+        c.check(SimpleExpr.getParseTree(input));
         assertEquals(0,c.getScopeErrors().size());
     }
     @Test
@@ -27,7 +27,7 @@ public class TestScope {
                 "        money = money - 1;\n" +
                 "    }";
         try {
-            c.check(TestChecker.getParseTree(input));
+            c.check(SimpleExpr.getParseTree(input));
         }
         catch ( Exception e) {
             System.out.println(e.getMessage());
@@ -43,7 +43,7 @@ public class TestScope {
                 "        int c=0;\n" +
                 "    } c=100;" ;
         try {
-            c.check(TestChecker.getParseTree(input));
+            c.check(SimpleExpr.getParseTree(input));
         }
         catch ( Exception e) {
             System.out.println(e.getMessage());
@@ -61,7 +61,7 @@ public class TestScope {
                 "  bool numberofiterations = false;\n" +
                 "\n" +
                 "}";
-        c.check(TestChecker.getParseTree(input));
+        c.check(SimpleExpr.getParseTree(input));
         assertEquals(0,c.getScopeErrors().size());
     }
 

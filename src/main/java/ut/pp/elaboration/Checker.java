@@ -85,17 +85,23 @@ public class Checker extends MyLangBaseListener {
         setType(ctx, getType(ctx.factor()));
     }
     @Override public void exitSuperiorExpr(MyLangParser.SuperiorExprContext ctx){
-        if (ctx.addOp() != null) {
-            if (getType(ctx.term()) != getType(ctx.superiorExpr())) {
-                if (ctx.addOp().PLUS() != null && getType(ctx.term()) != MyType.NUM) {
-                    this.errors.add("addition has type mismatch");
-                } else if (ctx.addOp().MINUS() != null && getType(ctx.term()) != MyType.NUM)  {
-                    this.errors.add("subtraction has type mismatch");
+        if (ctx.superiorExpr() != null) {
+            if (getType(ctx.term()) == getType(ctx.superiorExpr())) {
+
+                if (ctx.addOp() != null) {
+                    if (ctx.addOp().PLUS() != null && getType(ctx.term()) != MyType.NUM) {
+                        this.errors.add("addition has type mismatch");
+                    } else if (ctx.addOp().MINUS() != null && getType(ctx.term()) != MyType.NUM) {
+                        this.errors.add("subtraction has type mismatch");
+                    }
+                }
+                else if (ctx.OR() != null && getType(ctx.term()) != MyType.BOOLEAN) {
+                    this.errors.add("or has type mismatch");
                 }
             }
-        }
-        if (ctx.OR() != null && getType(ctx.term()) != MyType.BOOLEAN){
-                this.errors.add("addition has type mismatch");
+            else{
+                this.errors.add("types do not match in one of the following expressions -> addition, subtraction, or" );
+            }
         }
         setType(ctx, getType(ctx.term()));
     }
@@ -103,7 +109,6 @@ public class Checker extends MyLangBaseListener {
     @Override public void exitExpr(MyLangParser.ExprContext ctx){
         if (ctx.superiorExpr().size() == 1 ){
             setType(ctx,getType(ctx.superiorExpr(0)));
-
         }
         else  {
             MyType leftType = getType(ctx.superiorExpr(0));
@@ -113,7 +118,7 @@ public class Checker extends MyLangBaseListener {
                     this.errors.add("you cannot compare different types in terms" +
                             "of being equal");
                 }
-            } else if (leftType != MyType.NUM && leftType != rightType) {
+            } else if (leftType != MyType.NUM || rightType != MyType.NUM) {
                 this.errors.add("you cannot compare boolean types");
             }
             setType(ctx, MyType.BOOLEAN);
