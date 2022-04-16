@@ -9,7 +9,6 @@ public class HaskellProcess {
      * Class to generate haskell code
      */
     private static final String path = "src/main/java/ut/pp/elaboration/haskell/output.hs";
-
     /**
      * Run sprockell code
      */
@@ -19,7 +18,7 @@ public class HaskellProcess {
             ProcessBuilder b = new ProcessBuilder();
             // TODO WRITE FOR LINUX
             b.command("cmd.exe ","/c","runhaskell ",path);
-            b.inheritIO();
+//            b.inheritIO();
             Process process= b.start();
             BufferedReader bReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = "";
