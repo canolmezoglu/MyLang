@@ -6,7 +6,7 @@ import ut.pp.elaboration.model.interfaces.InstructionArgs;
 
 public class MemoryAddr implements InstructionArgs {
     private final MemoryAddrs type;
-    private int val=0;
+    private String val= "0";
     private Registers reg= Registers.reg0;
 
     /**
@@ -21,9 +21,9 @@ public class MemoryAddr implements InstructionArgs {
      * @param val
      * Constructor to initialize a memory address with a memory address type and value
      */
-    public MemoryAddr(MemoryAddrs type,int val) {
+    public MemoryAddr(MemoryAddrs type,double val) {
         this.type = type;
-        this.val=val;
+        this.val=String.format("%.0f", val);
     }
     /**
      * @param type

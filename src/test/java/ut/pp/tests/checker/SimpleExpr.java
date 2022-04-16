@@ -1,19 +1,15 @@
-package ut.pp.tests;
+package ut.pp.tests.checker;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.junit.Assert;
 import org.junit.Test;
 import ut.pp.elaboration.Checker;
-import ut.pp.elaboration.Result;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
-import static org.junit.Assert.assertEquals;
-
-public class TestChecker {
+public class SimpleExpr {
 
     final Checker checker = new Checker();
 
@@ -21,53 +17,46 @@ public class TestChecker {
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
-        ParseTree tree = parser.program();
-        return tree;
+        return parser.program();
     }
-    /**
-     * Test regular integer assignment
-     */
-    @Test
-    public void test_assStat1() throws Exception {
-        checker.check (
-             getParseTree("int fib = 5 ; ")
-        );
-        Assert.assertEquals(0,checker.getErrors().size());
-    }
+
     /**
      * Test if prefix expression works correctly for boolean
      */
     @Test
     public void test_prfExpr1() throws Exception {
-        checker.check (
-                getParseTree("print(not true); ")
-        );
+
+        checker.check (getParseTree("print(not true); "));
         Assert.assertEquals(0,checker.getErrors().size());
+
     }
     /**
      * Test if prefix expression works correctly for int
      */
     @Test
     public void test_prfExpr2() throws Exception {
-        checker.check (
-                getParseTree("print(-5); ")
-        );
+        checker.check (getParseTree("print(-5); "));
         Assert.assertEquals(0,checker.getErrors().size());
+
     }
     /**
      * Test if prefix expression catches error when an
      * integer is assigned to a boolean prefix
      */
     @Test
-    public void test_prfExpr3() throws Exception {
+    public void test_prfExpr3() {
         try {
             checker.check (
                     getParseTree("print(not 5); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
+            Assert.assertEquals(e.getMessage(),"[Prefix operation has type mismatch, expected bool, got int]");
         }
+
     }
     /**
      * Test if prefix expression catches error when an
@@ -75,14 +64,18 @@ public class TestChecker {
      */
 
     @Test
-    public void test_prfExpr4() throws Exception {
+    public void test_prfExpr4() {
         try {
             checker.check(
                     getParseTree("print(-true); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
+            Assert.assertEquals(e.getMessage(),"[Prefix operation has type mismatch, expected int, got bool]");
+
         }
     }
     /**
@@ -90,25 +83,27 @@ public class TestChecker {
      */
     @Test
     public void test_addExpr1() throws Exception {
-        try {
+
             checker.check(
                     getParseTree("print(5 + 5); ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
+
+
+        Assert.assertEquals(0,checker.getErrors().size());
+
     }
     /**
      * Test if error is thrown when addition with
      * plus works is given different types
      */
     @Test
-    public void test_addExpr2() throws Exception {
+    public void test_addExpr2() {
         try {
             checker.check(
                     getParseTree("print(true + 5); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -119,11 +114,13 @@ public class TestChecker {
      * plus works is given different types
      */
     @Test
-    public void test_addExpr3() throws Exception {
+    public void test_addExpr3(){
         try {
             checker.check(
                     getParseTree("print(6 + true); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -134,25 +131,26 @@ public class TestChecker {
      */
     @Test
     public void test_addExpr4() throws Exception {
-        try {
+
             checker.check(
                     getParseTree("print(5 - 5); ")
             );
-        }
-        catch (Exception e){
+
+
             Assert.assertEquals(0,checker.getErrors().size());
-        }
     }
     /**
      * Test if error is thrown when addition with
      * minus works is given different types
      */
     @Test
-    public void test_addExpr5() throws Exception {
+    public void test_addExpr5() {
         try {
             checker.check(
                     getParseTree("print(false - 5); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -163,11 +161,13 @@ public class TestChecker {
      * plus works is given different types
      */
     @Test
-    public void test_addExpr6() throws Exception {
+    public void test_addExpr6()  {
         try {
             checker.check(
                     getParseTree("print(618- false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -178,25 +178,23 @@ public class TestChecker {
      */
     @Test
     public void test_multExpr1() throws Exception {
-        try {
-            checker.check(
+        checker.check(
                     getParseTree("print(5 * 5); ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
+        Assert.assertEquals(0,checker.getErrors().size());
     }
     /**
      * Test if error is thrown when multiplication
      * is given different types
      */
     @Test
-    public void test_multExpr2() throws Exception {
+    public void test_multExpr2()  {
         try {
             checker.check(
                     getParseTree("print(true * 5); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -207,11 +205,13 @@ public class TestChecker {
      * is given different types
      */
     @Test
-    public void test_multExpr3() throws Exception {
+    public void test_multExpr3() {
         try {
             checker.check(
                     getParseTree("print(6 * false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -224,14 +224,12 @@ public class TestChecker {
 
     @Test
     public void test_compLe1() throws Exception {
-        try {
-            checker.check(
+        checker.check(
                     getParseTree("print(6 <= 2); ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
+
+        Assert.assertEquals(0,checker.getErrors().size());
+
 
     }
     /**
@@ -240,11 +238,13 @@ public class TestChecker {
      */
 
     @Test
-    public void test_compLe2() throws Exception {
+    public void test_compLe2()  {
         try {
             checker.check(
                     getParseTree("print(6 <= false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -257,11 +257,13 @@ public class TestChecker {
      */
 
     @Test
-    public void test_compLe3() throws Exception {
+    public void test_compLe3()  {
         try {
             checker.check(
                     getParseTree("print(true <= false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -275,14 +277,10 @@ public class TestChecker {
 
     @Test
     public void test_compLt1() throws Exception {
-        try {
-            checker.check(
+        checker.check(
                     getParseTree("print(3721 < -2); ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
+        Assert.assertEquals(0,checker.getErrors().size());
 
     }
     /**
@@ -291,11 +289,13 @@ public class TestChecker {
      */
 
     @Test
-    public void test_compLt2() throws Exception {
+    public void test_compLt2()  {
         try {
             checker.check(
                     getParseTree("print(true < 7); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -308,11 +308,13 @@ public class TestChecker {
      */
 
     @Test
-    public void test_compLt3() throws Exception {
+    public void test_compLt3() {
         try {
             checker.check(
                     getParseTree("print(not true <= false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -326,14 +328,11 @@ public class TestChecker {
 
     @Test
     public void test_compGe1() throws Exception {
-        try {
-            checker.check(
+        checker.check(
                     getParseTree("print(-55 >= -22); ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
+        Assert.assertEquals(0,checker.getErrors().size());
+
 
     }
     /**
@@ -342,11 +341,13 @@ public class TestChecker {
      */
 
     @Test
-    public void test_compGe2() throws Exception {
+    public void test_compGe2()  {
         try {
             checker.check(
                     getParseTree("print(not true >= 8282); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -359,11 +360,13 @@ public class TestChecker {
      */
 
     @Test
-    public void test_compGe3() throws Exception {
+    public void test_compGe3()  {
         try {
             checker.check(
                     getParseTree("print(not true >= not false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -377,14 +380,12 @@ public class TestChecker {
 
     @Test
     public void test_compGt1() throws Exception {
-        try {
-            checker.check(
+        checker.check(
                     getParseTree("print(-535 > -22); ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
+
+        Assert.assertEquals(0,checker.getErrors().size());
+
 
     }
     /**
@@ -393,11 +394,13 @@ public class TestChecker {
      */
 
     @Test
-    public void test_compGt2() throws Exception {
+    public void test_compGt2() {
         try {
             checker.check(
                     getParseTree("print(3232  > not false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -410,11 +413,13 @@ public class TestChecker {
      */
 
     @Test
-    public void test_compGt3() throws Exception {
+    public void test_compGt3()  {
         try {
             checker.check(
                     getParseTree("print(true > not false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -428,15 +433,10 @@ public class TestChecker {
 
     @Test
     public void test_compEq1() throws Exception {
-        try {
-            checker.check(
+        checker.check(
                     getParseTree("print(-535  == -22); ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
-
+        Assert.assertEquals(0,checker.getErrors().size());
     }
     /**
      * Test if equal accepts
@@ -445,15 +445,11 @@ public class TestChecker {
 
     @Test
     public void test_compEq2() throws Exception {
-        try {
             checker.check(
                     getParseTree("print(true  == not false); ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
 
+            Assert.assertEquals(0,checker.getErrors().size());
     }
     /**
      * Test if equal operator rejects
@@ -461,11 +457,13 @@ public class TestChecker {
      */
 
     @Test
-    public void test_compEq3() throws Exception {
+    public void test_compEq3()  {
         try {
             checker.check(
                     getParseTree("print(3232  == not false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -479,15 +477,13 @@ public class TestChecker {
 
     @Test
     public void test_compNeq1() throws Exception {
-        try {
-            checker.check(
+        checker.check(
                     getParseTree("print(-535  != -22); ")
             );
-        }
-        catch (Exception e){
-            checker.getErrors();
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
+
+
+        Assert.assertEquals(0,checker.getErrors().size());
+
 
     }
     /**
@@ -497,14 +493,10 @@ public class TestChecker {
 
     @Test
     public void test_compNeq2() throws Exception {
-        try {
-            checker.check(
+        checker.check(
                     getParseTree("print(true  != not false); ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
+        Assert.assertEquals(0,checker.getErrors().size());
 
     }
     /**
@@ -514,11 +506,13 @@ public class TestChecker {
 
 
     @Test
-    public void test_compNeq3() throws Exception {
+    public void test_compNeq3() {
         try {
             checker.check(
                     getParseTree("print(3232  != not false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -533,11 +527,13 @@ public class TestChecker {
 
 
     @Test
-    public void test_bool1() throws Exception {
+    public void test_bool1() {
         try {
             checker.check(
                     getParseTree("print(3232  and not false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -553,14 +549,11 @@ public class TestChecker {
 
     @Test
     public void test_bool2() throws Exception {
-        try {
             checker.check(
                     getParseTree("print(true  and not false); ")
             );
-        }
-        catch (Exception e){
             Assert.assertEquals(0,checker.getErrors().size());
-        }
+
 
     }
 
@@ -571,11 +564,13 @@ public class TestChecker {
 
 
     @Test
-    public void test_bool3() throws Exception {
+    public void test_bool3() {
         try {
             checker.check(
-                    getParseTree("print(3232  or not false); ")
+                    getParseTree("print(3232 or not false); ")
             );
+            Assert.fail();
+
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
@@ -590,61 +585,10 @@ public class TestChecker {
 
     @Test
     public void test_bool4() throws Exception {
-        try {
-            checker.check(
+        checker.check(
                     getParseTree("print(true  or not false); ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
-
-    }
-
-    /**
-     * Test if change assignment accepts the correct type
-     * with integers.
-     */
-    @Test
-    public void test_changeAss1() throws Exception{
-        try {
-            checker.check(
-                    getParseTree(" int a = 5; a = 16; ")
-            );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
-    }
-
-    /**
-     * Test if change assignment accepts the correct type
-     * with booleans.
-     */
-    @Test
-    public void test_changeAss2() throws Exception{
-        try {
-            checker.check(
-                    getParseTree(" bool a = true; a = false; ")
-            );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
-    }
-    /**
-     * Test if change assignment rejects the incorrect type.
-     */
-    @Test
-    public void test_changeAss3() throws Exception{
-        try {
-            checker.check(
-                    getParseTree(" bool a = true; a = 12; ")
-            );
-        }
-        catch (Exception e){
-            Assert.assertEquals(1,checker.getErrors().size());
-        }
+        Assert.assertEquals(0,checker.getErrors().size());
     }
 
 

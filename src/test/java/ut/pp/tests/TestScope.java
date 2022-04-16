@@ -1,15 +1,11 @@
 package ut.pp.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.Test;
 import ut.pp.elaboration.Checker;
-import ut.pp.parser.MyLangLexer;
-import ut.pp.parser.MyLangParser;
-import ut.pp.tests.TestChecker;
+import ut.pp.tests.checker.SimpleExpr;
 
 public class TestScope {
 
@@ -22,7 +18,7 @@ public class TestScope {
                 "        money = money - 1;\n" +
                 "    }";
 
-        c.check(TestChecker.getParseTree(input));
+        c.check(SimpleExpr.getParseTree(input));
         assertEquals(0,c.getScopeErrors().size());
     }
     @Test
@@ -32,12 +28,13 @@ public class TestScope {
                 "        money = money - 1;\n" +
                 "    }";
         try {
-            c.check(TestChecker.getParseTree(input));
+            c.check(SimpleExpr.getParseTree(input));
         }
         catch ( Exception e) {
             System.out.println(e.getMessage());
 
             assertEquals(1, c.getScopeErrors().size());
+            assertTrue(c.getScopeErrors().contains("money not declared in this scope: 3"));
 
         }
     }
@@ -48,7 +45,7 @@ public class TestScope {
                 "        int c=0;\n" +
                 "    } c=100;" ;
         try {
-            c.check(TestChecker.getParseTree(input));
+            c.check(SimpleExpr.getParseTree(input));
         }
         catch ( Exception e) {
             System.out.println(e.getMessage());
@@ -66,7 +63,7 @@ public class TestScope {
                 "  bool numberofiterations = false;\n" +
                 "\n" +
                 "}";
-        c.check(TestChecker.getParseTree(input));
+        c.check(SimpleExpr.getParseTree(input));
         assertEquals(0,c.getScopeErrors().size());
     }
 

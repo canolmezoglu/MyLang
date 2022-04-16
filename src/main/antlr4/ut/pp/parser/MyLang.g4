@@ -73,7 +73,7 @@ factor : prefixOp factor                     #prefixFactor
         ;
 
 
-declaration: access? type ID ASS expr? END;
+declaration: access? type ID ASS expr END;
 
 changeAss: ID ASS expr END  ;
 
