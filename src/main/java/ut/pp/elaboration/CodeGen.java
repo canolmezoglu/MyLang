@@ -582,7 +582,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
         // if we're in main thread
         else {
-            InstructionList.add(sp.loadToMemory(Registers.regA,res.getOffset(ctx)));
+            InstructionList.add(sp.loadToMemory(Registers.regA,offset));
             InstructionList.add(sp.push(Registers.regA));
         }
         return InstructionList;

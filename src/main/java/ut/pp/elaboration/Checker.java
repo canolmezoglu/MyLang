@@ -139,6 +139,7 @@ public class Checker extends MyLangBaseListener {
         VariableData type = null;
         if (this.currFunction !=null){
             if(iden.contains("&")){ //this is a pointer
+                setType(ctx,this.currFunction.getVariable(iden.substring(0,iden.length()-1)).type);
                 return;
             }
             setType(ctx,this.currFunction.getVariable(iden).type);
@@ -148,6 +149,10 @@ public class Checker extends MyLangBaseListener {
         }
         else{
             if(iden.contains("&")){ //this is a pointer
+                type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
+                if(type!=null) {
+                    setType(ctx,type.type);
+                }
                 return;
             }
             type = scope.check(iden,ctx.getStart());
@@ -264,9 +269,11 @@ public class Checker extends MyLangBaseListener {
             }
             else if (this.currFunction == null){
                 scope.declare(ctx.ID().toString(),check.type, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
+                setType(ctx, check.type);
             }
             else{
                 this.currFunction.declare(ctx.ID().toString(),check.type);
+                setType(ctx, check.type);
             }
         }
         else{
