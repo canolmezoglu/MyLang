@@ -19,7 +19,8 @@ public class HaskellProcess {
             // TODO WRITE FOR LINUX
             b.command("cmd.exe ","/c","runhaskell ",path);
 //            b.inheritIO();
-            Process process= b.start();
+            Process process = Runtime.getRuntime().exec("runhaskell " + path);
+//            Process process= b.start();
             BufferedReader bReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = "";
             List<String> output = new ArrayList<>();
