@@ -3,7 +3,7 @@ pointer b =a;
 int d = 200;
 pointer c = d;
 
-if(b&<c&){
+if( b& < c& ){
     a = a+500;
     d = d+500;
 }

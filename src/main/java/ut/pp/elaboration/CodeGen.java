@@ -437,9 +437,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
 
         // Adds the instructions
-        for (MyLangParser.InstructionContext context : ctx.instruction()) {
-            InstructionList.addAll(visit(context));
-        }
+        InstructionList.addAll(visit(ctx.block()));
         // Frees up the lock.
         InstructionList.add(sp.writeToMemory(Registers.reg0,0));
         return InstructionList;

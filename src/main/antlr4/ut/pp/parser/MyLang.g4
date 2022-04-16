@@ -45,7 +45,7 @@ threadConstruct : THREAD LBRACE instruction+ RBRACE;
 
 printConstruct : PRINT LPAR expr RPAR END;
 
-lockConstruct : LOCK instruction* UNLOCK;
+lockConstruct : LOCK block UNLOCK;
 
 returnConstruct : RETURN expr END;
 block: LBRACE instruction* RBRACE;

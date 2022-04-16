@@ -25,14 +25,9 @@ public class VariableChecker {
      */
     @Test
     public void test_changeAss1() throws Exception{
-        try {
             checker.check(
                     getParseTree(" int a = 5; a = 16; ")
             );
-        }
-        catch (Exception e){
-            Assert.assertEquals(0,checker.getErrors().size());
-        }
     }
 
     /**
@@ -41,39 +36,63 @@ public class VariableChecker {
      */
     @Test
     public void test_changeAss2() throws Exception{
-        try {
             checker.check(
                     getParseTree(" bool a = true; a = false; ")
             );
-        }
-        catch (Exception e){
+
             Assert.assertEquals(0,checker.getErrors().size());
-        }
+
     }
     /**
      * Test if change assignment rejects the incorrect type.
      */
     @Test
-    public void test_changeAss3() throws Exception{
+    public void test_changeAss3() {
         try {
             checker.check(
                     getParseTree(" bool a = true; a = 12; ")
             );
+            Assert.fail();
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
         }
     }
     /**
-     * Test regular integer assignment
+     * Test regular integer declaration
      */
     @Test
-    public void test_assStat1() throws Exception {
+    public void test_declStat() throws Exception {
         checker.check (
                 getParseTree("int fib = 5 ; ")
         );
         Assert.assertEquals(0,checker.getErrors().size());
     }
+    /**
+     * Test regular boolean declaration
+     */
+    @Test
+    public void test_declStat2() throws Exception {
+        checker.check (
+                getParseTree("bool a = true ; ")
+        );
+        Assert.assertEquals(0,checker.getErrors().size());
+    }
+    /**
+     * Test declaring without an expression
+     */
+    @Test
+    public void test_declStat3() throws Exception {
+        try {
+            checker.check(
+                    getParseTree("bool a; ")
+            );
+            Assert.fail();
+        }catch (Exception e){
+            Assert.assertEquals(2, checker.getErrors().size());
+        }
+        }
+
 
 
 
