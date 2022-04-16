@@ -41,7 +41,6 @@ public class TestSemantic {
         Assert.assertEquals("Sprockell 3 says 4",output.get(4));
         Assert.assertEquals("Sprockell 4 says 5",output.get(5));
         Assert.assertEquals("Sprockell 0 says 6",output.get(6));
-
     }
 
     @Test
@@ -58,7 +57,30 @@ public class TestSemantic {
         String input = "fib";
         List<String> output = ut.pp.Main.runSprockell(input);
         Assert.assertEquals("Sprockell 0 says 13", output.get(0));
-
+    }
+    @Test
+    public void test1dArray() throws Exception {
+        String input = "1darray";
+        List<String> output = ut.pp.Main.runSprockell(input);
+        Assert.assertEquals("[Sprockell 0 says 130, Sprockell 0 says 1, Sprockell 0 says 0]", output.toString());
+    }
+    @Test
+    public void test2dArray() throws Exception {
+        String input = "2darray";
+        List<String> output = ut.pp.Main.runSprockell(input);
+        Assert.assertEquals("[Sprockell 0 says 6, Sprockell 0 says 10, Sprockell 0 says 1]", output.toString());
+    }
+    @Test
+    public void testEnum() throws Exception {
+        String input = "enum";
+        List<String> output = ut.pp.Main.runSprockell(input);
+        Assert.assertEquals("[Sprockell 0 says 1, Sprockell 0 says 39, Sprockell 0 says 2, Sprockell 0 says 1]", output.toString());
+    }
+    @Test
+    public void testPointer() throws Exception {
+        String input = "pointer";
+        List<String> output = ut.pp.Main.runSprockell(input);
+        Assert.assertEquals("[Sprockell 0 says 600, Sprockell 0 says 700, Sprockell 0 says 100]", output.toString());
     }
 
 
