@@ -1,6 +1,7 @@
 package ut.pp.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import ut.pp.elaboration.Checker;
@@ -33,6 +34,7 @@ public class TestScope {
             System.out.println(e.getMessage());
 
             assertEquals(1, c.getScopeErrors().size());
+            assertTrue(c.getScopeErrors().contains("money not declared in this scope: 3"));
 
         }
     }

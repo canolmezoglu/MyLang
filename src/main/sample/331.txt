@@ -1,0 +1,10 @@
+int outerScope = 10;
+if (outerScope > 0) {
+    bool outerScope = outerScope == 10;
+    if (outerScope){
+        int outerScope = 75;
+        print(outerScope);
+    }
+    print(outerScope);
+}
+print(outerScope);
