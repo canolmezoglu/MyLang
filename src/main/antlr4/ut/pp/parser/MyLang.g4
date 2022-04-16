@@ -150,5 +150,5 @@ fragment LETTER: [a-zA-Z];
 fragment DIGIT: [0-9];
 
 NUM: DIGIT+;
-ID: LETTER (LETTER | DIGIT | ARR_INDEX | COMMA | DOT | POINT )*;
+ID: LETTER (LETTER | DIGIT | ARR_INDEX | DOT | POINT )*;
 WS: [ \t\r\n]+ -> skip;

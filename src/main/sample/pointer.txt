@@ -2,10 +2,14 @@ int a=100;
 pointer b =a;
 int d = 200;
 pointer c = d;
+
 if(b&<c&){
     a = a+500;
     d = d+500;
 }
+
 print(b&);
 print(c&);
-print(8);
+
+c& = 100;
+print(d);

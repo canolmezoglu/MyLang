@@ -1,0 +1,15 @@
+int a[5] = {100,250,30,47,55};
+int b[6] =  {1,2,30,47,6,55};
+
+a%1 = a%2+a%0;
+print(a%1);
+
+if(a%4 == b%5){
+    print(true);
+}
+
+bool arr[3] = {true,false,true};
+
+print(a%0);
+print(arr%1==arr%2);
+

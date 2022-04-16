@@ -330,15 +330,15 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         List<MyLangParser.DarrayContext> rows_list = ctx.darray();
         for(int i=0;i< rows_list.size();i++){
             for(int j=0;j<rows_list.get(i).expr().size();j++){
-                scope.declare(array_name+"%"+i+","+j, type, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
+                scope.declare(array_name+"%"+i+"%"+j, type, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
                 InstructionList.addAll(visit(ctx.darray(i).expr(j)));
                 InstructionList.add(sp.pop(Registers.regA));
-                var_address.put(array_name+"%"+i+","+j,res.getOffset(ctx.darray(i).expr(j)));
+                var_address.put(array_name+"%"+i+"%"+j,res.getOffset(ctx.darray(i).expr(j)));
                 if(res.getGlobal(ctx.darray(i).expr(j))!=null) {
-                    var_global.put(array_name+"%"+i+","+j,res.getGlobal(ctx.darray(i).expr(j)));
+                    var_global.put(array_name+"%"+i+"%"+j,res.getGlobal(ctx.darray(i).expr(j)));
                 }
                 else{
-                    var_global.put(array_name+"%"+i+","+j,false);
+                    var_global.put(array_name+"%"+i+"%"+j,false);
                 }
 
                 if (ctx.access() != null && ctx.access().SHARED() != null){
@@ -403,7 +403,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         List<Instruction> InstructionList = new ArrayList<>();
         String pointer_name = ctx.ID().getText();
         String varname = ctx.factor().getText();
-        scope.declare(pointer_name, MyType.POINTER, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
         pointer_map.put(pointer_name,varname);
         return InstructionList;
     }
@@ -621,8 +620,8 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.add(sp.pop(Registers.regB));
             if (ctx.mult() != null) {
                 if(ctx.mult().DIV()!=null){
-                    InstructionList.add(sp.compute(Operators.Add,Registers.reg0,Registers.reg0,Registers.regC));
-                    InstructionList.add(sp.compute(Operators.Add,Registers.reg0,Registers.reg0,Registers.regE));
+                    InstructionList.add(sp.compute(Operators.Add,Registers.reg0,Registers.reg0,Registers.regC));//counter
+                    InstructionList.add(sp.compute(Operators.Add,Registers.reg0,Registers.reg0,Registers.regE));//compare
                     InstructionList.add(sp.compute(Operators.Sub,Registers.regA,Registers.regB,Registers.regA));
                     InstructionList.add(sp.compute(Operators.Incr, Registers.regC, Registers.regC, Registers.regC));
                     InstructionList.add(sp.compute(Operators.GtE, Registers.regA, Registers.regB, Registers.regE));

@@ -141,10 +141,6 @@ public class Checker extends MyLangBaseListener {
         VariableData type = null;
         if (this.currFunction !=null){
             if(iden.contains("&")){ //this is a pointer
-                type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
-                if(type.type != MyType.POINTER){
-                    this.errors.add("This pointer is not defined");
-                }
                 return;
             }
             setType(ctx,this.currFunction.getVariable(iden).type);
@@ -154,10 +150,6 @@ public class Checker extends MyLangBaseListener {
         }
         else{
             if(iden.contains("&")){ //this is a pointer
-                type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
-                if(type.type != MyType.POINTER){
-                    this.errors.add("This pointer is not defined");
-                }
                 return;
             }
             type = scope.check(iden,ctx.getStart());
@@ -189,8 +181,8 @@ public class Checker extends MyLangBaseListener {
         if (this.currFunction !=null){
             if(iden.contains("&")){ //this is a pointer
                 type = this.currFunction.getVariable(iden.substring(0,iden.length()-1));
-                if(type.type != MyType.POINTER){
-                    this.errors.add("Pointer is not defined");
+                if(type.type != getType(ctx.expr())){
+                    this.errors.add("You are assigning an invalid type to the pointer-variable");
                 }
                 return;
             }
@@ -208,8 +200,8 @@ public class Checker extends MyLangBaseListener {
         else{
             if(iden.contains("&")){ //this is a pointer
                 type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
-                if(type.type != MyType.POINTER){
-                    this.errors.add("Pointer is not defined");
+                if(type.type !=  getType(ctx.expr())){
+                    this.errors.add("You are assigning an invalid type to the pointer-variable");
                 }
                 return;
             }
@@ -267,10 +259,10 @@ public class Checker extends MyLangBaseListener {
                 this.errors.add("Pointer is pointing to an undefined variable");
             }
             else if (this.currFunction == null){
-                scope.declare(ctx.ID().toString(), MyType.POINTER, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
+                scope.declare(ctx.ID().toString(),check.type, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
             }
             else{
-                this.currFunction.declare(ctx.ID().toString(),MyType.POINTER);
+                this.currFunction.declare(ctx.ID().toString(),check.type);
             }
         }
         else{
@@ -317,13 +309,13 @@ public class Checker extends MyLangBaseListener {
                         this.errors.add("you are trying to assign an integer to a boolean array");
                     }
                     setType(ctx.darray(i).expr(j), MyType.BOOLEAN);
-                    setOffset(ctx.darray(i).expr(j), scope.declare(array_name+"%"+i+","+j, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                    setOffset(ctx.darray(i).expr(j), scope.declare(array_name+"%"+i+"%"+j, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
                 } else if (ctx.type().INTEGER() != null) {
                     if (getType(ctx.darray(i).expr(j)) != MyType.NUM) {
                         this.errors.add("you are trying to assign an boolean to an integer array");
                     }
                     setType(ctx.darray(i).expr(j), MyType.NUM);
-                    setOffset(ctx.darray(i).expr(j), scope.declare(array_name+"%"+i+","+j, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                    setOffset(ctx.darray(i).expr(j), scope.declare(array_name+"%"+i+"%"+j, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
                 } else {
                     this.errors.add("Invalid type");
                 }

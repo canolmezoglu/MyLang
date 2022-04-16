@@ -1,0 +1,28 @@
+int enum cars {
+bmw = 1,
+mercedes = 2,
+ferrari =3
+};
+
+print(cars.bmw);
+
+int enum fruits {
+apple = 10,
+banana = 25,
+orange =39
+};
+
+print(fruits.orange);
+
+int a = 10;
+
+if(a == fruits.apple){
+ print(cars.mercedes);
+}
+
+bool enum tests {
+yes =true,
+no =false
+};
+
+print(tests.yes);

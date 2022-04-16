@@ -1,0 +1,6 @@
+int a =900;
+int b=100;
+print(a/b);
+
+a=847;
+print(a/b);
