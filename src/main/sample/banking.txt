@@ -5,24 +5,21 @@ thread {   int wait = 100; while (wait > 0){
         wait = wait - 1;
         lock {
            money = money + 1;
-           }
-        unlock
-    }
+           } unlock
+         }
 }
 thread {
     int wait = 100; while (wait > 0){
         wait = wait - 1;
         lock {
             money = money - 2;
-            }
-        unlock
+            } unlock
     }
 }
 thread {
     lock {
          money = money + 5;
-         }
-    unlock
+         } unlock
 }
 }
 print(money);

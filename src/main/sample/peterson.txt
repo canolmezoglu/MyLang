@@ -9,14 +9,22 @@ thread
   flag0 = true;
   turn = 1;
   while (flag1 and (turn == 1)) { }
-  change = change + 1;
+  int i = 100;
+  while (i > 0){
+    change = change + 5;
+    i = i - 1;
+  }
   flag0 = false;
   }
 thread {
   flag1 = true;
   turn = 0;
   while (flag0 and (turn == 0)) { }
-  change = change + 2;
+   int i = 100;
+   while (i > 0){
+     change = change - 4;
+     i = i - 1;
+   }
   flag1 = false;
 }
 }

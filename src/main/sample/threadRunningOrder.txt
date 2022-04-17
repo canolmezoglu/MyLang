@@ -1,47 +1,19 @@
 print(0);
-shared int order = 0;
 parallel{
-    thread {
-       lock
-          if (order >= 0){
-                order = 1;
-                print(order);
-
-          }
-       unlock
-    }
-    thread {
-           lock
-              if (order >= 1){
-                    order = 2;
-                    print(order);
-
+    thread {print(1);
+              parallel{
+                 thread {print(2);}
+                 thread {print(3);}
+                 }
               }
-           unlock
-
     }
-}
-order = 3;
-print (order);
+print (4);
 parallel{
-    thread {
-       lock
-          if (order >= 2){
-                order = 4;
-                print(order);
-
-          }
-       unlock
+     thread {print(5);}
+     thread {print(6);}
     }
-    thread {
-           lock
-              if (order >= 4){
-                    order = 5;
-                    print(order);
-
-              }
-           unlock
+print (7);
+parallel{
+     thread {print(8);}
+     thread {print(9);}
     }
-}
-order = 6;
-print (order);

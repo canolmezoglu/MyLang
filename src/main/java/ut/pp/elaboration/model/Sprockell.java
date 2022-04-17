@@ -146,6 +146,9 @@ public class Sprockell {
     public Instruction readInst (int slot){
         return new Instruction(Instructions.ReadInstr, Arrays.asList(new MemoryAddr(MemoryAddrs.DirAddr, slot)));
     }
+    public Instruction readInst (Registers slot){
+        return new Instruction(Instructions.ReadInstr, Arrays.asList(new MemoryAddr(MemoryAddrs.IndAddr, slot)));
+    }
     public Instruction fakeInst (String functionName){
         return new Instruction(Instructions.Fake,Arrays.asList(new FakeOperator(functionName)));
     }
