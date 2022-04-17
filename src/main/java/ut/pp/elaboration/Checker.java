@@ -2,6 +2,7 @@ package ut.pp.elaboration;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -47,6 +48,58 @@ public class Checker extends MyLangBaseListener {
             throw new Exception(this.errors.toString());
         }
         return this.result;
+    }
+    public boolean checkDynamicArray(String iden, ParserRuleContext ctx) {
+        boolean dynamicArray = false;
+        String[] arrayDynamic = iden.split("%");
+        if (arrayDynamic.length > 1) {
+            if (arrayDynamic.length < 3 && Character.isLetter(arrayDynamic[1].charAt(0))) {
+                ArraySp arraySp =
+                        new ArraySp(scope.check(arrayDynamic[0] + "%" + "0", ctx.getStart()).getSizeCurr());
+                arraySp.addPointer(true, scope.check(arrayDynamic[1], ctx.getStart()).getSizeCurr());
+                result.addDynamicArrayCall(ctx, arraySp);
+                dynamicArray = true;
+
+
+            } else if (arrayDynamic.length == 3) {
+                if (Character.isLetter(arrayDynamic[1].charAt(0)) && Character.isLetter(arrayDynamic[2].charAt(0))) {
+                    VariableData variableData = scope.check(arrayDynamic[0] + "%" + "0"  + "%" + "0"  , ctx.getStart());
+                    ArraySp arraySp =
+                            new ArraySp(variableData.getSizeCurr());
+                    arraySp.addPointer(
+                            true, scope.check(arrayDynamic[1], ctx.getStart()).getSizeCurr(),
+                            true, scope.check(arrayDynamic[2], ctx.getStart()).getSizeCurr());
+                    result.addDynamicArrayCall(ctx, arraySp);
+                    arraySp.setColumnSize(variableData.getColumnCount());
+                    dynamicArray = true;
+
+                } else if (Character.isLetter(arrayDynamic[1].charAt(0))) {
+                    VariableData variableData = scope.check(arrayDynamic[0] + "%" + "0"  + "%" + "0"  ,  ctx.getStart());
+                    ArraySp arraySp =
+                            new ArraySp(variableData.getSizeCurr());
+                    arraySp.addPointer(
+                            true, scope.check(arrayDynamic[1], ctx.getStart()).getSizeCurr(),
+                            false, Integer.parseInt(arrayDynamic[2]));
+                    result.addDynamicArrayCall(ctx, arraySp);
+                    arraySp.setColumnSize(variableData.getColumnCount());
+
+                    dynamicArray = true;
+
+
+                } else if (Character.isLetter(arrayDynamic[2].charAt(0))) {
+                    VariableData variableData = scope.check(arrayDynamic[0] + "%" + "0"  + "%" + "0"   , ctx.getStart());
+                    ArraySp arraySp =
+                            new ArraySp(variableData.getSizeCurr());
+                    arraySp.addPointer(
+                            false, Integer.parseInt(arrayDynamic[1]),
+                            true, scope.check(arrayDynamic[2], ctx.getStart()).getSizeCurr());
+                    result.addDynamicArrayCall(ctx, arraySp);
+                    arraySp.setColumnSize(variableData.getColumnCount());
+                    dynamicArray = true;
+                }
+            }
+        }
+        return dynamicArray;
     }
 
     @Override public void enterProgram(MyLangParser.ProgramContext ctx){
@@ -149,19 +202,21 @@ public class Checker extends MyLangBaseListener {
             result.setGlobal(ctx,false);
             return;
         }
-        else{
-            if(iden.contains("&")){ //this is a pointer
-                type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
-                if(type!=null) {
-                    setType(ctx,type.type);
+        else {
+            if (iden.contains("&")) { //this is a pointer
+                type = scope.check(iden.substring(0, iden.length() - 1), ctx.getStart());
+                if (type != null) {
+                    setType(ctx, type.type);
                 }
                 return;
             }
-            type = scope.check(iden,ctx.getStart());
-            if(type!=null) {
-                setType(ctx,type.type);
-                setOffset(ctx,type.getSizeCurr());
-                result.setGlobal(ctx,type.global);
+            if (!checkDynamicArray(iden, ctx)) {
+                type = scope.check(iden, ctx.getStart());
+                if (type != null) {
+                    setType(ctx, type.type);
+                    setOffset(ctx, type.getSizeCurr());
+                    result.setGlobal(ctx, type.global);
+                }
             }
         }
     }
@@ -198,15 +253,18 @@ public class Checker extends MyLangBaseListener {
                 }
                 return;
             }
-            type = this.currFunction.getVariable(iden);
-            if (type !=null){
-                if (type.type != getType(ctx.expr())) {
-                    this.errors.add("you are changing a variable to an unexpected type");
+            if (!checkDynamicArray(iden,ctx)) {
+
+                type = this.currFunction.getVariable(iden);
+                if (type != null) {
+                    if (type.type != getType(ctx.expr())) {
+                        this.errors.add("you are changing a variable to an unexpected type");
+                    }
+                    setType(ctx, getType(ctx.expr()));
+                    result.setGlobal(ctx, false);
+                    setOffset(ctx, this.currFunction.getLocalDataSize());
+                    return;
                 }
-                setType(ctx, getType(ctx.expr()));
-                result.setGlobal(ctx,false);
-                setOffset(ctx,this.currFunction.getLocalDataSize());
-                return;
             }
         }
         else {
@@ -217,51 +275,11 @@ public class Checker extends MyLangBaseListener {
                 }
                 return;
             }
-            boolean dynamicArray = false;
-            String[] arrayDynamic = iden.split("%");
-            if (arrayDynamic.length > 1) {
-                if (arrayDynamic.length < 3 && Character.isLetter(arrayDynamic[1].charAt(0))) {
-                    ArraySp arraySp =
-                            new ArraySp(scope.check(arrayDynamic[0] + "%" + "0", ctx.getStart()).getSizeCurr());
-                    arraySp.addPointer(true, scope.check(arrayDynamic[1], ctx.getStart()).getSizeCurr());
-                    result.addDynamicArrayCall(ctx, arraySp);
-                    dynamicArray = true;
 
-
-                } else if (arrayDynamic.length == 3) {
-                    if (Character.isLetter(arrayDynamic[1].charAt(0)) && Character.isLetter(arrayDynamic[2].charAt(0))) {
-                        ArraySp arraySp =
-                                new ArraySp(scope.check(arrayDynamic[0] + "%" + "0", ctx.getStart()).getSizeCurr());
-                        arraySp.addPointer(
-                                true, scope.check(arrayDynamic[1], ctx.getStart()).getSizeCurr(),
-                                true, scope.check(arrayDynamic[2], ctx.getStart()).getSizeCurr());
-                        result.addDynamicArrayCall(ctx, arraySp);
-                        dynamicArray = true;
-
-                    } else if (Character.isLetter(arrayDynamic[1].charAt(0))) {
-                        ArraySp arraySp =
-                                new ArraySp(scope.check(arrayDynamic[0] + "%" + "0", ctx.getStart()).getSizeCurr());
-                        arraySp.addPointer(
-                                true, scope.check(arrayDynamic[1], ctx.getStart()).getSizeCurr(),
-                                false, Integer.parseInt(arrayDynamic[2]));
-                        result.addDynamicArrayCall(ctx, arraySp);
-                        dynamicArray = true;
-
-
-                    } else if (Character.isLetter(arrayDynamic[2].charAt(0))) {
-                        ArraySp arraySp =
-                                new ArraySp(scope.check(arrayDynamic[0] + "%" + "0", ctx.getStart()).getSizeCurr());
-                        arraySp.addPointer(
-                                false, Integer.parseInt(arrayDynamic[1]),
-                                true, scope.check(arrayDynamic[2], ctx.getStart()).getSizeCurr());
-                        result.addDynamicArrayCall(ctx, arraySp);
-                        dynamicArray = true;
-                    }
-                }
 
 
             }
-            if (!dynamicArray) {
+            if (!checkDynamicArray(iden,ctx)) {
                 type = scope.check(ctx.ID().toString(), ctx.getStart());
                 if (type != null) {
                     if (type.type != getType(ctx.expr())) {
@@ -277,7 +295,7 @@ public class Checker extends MyLangBaseListener {
         }
 
 
-    }
+
 
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
             if (ctx.ID().toString().contains("%") || ctx.ID().toString().contains(",") || ctx.ID().toString().contains(".")){
@@ -369,13 +387,18 @@ public class Checker extends MyLangBaseListener {
                         this.errors.add("you are trying to assign an integer to a boolean array");
                     }
                     setType(ctx.darray(i).expr(j), MyType.BOOLEAN);
-                    setOffset(ctx.darray(i).expr(j), scope.declare(array_name+"%"+i+"%"+j, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                    VariableData var = scope.declare(array_name+"%"+i+"%"+j, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null);
+                    setOffset(ctx.darray(i).expr(j), var.getSizeCurr());
+                    var.setColumnCount(rows_list.get(i).expr().size());
                 } else if (ctx.type().INTEGER() != null) {
                     if (getType(ctx.darray(i).expr(j)) != MyType.NUM) {
                         this.errors.add("you are trying to assign an boolean to an integer array");
                     }
                     setType(ctx.darray(i).expr(j), MyType.NUM);
-                    setOffset(ctx.darray(i).expr(j), scope.declare(array_name+"%"+i+"%"+j, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                    VariableData var = scope.declare(array_name+"%"+i+"%"+j, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null);
+                    setOffset(ctx.darray(i).expr(j),var.getSizeCurr());
+                    var.setColumnCount(rows_list.get(i).expr().size());
+
                 } else {
                     this.errors.add("Invalid type");
                 }

@@ -5,7 +5,7 @@ public class VariableData {
     int sizeCurr;
     boolean isParameter = false;
     boolean global = false;
-    boolean isDynamicArray = false;
+    int columnCount = 0;
     public VariableData(MyType type,int sizeCurr){
         this.sizeCurr = sizeCurr;
         this.type = type;
@@ -22,8 +22,12 @@ public class VariableData {
         this.isParameter = true;
     }
 
-    public void makeIntoDynamicArray (){
-        this.isDynamicArray = true;
+    public void setColumnCount (int columnCount){
+        this.columnCount = columnCount;
+    }
+
+    public int getColumnCount (){
+        return this.columnCount;
     }
 
     public MyType getType() {

@@ -70,6 +70,8 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
     }
 
+
+
     /**
      * Visits a program context.
      * @param ctx
@@ -467,18 +469,8 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             global = var_global.get(child);
         }
         else if(this.res.getDynamicArrayCall(ctx) !=null){
-            ArraySp arraySp = res.getDynamicArrayCall(ctx);
-            if ( arraySp.getPointerSize() > 1){
-
-
-            }
-            else{
-                InstructionList.add(sp.loadToMemory(Integer.toString(arraySp.getFirstPointerOffset()),Registers.regB));
-                InstructionList.add(sp.getFromIndAddr(Registers.regB,Registers.regB));
-                InstructionList.add(sp.loadToMemory(Integer.toString(arraySp.getBeginning_offset()),Registers.regC));
-                InstructionList.add(sp.compute(Operators.Add,Registers.regB,Registers.regC,Registers.regB));
-                InstructionList.add(sp.storeInMemory(Registers.regA,Registers.regB));
-            }
+            InstructionList.addAll(this.res.getDynamicArrayCall(ctx).getChangeInstructions());
+            return InstructionList;
         }
         else{
             offset = res.getOffset(ctx);
@@ -496,7 +488,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
         else{
             InstructionList.add(sp.storeInMemory(child, Registers.regA, offset));
-            currentMemoryUsage = offset ;
 
 
         }
@@ -560,6 +551,10 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             child = pointer_map.get(child.substring(0,child.length()-1));
             offset = var_address.get(child);
             global = var_global.get(child);
+        }
+        else if(this.res.getDynamicArrayCall(ctx) !=null){
+            InstructionList.addAll(this.res.getDynamicArrayCall(ctx).getIDCallInstructions());
+            return InstructionList;
         }
         else{
             offset = res.getOffset(ctx);

@@ -1,6 +1,16 @@
-int arr[2][3] = { {1,2,3} , {4,5,6}};
+int arr[2][3] = { {1,2,3} , {4,5,7}};
 print(arr%1%2);
+int i = 2;
+
+print(arr%1%i);
+int x = 1;
+
+print(arr%x%i);
+print(arr%x%2);
+
 int b[1][4] = { {7,8,9,10} };
 print(b%0%3);
-
-print(arr%1%2 + 4 == b%0%3);
+int z = 0;
+i = i + 1;
+b%z%i = 5;
+print(arr%1%1 == b%0%3);

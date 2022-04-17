@@ -19,7 +19,6 @@ public class HaskellProcess {
             ProcessBuilder b = new ProcessBuilder();
             // TODO WRITE FOR LINUX
 //            b.command("cmd.exe ","/c","runhaskell ",path);
-//            b.inheritIO();
             Process installSprockell = Runtime.getRuntime().exec("cabal v1-install " +sprockellPath );
             installSprockell.waitFor();
             Process process = Runtime.getRuntime().exec("runhaskell " + path);
@@ -28,7 +27,9 @@ public class HaskellProcess {
             String line = "";
             List<String> output = new ArrayList<>();
             while ((line = bReader.readLine()) != null) {
-                output.add(line);
+                output.add(line );
+//                output.add(line + "\n");
+
             }
             process.waitFor();
             return output;
