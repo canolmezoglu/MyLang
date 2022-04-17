@@ -23,7 +23,7 @@ statement: declaration #declStat
            | declarePointer #declPointer
            ;
 
-declarePointer: access? POINTER ID ASS factor END;
+declarePointer: POINTER ID ASS factor END;
 
 declareEnum: access? type ENUM ID enumAssign END;
 

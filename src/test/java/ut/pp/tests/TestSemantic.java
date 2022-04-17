@@ -76,6 +76,13 @@ public class TestSemantic {
         Assert.assertEquals("[Sprockell 0 says 7, Sprockell 0 says 7, Sprockell 0 says 7, Sprockell 0 says 7, Sprockell 0 says 10, Sprockell 0 says 1]", output.toString());
     }
     @Test
+    public void testDynamicArray() throws Exception {
+        String input = "dynamic_array";
+        List<String> output = ut.pp.Main.runSprockell(input);
+        Assert.assertEquals("[Sprockell 0 says 100, Sprockell 0 says 250, Sprockell 0 says 30, Sprockell 0 says 47, Sprockell 0 says 55, Sprockell 0 says 1, Sprockell 0 says 4]", output.toString());
+    }
+
+    @Test
     public void testEnum() throws Exception {
         String input = "enum";
         List<String> output = ut.pp.Main.runSprockell(input);

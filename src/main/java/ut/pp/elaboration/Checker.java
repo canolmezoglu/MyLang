@@ -3,6 +3,7 @@ package ut.pp.elaboration;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -236,6 +237,10 @@ public class Checker extends MyLangBaseListener {
         }
     }
 
+    @Override
+    public void visitErrorNode(ErrorNode node) {
+        this.errors.add("Syntax error at"+ node.getText());
+    }
 
 
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
@@ -335,7 +340,7 @@ public class Checker extends MyLangBaseListener {
                 this.errors.add("Pointer is pointing to an undefined variable");
             }
             else if (this.currFunction == null){
-                scope.declare(ctx.ID().toString(),check.type, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
+                scope.declare(ctx.ID().toString(),check.type, ctx.getStart(),false);
                 setType(ctx, check.type);
             }
             else{
@@ -575,6 +580,7 @@ public class Checker extends MyLangBaseListener {
 
         return scope.errors;
     }
+
 
 
 }

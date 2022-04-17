@@ -1,0 +1,26 @@
+shared int enum cars {
+bmw = 1,
+mercedes = 2,
+ferrari =3
+};
+
+
+parallel{
+    thread {
+       lock
+          if (cars.bmw >= 0){
+                print(cars.ferrari);
+
+          }
+       unlock
+    }
+    thread {
+           lock
+              if (cars.mercedes >= 1){
+                    print(cars.bmw);
+
+              }
+           unlock
+
+    }
+}
