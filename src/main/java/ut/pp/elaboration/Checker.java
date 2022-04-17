@@ -34,6 +34,7 @@ public class Checker extends MyLangBaseListener {
         for (String keyword : keywords){
             if (keyword.equals("thread")) occurences++;
         }
+
         return occurences;
 
     }
