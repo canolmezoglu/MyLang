@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import ut.pp.elaboration.model.ArraySp;
 import ut.pp.elaboration.model.ThreadSp;
 import ut.pp.elaboration.model.enums.Registers;
 import ut.pp.parser.MyLangBaseListener;
@@ -24,6 +25,7 @@ public class Checker extends MyLangBaseListener {
     FunctionData currFunction;
     private ThreadSp active_thread;
     private List<ThreadSp> threads;
+    private HashMap<String, ArraySp> arrays;
 
     public static int getNumberOfThreads(ParseTree tree){
         int occurences = 0;
@@ -186,6 +188,7 @@ public class Checker extends MyLangBaseListener {
             this.errors.add("Enum values are fixed: they cannot be updated");
         }
         String iden = ctx.ID().toString();
+
         VariableData type = null;
         if (this.currFunction !=null){
             if(iden.contains("&")){ //this is a pointer
@@ -206,25 +209,71 @@ public class Checker extends MyLangBaseListener {
                 return;
             }
         }
-        else{
-            if(iden.contains("&")){ //this is a pointer
-                type = scope.check(iden.substring(0,iden.length()-1),ctx.getStart());
-                if(type.type !=  getType(ctx.expr())){
+        else {
+            if (iden.contains("&")) { //this is a pointer
+                type = scope.check(iden.substring(0, iden.length() - 1), ctx.getStart());
+                if (type.type != getType(ctx.expr())) {
                     this.errors.add("You are assigning an invalid type to the pointer-variable");
                 }
                 return;
             }
-            type = scope.check(ctx.ID().toString(),ctx.getStart());
-            if(type!=null) {
-                if (type.type != getType(ctx.expr())) {
-                    this.errors.add("you are changing a variable to an unexpected type");
+            boolean dynamicArray = false;
+            String[] arrayDynamic = iden.split("%");
+            if (arrayDynamic.length > 1) {
+                if (arrayDynamic.length < 3 && Character.isLetter(arrayDynamic[1].charAt(0))) {
+                    ArraySp arraySp =
+                            new ArraySp(scope.check(arrayDynamic[0] + "%" + "0", ctx.getStart()).getSizeCurr());
+                    arraySp.addPointer(true, scope.check(arrayDynamic[1], ctx.getStart()).getSizeCurr());
+                    result.addDynamicArrayCall(ctx, arraySp);
+                    dynamicArray = true;
+
+
+                } else if (arrayDynamic.length == 3) {
+                    if (Character.isLetter(arrayDynamic[1].charAt(0)) && Character.isLetter(arrayDynamic[2].charAt(0))) {
+                        ArraySp arraySp =
+                                new ArraySp(scope.check(arrayDynamic[0] + "%" + "0", ctx.getStart()).getSizeCurr());
+                        arraySp.addPointer(
+                                true, scope.check(arrayDynamic[1], ctx.getStart()).getSizeCurr(),
+                                true, scope.check(arrayDynamic[2], ctx.getStart()).getSizeCurr());
+                        result.addDynamicArrayCall(ctx, arraySp);
+                        dynamicArray = true;
+
+                    } else if (Character.isLetter(arrayDynamic[1].charAt(0))) {
+                        ArraySp arraySp =
+                                new ArraySp(scope.check(arrayDynamic[0] + "%" + "0", ctx.getStart()).getSizeCurr());
+                        arraySp.addPointer(
+                                true, scope.check(arrayDynamic[1], ctx.getStart()).getSizeCurr(),
+                                false, Integer.parseInt(arrayDynamic[2]));
+                        result.addDynamicArrayCall(ctx, arraySp);
+                        dynamicArray = true;
+
+
+                    } else if (Character.isLetter(arrayDynamic[2].charAt(0))) {
+                        ArraySp arraySp =
+                                new ArraySp(scope.check(arrayDynamic[0] + "%" + "0", ctx.getStart()).getSizeCurr());
+                        arraySp.addPointer(
+                                false, Integer.parseInt(arrayDynamic[1]),
+                                true, scope.check(arrayDynamic[2], ctx.getStart()).getSizeCurr());
+                        result.addDynamicArrayCall(ctx, arraySp);
+                        dynamicArray = true;
+                    }
                 }
-                setType(ctx, getType(ctx.expr()));
-                setOffset(ctx,type.getSizeCurr());
-                result.setGlobal(ctx,type.global);
-                return;
+
+
             }
-            this.errors.add("this variable you are changing does not exist");
+            if (!dynamicArray) {
+                type = scope.check(ctx.ID().toString(), ctx.getStart());
+                if (type != null) {
+                    if (type.type != getType(ctx.expr())) {
+                        this.errors.add("you are changing a variable to an unexpected type");
+                    }
+                    setType(ctx, getType(ctx.expr()));
+                    setOffset(ctx, type.getSizeCurr());
+                    result.setGlobal(ctx, type.global);
+                    return;
+                }
+                this.errors.add("this variable you are changing does not exist");
+            }
         }
 
 

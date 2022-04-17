@@ -62,7 +62,7 @@ public class TestSemantic {
     public void test1dArray() throws Exception {
         String input = "1darray";
         List<String> output = ut.pp.Main.runSprockell(input);
-        Assert.assertEquals("[Sprockell 0 says 130, Sprockell 0 says 1, Sprockell 0 says 0]", output.toString());
+        Assert.assertEquals("[Sprockell 0 says 130, Sprockell 0 says 203, Sprockell 0 says 1, Sprockell 0 says 100, Sprockell 0 says 0]", output.toString());
     }
     @Test
     public void test2dArray() throws Exception {

@@ -3,6 +3,7 @@ package ut.pp.elaboration;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import ut.pp.elaboration.model.ArraySp;
 import ut.pp.elaboration.model.ThreadSp;
 import ut.pp.parser.MyLangParser;
 
@@ -22,7 +23,7 @@ public class Result {
     private final ParseTreeProperty<Boolean> globals = new ParseTreeProperty<>();
     private final ParseTreeProperty<Set<Integer>> childrenThreads = new ParseTreeProperty<>();
     private HashMap<String, FunctionData> functionDataHashMap = new HashMap<>();
-
+    private final ParseTreeProperty<ArraySp> dynamicArrayCall = new ParseTreeProperty<>();
 
     /** Adds an association from parse tree node to the flow graph entry. */
     public void setEntry(ParseTree node, ParserRuleContext entry) {
@@ -104,5 +105,10 @@ public class Result {
     public boolean functionDataHashMapContains(String id){
         return this.functionDataHashMap.containsKey(id);
     }
-
+    public void addDynamicArrayCall(ParseTree node,ArraySp arraySp){
+        this.dynamicArrayCall.put(node,arraySp);
+    }
+    public ArraySp getDynamicArrayCall(ParseTree node){
+        return this.dynamicArrayCall.get(node);
+    }
 }
