@@ -9,10 +9,15 @@ import java.util.List;
 
 public class TestSemantic {
 
+
     @Test
     public void testBanking() throws Exception {
         String input = "banking";
         Assert.assertEquals("Sprockell 0 says -95",ut.pp.Main.runSprockell(input).get(0));
+    }    @Test
+    public void testBankingMaxThreads() throws Exception {
+        String input = "bankingMaxThreads";
+        Assert.assertEquals("Sprockell 0 says 183",ut.pp.Main.runSprockell(input).get(0));
     }
     @Test
     public void testBankingNoLocks() throws Exception {
@@ -27,7 +32,7 @@ public class TestSemantic {
     @Test
     public void testNestedConcurrency() throws Exception {
         String input = "nestedConcurrency";
-        Assert.assertEquals("Sprockell 0 says -87",ut.pp.Main.runSprockell(input).get(0));
+        Assert.assertEquals("Sprockell 0 says -287",ut.pp.Main.runSprockell(input).get(0));
     }
 
     @Test

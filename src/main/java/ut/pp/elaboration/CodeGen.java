@@ -673,9 +673,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         reghandler.release(Registers.regA);
 
 
-        for (MyLangParser.InstructionContext context : ctx.instruction()) {
-            InstructionList.addAll(visit(context));
-            }
+        InstructionList.addAll(visit(ctx.block()));
 
         // Let the main thread know that it has finished up
         // executing by writing 0 to its shared memory location.

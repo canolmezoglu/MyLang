@@ -1,38 +1,38 @@
 shared int money = 0;
-
 parallel {
-thread {   int wait = 100; while (wait > 0){
-        wait = wait - 1;
-        lock {
-           money = money + 1;
-           }
-        unlock
-    }
-    parallel {
-        thread {
+    thread {
+            int wait = 100; while (wait > 0){
+            wait = wait - 1;
             lock {
-                money = money - 32;
-                }
+               money = money + 1;
+               }
             unlock
-         }
-         thread {
+        }
+        parallel {
+            thread {
+                lock {
+                    money = money - 32;
+                    }
+                unlock
+             }
+             thread {
+                lock
+                    {
+                    money = money + 45;
+                    }
+                unlock
+             }
+        }
+    }
+    thread {
+        int wait = 200; while (wait > 0){
+            wait = wait - 1;
             lock
                 {
-                money = money + 45;
+                money = money - 2;
                 }
             unlock
-         }
+        }
     }
-}
-thread {
-    int wait = 100; while (wait > 0){
-        wait = wait - 1;
-        lock
-            {
-            money = money - 2;
-            }
-        unlock
-    }
-}
 }
 print(money);

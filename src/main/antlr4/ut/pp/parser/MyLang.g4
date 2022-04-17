@@ -41,7 +41,7 @@ whileConstruct :  WHILE LPAR expr RPAR block  ;
 
 parallelConstruct: PARALLEL LBRACE threadConstruct+ RBRACE;
 
-threadConstruct : THREAD LBRACE instruction+ RBRACE;
+threadConstruct : THREAD block;
 
 printConstruct : PRINT LPAR expr RPAR END;
 

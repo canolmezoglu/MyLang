@@ -1,0 +1,51 @@
+shared int money = 0;
+
+parallel {
+thread {   int wait = 100; while (wait > 0){
+        wait = wait - 1;
+        lock {
+           money = money + 1;
+           }
+        unlock
+    }
+}
+thread {
+    int wait = 100; while (wait > 0){
+        wait = wait - 1;
+        lock {
+            money = money - 2;
+            }
+        unlock
+    }
+}
+thread {
+    lock {
+         money = money + 5;
+         }
+    unlock
+}
+thread {   int wait = 100; while (wait > 0){
+        wait = wait - 1;
+        lock {
+           money = money - 1;
+           }
+        unlock
+    }
+}
+thread {
+    int wait = 100; while (wait > 0){
+        wait = wait - 1;
+        lock {
+            money = money + 3;
+            }
+        unlock
+    }
+}
+thread {
+    lock {
+         money = money + 78;
+         }
+    unlock
+}
+}
+print(money);

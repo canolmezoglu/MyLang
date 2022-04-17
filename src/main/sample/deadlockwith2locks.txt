@@ -1,0 +1,7 @@
+shared int i = 65;
+lock {
+  lock {
+        i = 77;
+        print(i);
+  } unlock
+} unlock
