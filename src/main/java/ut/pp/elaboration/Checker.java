@@ -249,9 +249,10 @@ public class Checker extends MyLangBaseListener {
         }
     }
 
+
     @Override
     public void visitErrorNode(ErrorNode node) {
-        this.errors.add("Syntax error at"+ node.getText());
+        this.errors.add("Syntax error at Line: "+node.getSymbol().getLine() + " Character: "+node.getSymbol().getCharPositionInLine());
     }
 
 
