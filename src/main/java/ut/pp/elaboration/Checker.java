@@ -273,7 +273,6 @@ public class Checker extends MyLangBaseListener {
                 return;
             }
             if (!checkDynamicArray(iden,ctx)) {
-
                 type = this.currFunction.getVariable(iden);
                 if (type != null) {
                     if (type.type != getType(ctx.expr())) {
@@ -281,7 +280,7 @@ public class Checker extends MyLangBaseListener {
                     }
                     setType(ctx, getType(ctx.expr()));
                     result.setGlobal(ctx, false);
-                    setOffset(ctx, this.currFunction.getLocalDataSize());
+                    setOffset(ctx, type.getSizeCurr());
                     return;
                 }
             }
@@ -358,16 +357,15 @@ public class Checker extends MyLangBaseListener {
             if (ctx.factor() instanceof MyLangParser.IdFactorContext) {
                 VariableData check = scope.check(ctx.factor().getText(), ctx.getStart());
                 if (check == null) {
-                    this.errors.add("Error: Pointer is pointing to an undefined variable at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+                    this.errors.add("Pointer is pointing to an undefined variable");
                 } else if (this.currFunction == null) {
-                    scope.declare(ctx.ID().toString(), check.type, ctx.getStart(), false);
+                    setOffset(ctx, scope.declare(ctx.ID().toString(), check.type, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
                     setType(ctx, check.type);
+                    setOffset(ctx.factor(), check.getSizeCurr());
                 } else {
                     this.currFunction.declare(ctx.ID().toString(), check.type);
                     setType(ctx, check.type);
                 }
-            } else {
-                this.errors.add("Error: Pointer should be assigned to a variable at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
             }
         }
         catch(Exception e){
@@ -557,7 +555,13 @@ public class Checker extends MyLangBaseListener {
 
             for (int i=1; i < ctx.ID().size();i++){
                 MyType type = ctx.type(i).getText() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN;
-                this.currFunction.addParameter(ctx.ID(i).toString(),type);
+                if (ctx.ID(i).toString().contains("&")){
+                    this.currFunction.addParameter(ctx.ID(i).toString().substring(0,ctx.ID(i).toString().length()-1),type,true);
+                }
+                else{
+                    this.currFunction.addParameter(ctx.ID(i).toString(),type,false);
+
+                }
             }
 
         }

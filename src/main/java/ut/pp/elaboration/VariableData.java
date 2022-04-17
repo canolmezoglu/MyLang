@@ -6,6 +6,7 @@ public class VariableData {
     boolean isParameter = false;
     boolean global = false;
     int columnCount = 0;
+    boolean pointer = false;
     public VariableData(MyType type,int sizeCurr){
         this.sizeCurr = sizeCurr;
         this.type = type;
@@ -21,6 +22,7 @@ public class VariableData {
     public void makeIntoParameter (){
         this.isParameter = true;
     }
+    public void makeIntoPointer (){this.pointer = true;}
 
     public void setColumnCount (int columnCount){
         this.columnCount = columnCount;

@@ -23,7 +23,7 @@ public class Main {
          * Raise exception and show errors in code if there are any (excluding syntax errors) , in that case - no code generation
          * Generated Sprockell code can be seen in elaboration/haskell/output.hs
          */
-        String path ="src/main/sample/humaid.txt";
+        String path ="src/main/sample/passbyreference2.txt";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromPath(new File(path).toPath()));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);

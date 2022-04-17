@@ -25,6 +25,7 @@ public class Result {
     private HashMap<String, FunctionData> functionDataHashMap = new HashMap<>();
     private final ParseTreeProperty<ArraySp> dynamicArrayCall = new ParseTreeProperty<>();
 
+
     /** Adds an association from parse tree node to the flow graph entry. */
     public void setEntry(ParseTree node, ParserRuleContext entry) {
         this.entries.put(node, entry);
@@ -75,7 +76,6 @@ public class Result {
     public void setGlobal(ParseTree node, Boolean global) {
         this.globals.put(node, global);
     }
-
     /** Returns the type associated with a given parse tree node. */
     public Boolean getGlobal(ParseTree node) {
         return this.globals.get(node);
@@ -111,4 +111,5 @@ public class Result {
     public ArraySp getDynamicArrayCall(ParseTree node){
         return this.dynamicArrayCall.get(node);
     }
+
 }

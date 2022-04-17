@@ -10,9 +10,6 @@ import java.util.List;
 public class TestSemantic {
 
 
-
-
-
     @Test
     public void testWhile() throws Exception {
         String input = "while";

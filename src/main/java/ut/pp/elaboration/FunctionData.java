@@ -14,13 +14,16 @@ public class FunctionData {
         this.parameters = new ArrayList<>();
         this.returnType = returnType;
     }
-    public void addParameter(String id, MyType type){
+    public void addParameter(String id, MyType type,boolean pointer){
         if (localScope.containsKey(id) ){
             errors.add("You have declared a parameter more than once");
         }
         parameters.add(id);
         VariableData var = new VariableData(type,parameters.size());
         var.makeIntoParameter();
+        if (pointer){
+            var.makeIntoPointer();
+        }
         localScope.put(id,var);
 
     }
