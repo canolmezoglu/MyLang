@@ -47,8 +47,8 @@ public class TestScope {
         catch ( Exception e) {
             System.out.println(e.getMessage());
 
-            assertEquals(1, c.getScopeErrors().size());
-            assertTrue(c.getScopeErrors().contains("money not declared in this scope: 3"));
+            assertEquals(2, c.getScopeErrors().size());
+            assertTrue(c.getScopeErrors().contains("Error:money not declared in this scope at Line: 3 Character: 8"));
 
         }
     }
@@ -108,7 +108,8 @@ public class TestScope {
         }
         catch (Exception e) {
             assertEquals(1, c.getScopeErrors().size());
-            assertTrue(c.getScopeErrors().contains("numberofiterations already declared in this scope: 2"));
+            System.out.println(c.getScopeErrors());
+            assertTrue(c.getScopeErrors().contains("Error:numberofiterations already declared in this scope at Line 2 Character:0"));
         }
     }
 

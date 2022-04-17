@@ -46,8 +46,9 @@ public class Checker extends MyLangBaseListener {
         this.threads = new ArrayList<>();
         new ParseTreeWalker().walk(this, tree);
         this.errors.addAll((scope.errors));
+        String errors = String.join("\n", this.errors);
         if (!this.errors.isEmpty()){
-            throw new Exception(this.errors.toString());
+            throw new Exception(errors);
         }
         return this.result;
     }
@@ -124,10 +125,10 @@ public class Checker extends MyLangBaseListener {
     @Override public void exitPrefixFactor(MyLangParser.PrefixFactorContext ctx){
         if (ctx.prefixOp().MINUS() != null && getType(ctx.factor())!= MyType.NUM){
 
-                this.errors.add("Prefix operation has type mismatch, expected int, got bool");
+                this.errors.add("Prefix operation has type mismatch, expected int, got bool at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
         else if (ctx.prefixOp().NOT() != null && getType(ctx.factor() )!= MyType.BOOLEAN){
-            this.errors.add("Prefix operation has type mismatch, expected bool, got int");
+            this.errors.add("Prefix operation has type mismatch, expected bool, got int at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
         setType(ctx, getType(ctx.factor()));
     }
@@ -135,18 +136,18 @@ public class Checker extends MyLangBaseListener {
         if (ctx.mult()!=null || ctx.AND()!=null)  {
             if (getType(ctx.factor()) != getType(ctx.term())) {
                 if (ctx.AND()!=null ){
-                    this.errors.add("AND has type mismatch");
+                    this.errors.add("AND has type mismatch at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
                 else {
-                    this.errors.add("Multiplication has type mismatch");
+                    this.errors.add("Multiplication has type mismatch at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
             }
             else{
                 if (getType(ctx.factor()) != MyType.NUM && ctx.mult() != null){
-                    this.errors.add("Multiplication or division only takes integers");
+                    this.errors.add("Error: Multiplication or division only takes integers at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
                 else if (getType(ctx.factor()) != MyType.BOOLEAN && ctx.AND() != null){
-                    this.errors.add("AND only takes booleans");
+                    this.errors.add("Error: AND only takes booleans at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
             }
         }
@@ -158,17 +159,17 @@ public class Checker extends MyLangBaseListener {
 
                 if (ctx.addOp() != null) {
                     if (ctx.addOp().PLUS() != null && getType(ctx.term()) != MyType.NUM) {
-                        this.errors.add("addition has type mismatch");
+                        this.errors.add("Error: addition has type mismatch at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                     } else if (ctx.addOp().MINUS() != null && getType(ctx.term()) != MyType.NUM) {
-                        this.errors.add("subtraction has type mismatch");
+                        this.errors.add("Error: subtraction has type mismatch at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                     }
                 }
                 else if (ctx.OR() != null && getType(ctx.term()) != MyType.BOOLEAN) {
-                    this.errors.add("or has type mismatch");
+                    this.errors.add("Error: or has type mismatch at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
             }
             else{
-                this.errors.add("types do not match in one of the following expressions -> addition, subtraction, or" );
+                this.errors.add("Error: types do not match in one of the following expressions at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
             }
         }
         setType(ctx, getType(ctx.term()));
@@ -183,11 +184,11 @@ public class Checker extends MyLangBaseListener {
             MyType rightType = getType(ctx.superiorExpr(1));
             if (ctx.comp().EQ() != null || ctx.comp().NE() != null) {
                 if (leftType != rightType) {
-                    this.errors.add("you cannot compare different types in terms" +
-                            "of being equal");
+                    this.errors.add("Error: you cannot compare different types in terms" +
+                            "of being equal at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
             } else if (leftType != MyType.NUM || rightType != MyType.NUM) {
-                this.errors.add("you cannot compare boolean types");
+                this.errors.add("Error: you cannot compare boolean types at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
             }
             setType(ctx, MyType.BOOLEAN);
         }
@@ -239,7 +240,7 @@ public class Checker extends MyLangBaseListener {
                 Integer.parseInt(ctx.getText());
             }
             catch (NumberFormatException e){
-                this.errors.add("This int defined is larger than the limits");
+                this.errors.add("Error: This int defined is larger than the limits at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
             }
             result.setType(ctx,MyType.NUM);
 
@@ -252,13 +253,13 @@ public class Checker extends MyLangBaseListener {
 
     @Override
     public void visitErrorNode(ErrorNode node) {
-        this.errors.add("Syntax error at Line: "+node.getSymbol().getLine() + " Character: "+node.getSymbol().getCharPositionInLine());
+        this.errors.add("SyntaxError: at Line: "+node.getSymbol().getLine() + " Character: "+node.getSymbol().getCharPositionInLine());
     }
 
 
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
         if(ctx.ID().getText().contains(".")){
-            this.errors.add("Enum values are fixed: they cannot be updated");
+            this.errors.add("Error: Enum values are fixed: they cannot be updated at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
         String iden = ctx.ID().toString();
 
@@ -267,7 +268,7 @@ public class Checker extends MyLangBaseListener {
             if(iden.contains("&")){ //this is a pointer
                 type = this.currFunction.getVariable(iden.substring(0,iden.length()-1));
                 if(type.type != getType(ctx.expr())){
-                    this.errors.add("You are assigning an invalid type to the pointer-variable");
+                    this.errors.add("Error: You are assigning an invalid type to the pointer-variable at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
                 return;
             }
@@ -276,7 +277,7 @@ public class Checker extends MyLangBaseListener {
                 type = this.currFunction.getVariable(iden);
                 if (type != null) {
                     if (type.type != getType(ctx.expr())) {
-                        this.errors.add("you are changing a variable to an unexpected type");
+                        this.errors.add("Error: you are changing a variable to an unexpected type at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                     }
                     setType(ctx, getType(ctx.expr()));
                     result.setGlobal(ctx, false);
@@ -289,7 +290,7 @@ public class Checker extends MyLangBaseListener {
             if (iden.contains("&")) { //this is a pointer
                 type = scope.check(iden.substring(0, iden.length() - 1), ctx.getStart());
                 if (type.type != getType(ctx.expr())) {
-                    this.errors.add("You are assigning an invalid type to the pointer-variable");
+                    this.errors.add("Error: You are assigning an invalid type to the pointer-variable at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
                 return;
             }
@@ -301,14 +302,14 @@ public class Checker extends MyLangBaseListener {
                 type = scope.check(ctx.ID().toString(), ctx.getStart());
                 if (type != null) {
                     if (type.type != getType(ctx.expr())) {
-                        this.errors.add("you are changing a variable to an unexpected type");
+                        this.errors.add("Error: you are changing a variable to an unexpected type at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                     }
                     setType(ctx, getType(ctx.expr()));
                     setOffset(ctx, type.getSizeCurr());
                     result.setGlobal(ctx, type.global);
                     return;
                 }
-                this.errors.add("this variable you are changing does not exist");
+                this.errors.add("Error: this variable you are changing does not exist at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
             }
         }
 
@@ -317,130 +318,155 @@ public class Checker extends MyLangBaseListener {
 
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
             if (ctx.ID().toString().contains("%") || ctx.ID().toString().contains(",") || ctx.ID().toString().contains(".")){
-                this.errors.add("Variable cannot contain special character");
+                this.errors.add("Error: Variable cannot contain special character at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
             }
-            if (ctx.type().BOOLEAN() != null) {
-                if (getType(ctx.expr()) != MyType.BOOLEAN) {
-                    this.errors.add("you are trying to assign an integer to a boolean variable");
+            try{
+                if (ctx.type().BOOLEAN() != null) {
+                    if (getType(ctx.expr()) != MyType.BOOLEAN) {
+                        this.errors.add("Error: you are trying to assign an integer to a boolean variable at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
+                    }
+                    setType(ctx, MyType.BOOLEAN);
+                    if (this.currFunction == null){
+                        setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.BOOLEAN, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
+                    }
+                    else{
+                        setOffset(ctx,this.currFunction.declare(ctx.ID().toString(),MyType.BOOLEAN));
+                    }
+                } else if (ctx.type().INTEGER() != null) {
+                    if (getType(ctx.expr()) != MyType.NUM) {
+                        this.errors.add("Error: you are trying to assign an boolean to an integer variable at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
+                    }
+                    setType(ctx, MyType.NUM);
+                    if (this.currFunction == null){
+                        setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
+                    }
+                    else{
+                        setOffset(ctx,this.currFunction.declare(ctx.ID().toString(),MyType.NUM));
+                    }
+                } else {
+                    this.errors.add("Error: Invalid type at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
-                setType(ctx, MyType.BOOLEAN);
-                if (this.currFunction == null){
-                    setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.BOOLEAN, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
-                }
-                else{
-                    setOffset(ctx,this.currFunction.declare(ctx.ID().toString(),MyType.BOOLEAN));
-                }
-            } else if (ctx.type().INTEGER() != null) {
-                if (getType(ctx.expr()) != MyType.NUM) {
-                    this.errors.add("you are trying to assign an boolean to an integer variable");
-                }
-                setType(ctx, MyType.NUM);
-                if (this.currFunction == null){
-                    setOffset(ctx, scope.declare(ctx.ID().toString(), MyType.NUM, ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
-                }
-                else{
-                    setOffset(ctx,this.currFunction.declare(ctx.ID().toString(),MyType.NUM));
-                }
-            } else {
-                this.errors.add("Invalid type");
             }
+            catch (Exception e){
+                //Do nothing, errors have already been added by ScopeTable
+            }
+
     }
     @Override
     public void exitDeclarePointer(MyLangParser.DeclarePointerContext ctx) {
-        if(ctx.factor() instanceof MyLangParser.IdFactorContext){
-            VariableData check = scope.check(ctx.factor().getText(),ctx.getStart());
-            if(check==null){
-                this.errors.add("Pointer is pointing to an undefined variable");
-            }
-            else if (this.currFunction == null){
-                scope.declare(ctx.ID().toString(),check.type, ctx.getStart(),false);
-                setType(ctx, check.type);
-            }
-            else{
-                this.currFunction.declare(ctx.ID().toString(),check.type);
-                setType(ctx, check.type);
+        try {
+            if (ctx.factor() instanceof MyLangParser.IdFactorContext) {
+                VariableData check = scope.check(ctx.factor().getText(), ctx.getStart());
+                if (check == null) {
+                    this.errors.add("Error: Pointer is pointing to an undefined variable at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+                } else if (this.currFunction == null) {
+                    scope.declare(ctx.ID().toString(), check.type, ctx.getStart(), false);
+                    setType(ctx, check.type);
+                } else {
+                    this.currFunction.declare(ctx.ID().toString(), check.type);
+                    setType(ctx, check.type);
+                }
+            } else {
+                this.errors.add("Error: Pointer should be assigned to a variable at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
             }
         }
-        else{
-            this.errors.add("Pointer should be assigned to a variable");
+        catch(Exception e){
+            //Do nothing, errors have already been added by ScopeTable
         }
     }
     @Override
     public void exitDeclareArray(MyLangParser.DeclareArrayContext ctx) {
         if(ctx.darray().expr().size()!=Integer.parseInt(ctx.NUM().getText())){
-            this.errors.add("The size of the array does not match the number of elements you have listed");
+            this.errors.add("Error: The size of the array does not match the number of elements you have listed at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
-        for(int i=0;i<ctx.darray().expr().size();i++) {
-            if (ctx.type().BOOLEAN() != null) {
-                if (getType(ctx.darray().expr(i)) != MyType.BOOLEAN) {
-                    this.errors.add("you are trying to assign an integer to a boolean array");
+        try {
+
+            for (int i = 0; i < ctx.darray().expr().size(); i++) {
+                if (ctx.type().BOOLEAN() != null) {
+                    if (getType(ctx.darray().expr(i)) != MyType.BOOLEAN) {
+                        this.errors.add("Error: you are trying to assign an integer to a boolean array at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+                    }
+                    setType(ctx.darray().expr(i), MyType.BOOLEAN);
+                    setOffset(ctx.darray().expr(i), scope.declare(ctx.ID().toString() + "%" + i, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                } else if (ctx.type().INTEGER() != null) {
+                    if (getType(ctx.darray().expr(i)) != MyType.NUM) {
+                        this.errors.add("Error: you are trying to assign an boolean to an integer array at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+                    }
+                    setType(ctx.darray().expr(i), MyType.NUM);
+                    setOffset(ctx.darray().expr(i), scope.declare(ctx.ID().toString() + "%" + i, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                } else {
+                    this.errors.add("Error: Invalid type at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
                 }
-                setType(ctx.darray().expr(i), MyType.BOOLEAN);
-                setOffset(ctx.darray().expr(i), scope.declare(ctx.ID().toString()+"%"+i, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
-            } else if (ctx.type().INTEGER() != null) {
-                if (getType(ctx.darray().expr(i)) != MyType.NUM) {
-                    this.errors.add("you are trying to assign an boolean to an integer array");
-                }
-                setType(ctx.darray().expr(i), MyType.NUM);
-                setOffset(ctx.darray().expr(i), scope.declare(ctx.ID().toString()+"%"+i, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
-            } else {
-                this.errors.add("Invalid type");
             }
+        }
+        catch(Exception e){
+            //Do nothing, errors have already been added by ScopeTable
         }
     }
     @Override
     public void exitDeclare2dArray(MyLangParser.Declare2dArrayContext ctx) {
         List<MyLangParser.DarrayContext> rows_list = ctx.darray();
-        if(rows_list.size()!=Integer.parseInt(ctx.NUM(0).getText())){
-            this.errors.add("The number of rows does not match");
-        }
-        String array_name = ctx.ID().toString();
-        for(int i=0;i< rows_list.size();i++){
-            if(rows_list.get(i).expr().size()!=Integer.parseInt(ctx.NUM(1).getText())){
-                this.errors.add("The number of columns does not match");
-            }
-            for(int j=0;j<rows_list.get(i).expr().size();j++){
-                if (ctx.type().BOOLEAN() != null) {
-                    if (getType(ctx.darray(i).expr(j)) != MyType.BOOLEAN) {
-                        this.errors.add("you are trying to assign an integer to a boolean array");
-                    }
-                    setType(ctx.darray(i).expr(j), MyType.BOOLEAN);
-                    VariableData var = scope.declare(array_name+"%"+i+"%"+j, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null);
-                    setOffset(ctx.darray(i).expr(j), var.getSizeCurr());
-                    var.setColumnCount(rows_list.get(i).expr().size());
-                } else if (ctx.type().INTEGER() != null) {
-                    if (getType(ctx.darray(i).expr(j)) != MyType.NUM) {
-                        this.errors.add("you are trying to assign an boolean to an integer array");
-                    }
-                    setType(ctx.darray(i).expr(j), MyType.NUM);
-                    VariableData var = scope.declare(array_name+"%"+i+"%"+j, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null);
-                    setOffset(ctx.darray(i).expr(j),var.getSizeCurr());
-                    var.setColumnCount(rows_list.get(i).expr().size());
+        try {
 
-                } else {
-                    this.errors.add("Invalid type");
+            if (rows_list.size() != Integer.parseInt(ctx.NUM(0).getText())) {
+                this.errors.add("Error: The number of rows does not match at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+            }
+            String array_name = ctx.ID().toString();
+            for (int i = 0; i < rows_list.size(); i++) {
+                if (rows_list.get(i).expr().size() != Integer.parseInt(ctx.NUM(1).getText())) {
+                    this.errors.add("Error: The number of columns does not match at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+                }
+                for (int j = 0; j < rows_list.get(i).expr().size(); j++) {
+                    if (ctx.type().BOOLEAN() != null) {
+                        if (getType(ctx.darray(i).expr(j)) != MyType.BOOLEAN) {
+                            this.errors.add("Error: you are trying to assign an integer to a boolean array at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+                        }
+                        setType(ctx.darray(i).expr(j), MyType.BOOLEAN);
+                        VariableData var = scope.declare(array_name + "%" + i + "%" + j, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null);
+                        setOffset(ctx.darray(i).expr(j), var.getSizeCurr());
+                        var.setColumnCount(rows_list.get(i).expr().size());
+                    } else if (ctx.type().INTEGER() != null) {
+                        if (getType(ctx.darray(i).expr(j)) != MyType.NUM) {
+                            this.errors.add("Error: you are trying to assign an boolean to an integer array at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+                        }
+                        setType(ctx.darray(i).expr(j), MyType.NUM);
+                        VariableData var = scope.declare(array_name + "%" + i + "%" + j, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null);
+                        setOffset(ctx.darray(i).expr(j), var.getSizeCurr());
+                        var.setColumnCount(rows_list.get(i).expr().size());
+
+                    } else {
+                        this.errors.add("Error: Invalid type at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+                    }
                 }
             }
+        }
+        catch (Exception e){
+            //Do nothing, errors have already been added by ScopeTable
         }
     }
     @Override
     public void exitDeclareEnum(MyLangParser.DeclareEnumContext ctx) {
-        for(int i=0;i<ctx.enumAssign().expr().size();i++) {
-            if (ctx.type().BOOLEAN() != null) {
-                if (getType(ctx.enumAssign().expr(i)) != MyType.BOOLEAN) {
-                    this.errors.add("you are trying to assign an invalid type to a boolean enum");
+        try {
+            for (int i = 0; i < ctx.enumAssign().expr().size(); i++) {
+                if (ctx.type().BOOLEAN() != null) {
+                    if (getType(ctx.enumAssign().expr(i)) != MyType.BOOLEAN) {
+                        this.errors.add("Error: you are trying to assign an invalid type to a boolean enum at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+                    }
+                    setType(ctx.enumAssign().expr(i), MyType.BOOLEAN);
+                    setOffset(ctx.enumAssign().expr(i), scope.declare(ctx.ID().toString() + "." + ctx.enumAssign().ID(i).getText(), MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                } else if (ctx.type().INTEGER() != null) {
+                    if (getType(ctx.enumAssign().expr(i)) != MyType.NUM) {
+                        this.errors.add("Error: you are trying to assign an invalid type to an integer enum at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+                    }
+                    setType(ctx.enumAssign().expr(i), MyType.NUM);
+                    setOffset(ctx.enumAssign().expr(i), scope.declare(ctx.ID().toString() + "." + ctx.enumAssign().ID(i).getText(), MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                } else {
+                    this.errors.add("Error: Invalid type at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
                 }
-                setType(ctx.enumAssign().expr(i), MyType.BOOLEAN);
-                setOffset(ctx.enumAssign().expr(i), scope.declare(ctx.ID().toString()+"."+ctx.enumAssign().ID(i).getText(), MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
-            } else if (ctx.type().INTEGER() != null) {
-                if (getType(ctx.enumAssign().expr(i)) != MyType.NUM) {
-                    this.errors.add("you are trying to assign an invalid type to an integer enum");
-                }
-                setType(ctx.enumAssign().expr(i), MyType.NUM);
-                setOffset(ctx.enumAssign().expr(i), scope.declare(ctx.ID().toString()+"."+ctx.enumAssign().ID(i).getText(), MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
-            } else {
-                this.errors.add("Invalid type");
             }
+        }
+        catch(Exception e){
+            //Do nothing, errors have already been added by ScopeTable
         }
     }
 
@@ -455,7 +481,7 @@ public class Checker extends MyLangBaseListener {
         result.setThread(ctx,active_thread);
 
         if (getType(ctx.expr()) != MyType.BOOLEAN ){
-            this.errors.add("if statement can only check a boolean");
+            this.errors.add("Error: if statement can only check a boolean at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
     }
 
@@ -469,7 +495,7 @@ public class Checker extends MyLangBaseListener {
         result.setThread(ctx,active_thread);
 
         if (getType(ctx.expr()) != MyType.BOOLEAN ){
-            this.errors.add("while statement can only check a boolean");
+            this.errors.add("Error: while statement can only check a boolean at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
     }
     @Override public void exitStatementInst(MyLangParser.StatementInstContext ctx){
@@ -515,12 +541,12 @@ public class Checker extends MyLangBaseListener {
     public void exitReturnConstruct(MyLangParser.ReturnConstructContext ctx){
         if (this.currFunction !=null){
             if (this.currFunction.returnType != getType(ctx.expr())){
-                this.errors.add("this functions claims to return" + this.currFunction.returnType.toString() +
-                        " but actually returns" + getType(ctx.expr()));
+                this.errors.add("Error: this functions claims to return" + this.currFunction.returnType.toString() +
+                        " but actually returns" + getType(ctx.expr()) + "at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
             }
         }
         else{
-            this.errors.add("a return statement is called outside a function");
+            this.errors.add("Error: a return statement is called outside a function at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
     }
 
@@ -536,7 +562,7 @@ public class Checker extends MyLangBaseListener {
 
         }
         else{
-            this.errors.add("you have not named this function");
+            this.errors.add("Error: function has not been named at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
     }
     @Override
@@ -545,7 +571,7 @@ public class Checker extends MyLangBaseListener {
 
 
         if (!result.functionDataHashMapContains(ctx.ID().toString())) {
-            this.errors.add("you are calling a function that doesnt exist yet");
+            this.errors.add("Error: you are calling a function that does not exist yet at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
     }
     @Override
@@ -560,7 +586,7 @@ public class Checker extends MyLangBaseListener {
         setType(ctx,functionData.returnType);
         for (int i=0; i < ctx.expr().size();i++){
             if (getType(ctx.expr(0)) != functionData.getVariable(functionData.parameters.get(i)).type){
-                this.errors.add("the parameter type not equal to expected type");
+                this.errors.add("Error: the parameter type not equal to expected type at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
             }
 
         }
@@ -569,7 +595,7 @@ public class Checker extends MyLangBaseListener {
     @Override
     public void exitFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
         if (this.result.functionDataHashMapContains(ctx.ID(0).toString())){
-            this.errors.add("you cant have two functions with the same name");
+            this.errors.add("Error: you cant have two functions with the same name at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
         this.result.putFunctionDataMap(ctx.ID(0).toString(),this.currFunction);
         this.currFunction = null;

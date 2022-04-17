@@ -1,3 +1,2 @@
-int b = 67 - 27;
-int a = 500 + b;
-print(a);
+int a =100;
+int a = 100;

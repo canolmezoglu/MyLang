@@ -84,9 +84,17 @@ public class ScopeTable {
             return this.scopes.get(this.scope_num).get(var);
         }
         else{
-            this.errors.add(var+" already declared in this scope: "+tk.getLine());
+            if(var.contains("%")){
+                this.errors.add("Error:"+var+"array or array index already declared in this scope at Line "+tk.getLine()+" Character:" + tk.getCharPositionInLine());
+            }
+            else if(var.contains(".")){
+                this.errors.add("Error:"+var+" enum or enum type already declared in this scope at Line "+tk.getLine()+" Character:" + tk.getCharPositionInLine());
+            }
+            else{
+                this.errors.add("Error:"+var+" already declared in this scope at Line "+tk.getLine()+" Character:" + tk.getCharPositionInLine());
+            }
+            return null;
         }
-        return null;
     }
 
     public VariableData check(String var,Token tk){
@@ -96,7 +104,13 @@ public class ScopeTable {
         }
         check = checkGlobal(var,tk);
         if(check==null){
-            errors.add(var+" not declared in this scope: "+tk.getLine());
+            if(var.contains("%")){
+                errors.add("Error:"+ var+" array or array index not declared in this scope at Line: "+tk.getLine()+ " Character: "+tk.getCharPositionInLine());}
+            else if(var.contains(".")){
+                errors.add("Error: "+var+" enum or enum type not declared in this scope at Line: "+tk.getLine()+ " Character: "+tk.getCharPositionInLine());}
+            else{
+                errors.add("Error:"+var+" not declared in this scope at Line: "+tk.getLine()+ " Character: "+tk.getCharPositionInLine());
+            }
             return null;
         }
         return check;
