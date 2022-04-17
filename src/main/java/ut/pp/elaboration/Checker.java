@@ -35,6 +35,7 @@ public class Checker extends MyLangBaseListener {
         for (String keyword : keywords){
             if (keyword.equals("thread")) occurences++;
         }
+
         return occurences;
 
     }
@@ -52,12 +53,15 @@ public class Checker extends MyLangBaseListener {
     }
     public boolean checkDynamicArray(String iden, ParserRuleContext ctx) {
         boolean dynamicArray = false;
+        VariableData mainVariableData = null;
         String[] arrayDynamic = iden.split("%");
         if (arrayDynamic.length > 1) {
             if (arrayDynamic.length < 3 && Character.isLetter(arrayDynamic[1].charAt(0))) {
+                VariableData variableData = scope.check(arrayDynamic[0] + "%" + "0" , ctx.getStart());
                 ArraySp arraySp =
-                        new ArraySp(scope.check(arrayDynamic[0] + "%" + "0", ctx.getStart()).getSizeCurr());
+                        new ArraySp(variableData.getSizeCurr());
                 arraySp.addPointer(true, scope.check(arrayDynamic[1], ctx.getStart()).getSizeCurr());
+                mainVariableData = variableData;
                 result.addDynamicArrayCall(ctx, arraySp);
                 dynamicArray = true;
 
@@ -72,6 +76,8 @@ public class Checker extends MyLangBaseListener {
                             true, scope.check(arrayDynamic[2], ctx.getStart()).getSizeCurr());
                     result.addDynamicArrayCall(ctx, arraySp);
                     arraySp.setColumnSize(variableData.getColumnCount());
+                    mainVariableData = variableData;
+
                     dynamicArray = true;
 
                 } else if (Character.isLetter(arrayDynamic[1].charAt(0))) {
@@ -83,7 +89,7 @@ public class Checker extends MyLangBaseListener {
                             false, Integer.parseInt(arrayDynamic[2]));
                     result.addDynamicArrayCall(ctx, arraySp);
                     arraySp.setColumnSize(variableData.getColumnCount());
-
+                    mainVariableData = variableData;
                     dynamicArray = true;
 
 
@@ -96,9 +102,15 @@ public class Checker extends MyLangBaseListener {
                             true, scope.check(arrayDynamic[2], ctx.getStart()).getSizeCurr());
                     result.addDynamicArrayCall(ctx, arraySp);
                     arraySp.setColumnSize(variableData.getColumnCount());
+                    mainVariableData = variableData;
                     dynamicArray = true;
                 }
             }
+        }
+        if (dynamicArray){
+            setType(ctx,mainVariableData.type);
+            result.setGlobal(ctx, mainVariableData.global);
+
         }
         return dynamicArray;
     }

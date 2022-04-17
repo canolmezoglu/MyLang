@@ -107,18 +107,29 @@ public class ArraySp {
         }
         return InstructionList;
     }
-    public List<Instruction> getChangeInstructions(){
+    public List<Instruction> getChangeInstructions(boolean shared){
         List<Instruction> InstructionList = new ArrayList<>();
         Sprockell sp = new Sprockell();
         InstructionList.addAll(this.getArrPointer());
-        InstructionList.add(sp.storeInMemory(Registers.regA, Registers.regB));
+        if (shared){
+            InstructionList.add(sp.writeToMemory(Registers.regA,Registers.regB));
+        }
+        else {
+            InstructionList.add(sp.storeInMemory(Registers.regA, Registers.regB));
+        }
         return  InstructionList;
     }
-    public List<Instruction> getIDCallInstructions(){
+    public List<Instruction> getIDCallInstructions(boolean shared){
         List<Instruction> InstructionList = new ArrayList<>();
         Sprockell sp = new Sprockell();
         InstructionList.addAll(this.getArrPointer());
-        InstructionList.add(sp.getFromIndAddr(Registers.regA,Registers.regB));
+        if (shared){
+            InstructionList.add(sp.readInst(Registers.regB));
+            InstructionList.add(sp.receive(Registers.regA));
+        }
+        else{
+            InstructionList.add(sp.getFromIndAddr(Registers.regA,Registers.regB));
+        }
         InstructionList.add(sp.push(Registers.regA));
         return  InstructionList;
     }

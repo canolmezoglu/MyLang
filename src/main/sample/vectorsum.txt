@@ -1,0 +1,25 @@
+shared int arr[4] = {100,250,30,47};
+shared int sum = 0;
+parallel {
+    thread {
+        int i = 0;
+        int localSum = 0;
+        localSum  = localSum + arr%1;
+        localSum  = localSum + arr%0;
+        lock {
+          sum = sum + localSum;
+        } unlock
+    }
+    thread {
+            int i = 2;
+            int localSum = 0;
+            while (i < 4){
+               localSum  = localSum + arr%i;
+               i = i +1;
+            }
+            lock {
+              sum = sum + localSum;
+            } unlock
+    }
+}
+print(sum);

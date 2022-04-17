@@ -1,0 +1,11 @@
+parallel {
+    thread {
+            lock {
+                       parallel {
+                                thread { lock {print(1);} unlock }
+                                 thread { lock {print(2);} unlock}
+                            }
+               } unlock
+        }
+    thread { print(3);}
+    }

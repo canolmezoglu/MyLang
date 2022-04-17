@@ -469,7 +469,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             global = var_global.get(child);
         }
         else if(this.res.getDynamicArrayCall(ctx) !=null){
-            InstructionList.addAll(this.res.getDynamicArrayCall(ctx).getChangeInstructions());
+            InstructionList.addAll(this.res.getDynamicArrayCall(ctx).getChangeInstructions(res.getGlobal(ctx)));
             return InstructionList;
         }
         else{
@@ -553,7 +553,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             global = var_global.get(child);
         }
         else if(this.res.getDynamicArrayCall(ctx) !=null){
-            InstructionList.addAll(this.res.getDynamicArrayCall(ctx).getIDCallInstructions());
+            InstructionList.addAll(this.res.getDynamicArrayCall(ctx).getIDCallInstructions(res.getGlobal(ctx)));
             return InstructionList;
         }
         else{

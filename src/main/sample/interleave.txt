@@ -1,33 +1,26 @@
-print(0);
 parallel{
     thread {
-            int i = 20;
-            while  ( i > 0){
+            int i = 20; while (i > 0){
                 i = i-1;
                 print(1);
                 }
     }
     thread {
-               int i = 20;
-                while  ( i > 0){
-                    i = i-1;
-                    print(2);
-                    }
+            int i = 20; while  ( i > 0) {
+                i = i-1;
+                print(2);
+                }
     }
-      thread {
-                      int i = 20;
-                                while  ( i > 0){
-                                    i = i-1;
-                                    print(3);
-                                    }
-      }
-      thread {
-
-                      int i = 20;
-                                while  ( i > 0){
-                                    i = i-1;
-                                    print(4);
-                                    }
-      }
+    thread {
+            int i = 20; while  ( i > 0) {
+                i = i-1;
+                print(3);
+                }
+    }
+   thread {
+            int i = 20; while  ( i > 0) {
+                i = i-1;
+                print(4);
+                }
+    }
 }
-print(5)
