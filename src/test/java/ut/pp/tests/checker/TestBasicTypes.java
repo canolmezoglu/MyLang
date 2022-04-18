@@ -57,8 +57,8 @@ public class TestBasicTypes {
                     tree);
         } catch (Exception e) {
             Assert.assertEquals(1, checker.getErrors().size());
-            Assert.assertEquals(e.getMessage()
-                    , "[This int defined is larger than the limits]");
+            Assert.assertEquals("Error: This int defined is larger than the limits at Line: 1 Character: 7"
+            , e.getMessage());
         }
 
 
@@ -75,8 +75,8 @@ public class TestBasicTypes {
                     tree);
         } catch (Exception e) {
             Assert.assertEquals(1, checker.getErrors().size());
-            Assert.assertEquals(e.getMessage()
-                    , "[This int defined is larger than the limits]");
+            Assert.assertEquals("Error: This int defined is larger than the limits at Line: 1 Character: 6",
+                    e.getMessage());
         }
     }
 }

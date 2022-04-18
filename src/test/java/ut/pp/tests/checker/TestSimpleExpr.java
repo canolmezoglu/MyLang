@@ -54,7 +54,7 @@ public class TestSimpleExpr {
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
-            Assert.assertEquals(e.getMessage(),"[Prefix operation has type mismatch, expected bool, got int]");
+            Assert.assertEquals(e.getMessage(),"Prefix operation has type mismatch, expected bool, got int at Line: 1 Character: 6");
         }
 
     }
@@ -74,7 +74,7 @@ public class TestSimpleExpr {
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
-            Assert.assertEquals(e.getMessage(),"[Prefix operation has type mismatch, expected int, got bool]");
+            Assert.assertEquals(e.getMessage(),"Prefix operation has type mismatch, expected int, got bool at Line: 1 Character: 6");
 
         }
     }

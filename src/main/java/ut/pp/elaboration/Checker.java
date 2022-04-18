@@ -556,11 +556,11 @@ public class Checker extends MyLangBaseListener {
         if (this.currFunction !=null){
             if (this.currFunction.returnType == MyType.VOID){
                 if ( ctx.expr()!= null)
-                this.errors.add("A function that is void is trying to return a" + getType(ctx.expr()) + "at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
+                this.errors.add("Error: A function that is void is trying to return a " + getType(ctx.expr()) + " at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
             }
             else if (this.currFunction.returnType != getType(ctx.expr())){
                 this.errors.add("Error: A function claims to return " + this.currFunction.returnType.toString() +
-                        " but actually returns " + getType(ctx.expr()) + "at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
+                        " but actually returns " + getType(ctx.expr()) + " at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
             }
         }
         else{
@@ -613,10 +613,19 @@ public class Checker extends MyLangBaseListener {
         }
         else{
             functionData = result.getFunctionData(ctx.ID().toString());
+            if (functionData == null){
+                return;
+            }
         }
         setType(ctx,functionData.returnType);
         for (int i=0; i < ctx.expr().size();i++){
-            if (getType(ctx.expr(0)) != functionData.getVariable(functionData.parameters.get(i)).type){
+            if (ctx.expr(i).superiorExpr(0) !=null &&
+                    ctx.expr(i).superiorExpr(0).term() !=null &&
+                    ctx.expr(i).superiorExpr(0).term().factor() !=null &&
+                    ctx.expr(i).superiorExpr(0).term().factor() instanceof MyLangParser.FuncCallContext){
+                this.errors.add("Error: Function calls cannot be made inside function calls at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
+            }
+            if (getType(ctx.expr(i)) != functionData.getVariable(functionData.parameters.get(i)).type){
                 this.errors.add("Error: the parameter type not equal to expected type at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
             }
 

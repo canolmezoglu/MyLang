@@ -80,6 +80,7 @@ public class TestVariableChecker {
     }
     /**
      * Test declaring without an expression
+     * is rejected.
      */
     @Test
     public void test_declStat3() throws Exception {
@@ -89,7 +90,7 @@ public class TestVariableChecker {
             );
             Assert.fail();
         }catch (Exception e){
-            Assert.assertEquals(2, checker.getErrors().size());
+            Assert.assertEquals(4, checker.getErrors().size());
         }
         }
 
