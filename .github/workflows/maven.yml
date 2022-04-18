@@ -22,11 +22,15 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: maven
+    - name: Install Haskell
+      run:  sudo apt-get install haskell-platform -y
+    - name: See if Haskell is Installed
+      run:  haskell-compiler --version
     - name: Install Cabal1
       run:  sudo apt-get update -y
     - name: Install Cabal2
-      run: sudo apt-get install -y cabal-install
+      run:  sudo apt-get install -y cabal-install
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run:  mvn -B package --file pom.xml
 
 
