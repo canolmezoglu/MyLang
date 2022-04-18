@@ -32,7 +32,7 @@ jobs:
       run:  |
             sudo apt-get install -y cabal-install
             cabal update
-            cabal install quickcheck twentefp-eventloop-trees parsec zip-1.2.0 regex-tdfa bytestring
+            cabal install Quickcheck twentefp-eventloop-trees parsec zip-1.2.0 regex-tdfa bytestring
     - name: Install Sprockell
       run: |
             git clone https://github.com/leonschoorl/sprockell.git
