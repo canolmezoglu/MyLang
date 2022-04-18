@@ -19,16 +19,16 @@ public class HaskellProcess {
             ProcessBuilder b = new ProcessBuilder();
             // TODO WRITE FOR LINUX
 //            b.command("cmd.exe ","/c","runhaskell ",path);
-            Process installSprockell = Runtime.getRuntime().exec("cabal install " +sprockellPath );
-            BufferedReader bReader2 = new BufferedReader(new InputStreamReader(installSprockell.getInputStream()));
-            String line2 = "";
-
-            while ((line2 = bReader2.readLine()) != null) {
-                System.out.println(line2);
+//            Process installSprockell = Runtime.getRuntime().exec("cabal install " +sprockellPath );
+//            BufferedReader bReader2 = new BufferedReader(new InputStreamReader(installSprockell.getInputStream()));
+//            String line2 = "";
+//
+//            while ((line2 = bReader2.readLine()) != null) {
+//                System.out.println(line2);
 //                output.add(line + "\n");
 
-            }
-            installSprockell.waitFor();
+//            }
+//            installSprockell.waitFor();
             Process process = Runtime.getRuntime().exec("runhaskell " + path);
 //            Process process= b.start();
             BufferedReader bReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
