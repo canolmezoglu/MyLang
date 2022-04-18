@@ -31,12 +31,11 @@ jobs:
     - name: Install Cabal2
       run:  |
             sudo apt-get install -y cabal-install
-            cabal update
     - name: Install Sprockell
       run: |
             git clone https://github.com/leonschoorl/sprockell.git
             cd sprockell
-            cabal install
+            cabal v1-install 
     - name: Build with Maven
       run:  mvn -B package --file pom.xml
 
