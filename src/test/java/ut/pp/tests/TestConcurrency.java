@@ -70,6 +70,15 @@ public class TestConcurrency {
 
 
     }
+    @Test
+    public void testSharedEnum() throws Exception{
+        String input = "shared_enum";
+        List<String> output = ut.pp.Main.runSprockell(input);
+        Assert.assertEquals("Sprockell 1 says 3",output.get(0));
+        Assert.assertEquals("Sprockell 2 says 1",output.get(1));
+
+
+    }
 //TODO ADD DEADLOCK TESTS
 
 }
