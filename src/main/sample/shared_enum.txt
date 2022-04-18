@@ -7,20 +7,20 @@ ferrari =3
 
 parallel{
     thread {
-       lock
+       lock{
           if (cars.bmw >= 0){
                 print(cars.ferrari);
 
           }
-       unlock
+       }unlock
     }
     thread {
-           lock
+           lock{
               if (cars.mercedes >= 1){
                     print(cars.bmw);
 
               }
-           unlock
+           }unlock
 
     }
 }
