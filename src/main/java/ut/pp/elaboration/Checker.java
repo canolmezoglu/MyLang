@@ -608,7 +608,7 @@ public class Checker extends MyLangBaseListener {
     @Override
     public void exitFuncCall(MyLangParser.FuncCallContext ctx){
         FunctionData functionData = null;
-        if (this.currFunction !=null) {
+        if (this.currFunction !=null && !result.functionDataHashMapContains(ctx.ID().toString())) {
             functionData = this.currFunction;
         }
         else{
