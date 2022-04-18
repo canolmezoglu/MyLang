@@ -32,7 +32,7 @@ public class ScopeTable {
         this.scopes.add(new HashMap<>());
         this.sizes.add(0);
         if (globalSizes > 7){
-            this.errors.add(" more than 7 threads are defined, more shared memory locations are used than capacity");
+            this.errors.add(" Error: More than 7 threads are defined, more shared memory locations are used than capacity");
         }
         this.globalSizes.add(globalSizes);
 
@@ -72,7 +72,7 @@ public class ScopeTable {
 
             this.scopes.get(this.scope_num).put(var, new VariableData(type,this.globalSizes.get(this.scope_num),shared));
             if (globalSizes.get(this.scope_num) > 7){
-                this.errors.add(" more than 7 shared memory locations are used  "+tk.getLine());
+                this.errors.add("Error: More than 7 shared memory locations are used at line: "+tk.getLine());
             }
             return this.scopes.get(this.scope_num).get(var);
 

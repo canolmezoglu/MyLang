@@ -3,11 +3,10 @@ package ut.pp.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Assert;
 import org.junit.Test;
 import ut.pp.elaboration.Checker;
-import ut.pp.tests.checker.SimpleExpr;
-
-import java.security.spec.ECField;
+import ut.pp.tests.checker.TestSimpleExpr;
 
 public class TestScope {
 
@@ -25,7 +24,7 @@ public class TestScope {
                 "        money = money - 1;\n" +
                 "    }";
 
-        c.check(SimpleExpr.getParseTree(input));
+        c.check(TestSimpleExpr.getParseTree(input));
         assertEquals(0,c.getScopeErrors().size());
     }
 
@@ -42,11 +41,10 @@ public class TestScope {
                 "        money = money - 1;\n" +
                 "    }";
         try {
-            c.check(SimpleExpr.getParseTree(input));
+            c.check(TestSimpleExpr.getParseTree(input));
+            Assert.fail();
         }
         catch ( Exception e) {
-            System.out.println(e.getMessage());
-
             assertEquals(2, c.getScopeErrors().size());
             assertTrue(c.getScopeErrors().contains("Error:money not declared in this scope at Line: 3 Character: 8"));
 
@@ -64,10 +62,9 @@ public class TestScope {
                 "        int c=0;\n" +
                 "    } c=100;" ;
         try {
-            c.check(SimpleExpr.getParseTree(input));
+            c.check(TestSimpleExpr.getParseTree(input));
         }
         catch ( Exception e) {
-            System.out.println(e.getMessage());
             assertEquals(1, c.getScopeErrors().size());
 
         }
@@ -90,7 +87,7 @@ public class TestScope {
                 "\n" +
                 "}";
 
-        c.check(SimpleExpr.getParseTree(input));
+        c.check(TestSimpleExpr.getParseTree(input));
         assertEquals(0,c.getScopeErrors().size());
     }
     /**
@@ -104,11 +101,12 @@ public class TestScope {
             "bool numberofiterations = true;";
         try {
 
-            c.check(SimpleExpr.getParseTree(input));
+            c.check(TestSimpleExpr.getParseTree(input));
+            Assert.fail();
+
         }
         catch (Exception e) {
             assertEquals(1, c.getScopeErrors().size());
-            System.out.println(c.getScopeErrors());
             assertTrue(c.getScopeErrors().contains("Error:numberofiterations already declared in this scope at Line 2 Character:0"));
         }
     }

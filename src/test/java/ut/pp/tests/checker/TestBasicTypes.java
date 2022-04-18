@@ -11,7 +11,7 @@ import ut.pp.elaboration.Result;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
-public class BasicTypes {
+public class TestBasicTypes {
     final Checker checker = new Checker();
 
     public static ParseTree getParseTree(String code) {

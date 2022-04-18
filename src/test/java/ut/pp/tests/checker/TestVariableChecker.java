@@ -9,7 +9,7 @@ import ut.pp.elaboration.Checker;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
-public class VariableChecker {
+public class TestVariableChecker {
     final Checker checker = new Checker();
 
     public static ParseTree getParseTree(String code) {

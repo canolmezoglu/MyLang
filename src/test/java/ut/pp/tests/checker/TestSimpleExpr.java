@@ -9,7 +9,7 @@ import ut.pp.elaboration.Checker;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
-public class SimpleExpr {
+public class TestSimpleExpr {
 
     final Checker checker = new Checker();
 
