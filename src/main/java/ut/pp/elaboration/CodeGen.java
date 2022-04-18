@@ -651,13 +651,18 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.add(sp.pop(Registers.regB));
             if (ctx.mult() != null) {
                 if(ctx.mult().DIV()!=null){
+                    // check if first operand is negative, if so make positive
                     InstructionList.add(sp.compute(Operators.GtE,Registers.regA,Registers.reg0,Registers.regC));
                     InstructionList.add(sp.branch(Registers.regC,new Target(Targets.Rel,2)));
                     InstructionList.add(sp.compute(Operators.Sub,Registers.reg0,Registers.regA,Registers.regA));
+                    // check if second operand is negative, if so make positive
+
                     InstructionList.add(sp.compute(Operators.GtE,Registers.regB,Registers.reg0,Registers.regD));
                     InstructionList.add(sp.branch(Registers.regD,new Target(Targets.Rel,2)));
                     InstructionList.add(sp.compute(Operators.Sub,Registers.reg0,Registers.regB,Registers.regB));
+                    // if only one of those numbers were negative, store 1 in regE
                     InstructionList.add(sp.compute(Operators.Xor,Registers.regC,Registers.regD,Registers.regE));
+                    // division by subtraction
                     InstructionList.add(sp.compute(Operators.Add,Registers.reg0,Registers.reg0,Registers.regC));
                     InstructionList.add(sp.compute(Operators.GtE, Registers.regA, Registers.regB, Registers.regD));
                     InstructionList.add(sp.compute(Operators.Equal,Registers.regD,Registers.reg0,Registers.regD));
@@ -666,6 +671,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
                     InstructionList.add(sp.compute(Operators.Incr, Registers.regC, Registers.regC, Registers.regC));
                     InstructionList.add(sp.relJump(-5));
                     InstructionList.add(sp.compute(Operators.Add, Registers.regC, Registers.reg0, Registers.regA));
+                    // if only one was negative, make the number negative
                     InstructionList.add(sp.compute(Operators.Equal,Registers.regE,Registers.reg0,Registers.regE));
                     InstructionList.add(sp.branch(Registers.regE,new Target(Targets.Rel,2)));
                     InstructionList.add(sp.compute(Operators.Sub, Registers.reg0, Registers.regA, Registers.regA));
