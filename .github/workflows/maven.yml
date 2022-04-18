@@ -29,7 +29,7 @@ jobs:
     - name: Install Cabal1
       run:  sudo apt-get update -y
     - name: Install this weird thing
-      run:  apt-get install -y libbz2-dev
+      run:  sudo apt-get install -y libbz2-dev
     - name: Install Cabal2
       run:  |
             sudo apt-get install -y cabal-install
