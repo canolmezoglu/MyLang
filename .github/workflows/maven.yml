@@ -36,7 +36,7 @@ jobs:
       run: |
             git clone https://github.com/leonschoorl/sprockell.git
             cd sprockell
-            cabal v1-install
+            cabal install
     - name: Build with Maven
       run:  mvn -B package --file pom.xml
 
