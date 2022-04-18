@@ -13,6 +13,7 @@ instruction:
     | lockConstruct                             #lockInst
     | returnConstruct                           #returnInst
     | functionConstruct                         #functionInst
+    | runProcedureConstruct                     #runProInst
     ;
 
 statement: declaration #declStat
@@ -41,13 +42,15 @@ whileConstruct :  WHILE LPAR expr RPAR block  ;
 
 parallelConstruct: PARALLEL LBRACE threadConstruct+ RBRACE;
 
+runProcedureConstruct: RUN LPAR factor RPAR END;
+
 threadConstruct : THREAD block;
 
 printConstruct : PRINT LPAR expr RPAR END;
 
 lockConstruct : LOCK block UNLOCK;
 
-returnConstruct : RETURN expr END;
+returnConstruct : RETURN expr? END;
 block: LBRACE instruction* RBRACE;
 
 expr: superiorExpr
@@ -96,6 +99,7 @@ comp: LE | LT | GE | GT | EQ | NE;
 
 type: INTEGER
     | BOOLEAN
+    | VOID
     ;
 
 DIV: '/';
@@ -121,6 +125,8 @@ RETURN : 'return';
 FUNCTION: 'function';
 ENUM: 'enum';
 POINTER: 'pointer';
+VOID: 'void';
+RUN: 'run';
 
 ASS: '=';
 EQ:     '==';

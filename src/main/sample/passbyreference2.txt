@@ -1,13 +1,12 @@
-function int swap (int x&,int y&){
+function void swap (int x&,int y&){
     int temp = x;
     x = y;
     y= temp;
-    return 69;
 }
 int a = 5;
 int b = 77;
 pointer c = a;
 pointer d = b;
-print(swap(c,d));
+run(swap(c,d));
 print(a);
 print(b);

@@ -858,10 +858,17 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     @Override public List<Instruction> visitReturnInst(MyLangParser.ReturnInstContext ctx){
         return visit(ctx.returnConstruct());
     }
+    @Override public List<Instruction> visitRunProInst(MyLangParser.RunProInstContext ctx){
+        return visit(ctx.runProcedureConstruct());
+    }
+    @Override public List<Instruction> visitRunProcedureConstruct(MyLangParser.RunProcedureConstructContext ctx){
+        return visit(ctx.factor());
+    }
     @Override public List<Instruction> visitReturnConstruct(MyLangParser.ReturnConstructContext ctx){
         List<Instruction> InstructionList = new ArrayList<>();
-        InstructionList.addAll(visit(ctx.expr()));
-
+        if (ctx.expr() !=null) {
+            InstructionList.addAll(visit(ctx.expr()));
+        }
         // todo do this with incr instead
         InstructionList.add(sp.loadToMemory("1",Registers.regB));
         InstructionList.add(sp.compute(Operators.Add,Registers.regB,Registers.regF,Registers.regB));
@@ -877,10 +884,12 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         this.currentfunctionData = res.getFunctionData(ctx.ID(0).toString());
         InstructionList.addAll(visit(ctx.block()));
         // todo do this with incr instead
-        InstructionList.add(sp.loadToMemory("1",Registers.regB));
-        InstructionList.add(sp.compute(Operators.Add,Registers.regB,Registers.regF,Registers.regB));
-        InstructionList.add(sp.getFromIndAddr(Registers.regB,Registers.regB));
-        InstructionList.add(sp.IndJump(Registers.regB));
+        if (!this.currentfunctionData.isLastLineHasReturn()) {
+            InstructionList.add(sp.loadToMemory("1", Registers.regB));
+            InstructionList.add(sp.compute(Operators.Add, Registers.regB, Registers.regF, Registers.regB));
+            InstructionList.add(sp.getFromIndAddr(Registers.regB, Registers.regB));
+            InstructionList.add(sp.IndJump(Registers.regB));
+        }
         this.functions.put(ctx.ID(0).toString(),InstructionList);
         this.currentfunctionData = null;
         return null;

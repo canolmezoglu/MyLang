@@ -5,9 +5,19 @@ import java.util.*;
 public class FunctionData {
     Set<String> errors;
     int localDataSize;
-     Map<String,VariableData> localScope;
-     List<String> parameters;
-     MyType returnType;
+    Map<String,VariableData> localScope;
+    List<String> parameters;
+    MyType returnType;
+
+    public boolean isLastLineHasReturn() {
+        return lastLineHasReturn;
+    }
+
+    public void setLastLineHasReturn(boolean lastLineHasReturn) {
+        this.lastLineHasReturn = lastLineHasReturn;
+    }
+
+    boolean lastLineHasReturn;
     public FunctionData(MyType returnType){
         this.localDataSize = 0;
         this.localScope = new HashMap<>();

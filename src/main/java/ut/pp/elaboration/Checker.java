@@ -122,6 +122,22 @@ public class Checker extends MyLangBaseListener {
 
     }
 
+
+    @Override public void exitRunProcedureConstruct(MyLangParser.RunProcedureConstructContext ctx){
+        if (ctx.factor() instanceof MyLangParser.FuncCallContext){
+           String functionname =  ((MyLangParser.FuncCallContext) ctx.factor()).ID().toString();
+           FunctionData functionData =result.getFunctionData(functionname);
+           if (functionData.returnType != MyType.VOID){
+               this.errors.add("Error:Run does not run any not void functions at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
+
+           }
+        }
+        else
+        {
+            this.errors.add("Error:Run does not run any not void functions at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
+        }
+    }
+
     @Override public void exitPrefixFactor(MyLangParser.PrefixFactorContext ctx){
         if (ctx.prefixOp().MINUS() != null && getType(ctx.factor())!= MyType.NUM){
 
@@ -359,7 +375,7 @@ public class Checker extends MyLangBaseListener {
                 if (check == null) {
                     this.errors.add("Pointer is pointing to an undefined variable");
                 } else if (this.currFunction == null) {
-                    setOffset(ctx, scope.declare(ctx.ID().toString(), check.type, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
+                    setOffset(ctx, scope.declare(ctx.ID().toString(), check.type, ctx.getStart(), false).getSizeCurr());
                     setType(ctx, check.type);
                     setOffset(ctx.factor(), check.getSizeCurr());
                 } else {
@@ -538,9 +554,13 @@ public class Checker extends MyLangBaseListener {
     @Override
     public void exitReturnConstruct(MyLangParser.ReturnConstructContext ctx){
         if (this.currFunction !=null){
-            if (this.currFunction.returnType != getType(ctx.expr())){
-                this.errors.add("Error: this functions claims to return" + this.currFunction.returnType.toString() +
-                        " but actually returns" + getType(ctx.expr()) + "at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
+            if (this.currFunction.returnType == MyType.VOID){
+                if ( ctx.expr()!= null)
+                this.errors.add("A function that is void is trying to return a" + getType(ctx.expr()) + "at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
+            }
+            else if (this.currFunction.returnType != getType(ctx.expr())){
+                this.errors.add("Error: A function claims to return " + this.currFunction.returnType.toString() +
+                        " but actually returns " + getType(ctx.expr()) + "at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
             }
         }
         else{
@@ -550,10 +570,17 @@ public class Checker extends MyLangBaseListener {
 
     @Override
     public void enterFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
-        this.currFunction = new FunctionData(ctx.type(0).getText() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN);
+        MyType mytype = null;
+        if (ctx.type(0).VOID() !=null) mytype = MyType.VOID;
+        if (ctx.type(0).INTEGER() !=null) mytype = MyType.NUM;
+        if (ctx.type(0).BOOLEAN() !=null) mytype = MyType.BOOLEAN;
+
+        this.currFunction = new FunctionData(mytype);
+
         if (ctx.ID() != null){
 
             for (int i=1; i < ctx.ID().size();i++){
+                if (ctx.type(i).VOID() !=null) errors.add("Error : You cannot have void parameters at line: "  + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 MyType type = ctx.type(i).getText() .equals( "int" ) ? MyType.NUM : MyType.BOOLEAN;
                 if (ctx.ID(i).toString().contains("&")){
                     this.currFunction.addParameter(ctx.ID(i).toString().substring(0,ctx.ID(i).toString().length()-1),type,true);
@@ -599,8 +626,18 @@ public class Checker extends MyLangBaseListener {
     @Override
     public void exitFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
         if (this.result.functionDataHashMapContains(ctx.ID(0).toString())){
-            this.errors.add("Error: you cant have two functions with the same name at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
+            this.errors.add("Error: you cannot have two functions with the same name at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
+        if (ctx.block().instruction(ctx.block().instruction().size()-1) instanceof MyLangParser.ReturnInstContext) {
+            this.currFunction.setLastLineHasReturn(true);
+
+        }
+        else if (this.currFunction.returnType == MyType.NUM ||
+                this.currFunction.returnType == MyType.BOOLEAN
+        ){
+            this.errors.add("Error: You cannot have an integer or boolean function that returns nothing at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
+        }
+
         this.result.putFunctionDataMap(ctx.ID(0).toString(),this.currFunction);
         this.currFunction = null;
     }

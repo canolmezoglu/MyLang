@@ -1,12 +1,12 @@
-function int changeReference (int x&, int y&){
+function void changeReference (int x&, int y&){
     x = x + 2;
     y = y + 6;
-    return 5;
+    return;
 }
 int i = 4;
 int d = 5;
 pointer b = i;
 pointer c = d;
-print(changeReference(b,c));
+run(changeReference(b,c));
 print(d);
 print(i);
