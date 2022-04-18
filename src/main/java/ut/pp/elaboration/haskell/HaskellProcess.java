@@ -9,7 +9,7 @@ public class HaskellProcess {
      * Class to generate haskell code
      */
     private static final String path = "src/main/java/ut/pp/elaboration/haskell/output.hs";
-    private static final String sprockellPath = "src/main/java/ut/pp/elaboration/haskell/sprockell-master/src/Sprockell";
+    private static final String sprockellPath = "src/main/java/ut/pp/elaboration/haskell/sprockell-master";
     /**
      * Run sprockell code
      */
@@ -19,7 +19,7 @@ public class HaskellProcess {
             ProcessBuilder b = new ProcessBuilder();
             // TODO WRITE FOR LINUX
 //            b.command("cmd.exe ","/c","runhaskell ",path);
-            Process installSprockell = Runtime.getRuntime().exec("cabal v1-install " +sprockellPath );
+            Process installSprockell = Runtime.getRuntime().exec("cabal install" +sprockellPath );
             installSprockell.waitFor();
             Process process = Runtime.getRuntime().exec("runhaskell " + path);
 //            Process process= b.start();
