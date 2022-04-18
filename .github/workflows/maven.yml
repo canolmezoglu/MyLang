@@ -27,12 +27,14 @@ jobs:
     - name: See if Haskell is Installed
       run:  haskell-compiler --version
     - name: Install Cabal1
-      run:  sudo apt-get update -y
+      run:  |
+            sudo apt-get update -y
+            apt-get install -y libbz2-dev
     - name: Install Cabal2
       run:  |
             sudo apt-get install -y cabal-install
             cabal update
-            cabal install Quickcheck twentefp-eventloop-trees parsec zip-1.2.0 regex-tdfa bytestring
+            cabal install QuickCheck twentefp-eventloop-trees parsec zip-1.2.0 regex-tdfa bytestring
     - name: Install Sprockell
       run: |
             git clone https://github.com/leonschoorl/sprockell.git
