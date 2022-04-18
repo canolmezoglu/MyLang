@@ -22,6 +22,8 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: maven
+    - name: Install Cabal
+      run: choco install -fy cabal --version 3.2.0.0
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
