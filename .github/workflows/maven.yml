@@ -23,17 +23,11 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Install Haskell
-      run:  |
-            ghcup rm 9.2.2
-            sudo add-apt-repository ppa:hvr/ghc
-            sudo apt-get update
-            sudo apt-get install ghc-8.0.2
+      run:  sudo apt-get install haskell-platform -y
     - name: See if Haskell is Installed
-      run:  ghc --version
+      run:  haskell-compiler --version
     - name: Install Cabal1
       run:  sudo apt-get update -y
-    - name: Install this weird thing
-      run:  sudo apt-get install -y libbz2-dev
     - name: Install Cabal2
       run:  |
             sudo apt-get install -y cabal-install
@@ -42,8 +36,7 @@ jobs:
       run: |
             git clone https://github.com/leonschoorl/sprockell.git
             cd sprockell
-            cabal v1-install 
+            cabal v1-install
     - name: Build with Maven
       run:  mvn -B package --file pom.xml
-
 
