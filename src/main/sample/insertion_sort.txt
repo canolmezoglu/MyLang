@@ -1,0 +1,22 @@
+int arr[7] = {7,16,9,4,8,2,1};
+int i = 1;
+while (i < 7){
+    int key = arr%i ;
+    int j = i - 1;
+    while ( (j >= 0) and (arr%j > key)) {
+          int indexToChange = j + 1;
+          arr%indexToChange = arr%j ;
+          j = j - 1;
+          }
+          j = j + 1;
+          arr%j = key;
+          i = i+1;
+}
+print(arr%0);
+print(arr%1);
+print(arr%2);
+print(arr%3);
+print(arr%4);
+print(arr%5);
+print(arr%6);
+

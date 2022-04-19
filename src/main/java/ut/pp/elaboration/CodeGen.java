@@ -60,16 +60,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return this.visit(tree);
     }
 
-    /**
-     * Loads an expression to a register and returns it
-     * Invokes the reghandler to acquire an empty register,
-     * therefore, the returned register should be released
-     * @return register
-     */
-    private Registers getRegister(MyLangParser.ExprContext expr) {
-        return registers.get(expr);
-
-    }
 
 
 

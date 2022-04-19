@@ -67,16 +67,33 @@ public class TestConcurrency {
         String input = "vectorsum";
         List<String> output = ut.pp.Main.runSprockell(input);
         Assert.assertEquals("Sprockell 0 says 427",output.get(0));
-
-
     }
+
     @Test
     public void testSharedEnum() throws Exception{
         String input = "shared_enum";
         List<String> output = ut.pp.Main.runSprockell(input);
         Assert.assertEquals("Sprockell 1 says 3",output.get(0));
         Assert.assertEquals("Sprockell 2 says 1",output.get(1));
+    }
 
+    @Test
+    public void testNestedConcurrencyInterleave() throws Exception {
+        String input = "nestedConcurrencyInterleave";
+        List<String> output = ut.pp.Main.runSprockell(input);
+        int i = 0;
+        while(i < 200){
+            Assert.assertEquals("Sprockell 1 says 1",output.get(i++));
+            Assert.assertEquals("Sprockell 4 says 2",output.get(i++));
+        }
+        Assert.assertEquals("Sprockell 4 says 2",output.get(i++));
+        Assert.assertEquals("Sprockell 2 says 3",output.get(i++));
+        while(i < 498){
+            Assert.assertEquals("Sprockell 4 says 2",output.get(i++));
+            Assert.assertEquals("Sprockell 3 says 4",output.get(i++));
+            Assert.assertEquals("Sprockell 2 says 3",output.get(i++));
+        }
+        Assert.assertEquals("Sprockell 3 says 4",output.get(i++));
 
     }
 //TODO ADD DEADLOCK TESTS
