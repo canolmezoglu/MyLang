@@ -23,7 +23,10 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Install Haskell
-      run:  sudo apt-get install haskell-platform -y
+      run:  |
+            sudo add-apt-repository ppa:hvr/ghc
+            sudo apt-get update
+            sudo apt-get install ghc-8.0.2
     - name: See if Haskell is Installed
       run:  haskell-compiler --version
     - name: Install Cabal1
