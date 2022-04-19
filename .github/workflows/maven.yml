@@ -34,7 +34,7 @@ jobs:
             cabal update
     - name: Install Sprockell
       run: |
-            git clone https://github.com/leonschoorl/sprockell.git
+            git clone https://github.com/canolmezoglu/sprockell.git
             cd sprockell
             cabal v1-install
     - name: Build with Maven
