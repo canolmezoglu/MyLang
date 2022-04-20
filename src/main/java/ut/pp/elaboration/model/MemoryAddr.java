@@ -10,15 +10,15 @@ public class MemoryAddr implements InstructionArgs {
     private Registers reg= Registers.reg0;
 
     /**
-     * @param type
+     * @param type The type of MemoryAddress
      * Constructor enumsto initialize a memory address
      */
     public MemoryAddr(MemoryAddrs type) {
         this.type = type;
     }
     /**
-     * @param type
-     * @param val
+     * @param type The type of MemoryAddress
+     * @param val Value of this memory address
      * Constructor to initialize a memory address with a memory address type and value
      */
     public MemoryAddr(MemoryAddrs type,double val) {
@@ -26,8 +26,8 @@ public class MemoryAddr implements InstructionArgs {
         this.val=String.format("%.0f", val);
     }
     /**
-     * @param type
-     * @param reg
+     * @param type The type of MemoryAddress
+     * @param reg The register object
      * Constructor to initialize a memory address with a memory address type and register
      */
     public MemoryAddr(MemoryAddrs type, Registers reg){
@@ -60,6 +60,10 @@ public class MemoryAddr implements InstructionArgs {
             }
         }
     }
+
+    /**
+     * @return this object
+     */
     @Override
     public InstructionArgs get() {
         return this;

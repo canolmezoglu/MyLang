@@ -51,8 +51,8 @@ public class HaskellProcess {
     }
     /**
      * Build haskell code
-     * @param p
-     * @param thread_count
+     * @param p Sprockell instructions
+     * @param thread_count tnumber of threads in the program
      */
     public static  void build_Sprockell(String p, int thread_count,boolean debug){
         try {

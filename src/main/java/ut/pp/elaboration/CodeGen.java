@@ -15,8 +15,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
-
-
+    /**
+     * Code Generated for Sprockell program with no errors
+     */
     Sprockell sp;
     ParseTreeProperty<Registers> registers;
     Register reghandler;
@@ -57,6 +58,12 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
     }
 
+    /**
+     * Start the tree visitor for code generation after running the Code Checker
+     * @param tree
+     * @return
+     * @throws Exception
+     */
     public List<Instruction> genCode(ParseTree tree) throws Exception {
         sp = new Sprockell();
         scope = new ScopeTable();
@@ -226,18 +233,32 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return InstructionList;
     }
 
+    /**
+     * Visit an individual statement in the program
+     * @param ctx
+     * @return Visitor for a statement
+     */
     //TODO understand if # stuff on the right of ANTLR file is necessary for Instructions
     @Override
     public List<Instruction> visitStatementInst(MyLangParser.StatementInstContext ctx) {
         return visit(ctx.statement());
     }
 
+    /**
+     * Visit the if construct in the program
+     * @param ctx
+     * @return Visitor for if construct
+     */
     @Override
     public List<Instruction> visitIfInst(MyLangParser.IfInstContext ctx) {
         return super.visitIfInst(ctx);
     }
 
-
+    /**
+     * Visit the declaration statememnt
+     * @param ctx
+     * @return Visitor for declaration
+     */
     @Override
     public List<Instruction> visitDeclStat(MyLangParser.DeclStatContext ctx) {
         return visit(ctx.declaration());
@@ -288,6 +309,14 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
         return InstructionList;
     }
+
+    /**
+     * Visits every 1d array element declaration, decrypts the expression and loads the
+     * value inside the expression in the memory location / offset specified
+     * in the Result res that the checker returns
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitDeclareArray(MyLangParser.DeclareArrayContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -329,6 +358,13 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return InstructionList;
 
     }
+    /**
+     * Visits every 2d array element declaration, decrypts the expression and loads the
+     * value inside the expression in the memory location / offset specified
+     * in the Result res that the checker returns
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitDeclare2dArray(MyLangParser.Declare2dArrayContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -372,7 +408,13 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
         return InstructionList;
     }
-
+    /**
+     * Visits every enum element, decrypts the expression and loads the
+     * value inside the expression in the memory location / offset specified
+     * in the Result res that the checker returns
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitDeclareEnum(MyLangParser.DeclareEnumContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -412,6 +454,13 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
         return InstructionList;
     }
+    /**
+     * Visits every pointer declaration, decrypts the expression and loads the
+     * value inside the expression in the memory location / offset specified,
+     * and stores the address of every identifier it points to
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitDeclarePointer(MyLangParser.DeclarePointerContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -424,11 +473,20 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return InstructionList;
     }
 
+    /**
+     * Visit every Change statement
+     * @param ctx
+     * @return Visitor for Change statement
+     */
     @Override
     public List<Instruction> visitChangeStat(MyLangParser.ChangeStatContext ctx) {
         return visit(ctx.changeAss());
     }
-
+    /**
+     * Visit every Lock statement
+     * @param ctx
+     * @return Visitor for Lock statement
+     */
     @Override
     public List<Instruction> visitLockInst(MyLangParser.LockInstContext ctx){
         return visit(ctx.lockConstruct());
@@ -521,6 +579,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return InstructionList;
     }
 
+    /**
+     * Code generation for a superior expression
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitSuperiorExpr(MyLangParser.SuperiorExprContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -548,6 +611,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return InstructionList;
     }
 
+    /**
+     * Code generation for a primitive factor
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitPrimitiveFactor(MyLangParser.PrimitiveFactorContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -556,7 +624,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
     }
 
-
+    /**
+     * Code generation for a primitive value
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitPrimitive(MyLangParser.PrimitiveContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -566,6 +638,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return InstructionList;
     }
 
+    /**
+     * Code generation for an Identifier
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitIdFactor(MyLangParser.IdFactorContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -628,6 +705,12 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return InstructionList;
 
     }
+
+    /**
+     * Visit all parallel constructs in the program
+     * @param ctx
+     * @return Visitors for all parallel constructs
+     */
     @Override public List<Instruction> visitParallelConstruct(MyLangParser.ParallelConstructContext ctx){
         for (MyLangParser.ThreadConstructContext threadConstructContext:
              ctx.threadConstruct()) {
@@ -636,6 +719,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return null;
     }
 
+    /**
+     * Code Generation for a print statement
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitPrintConstruct(MyLangParser.PrintConstructContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -645,7 +733,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return InstructionList;
     }
 
-
+    /**
+     * Code generation for a Term used in the program
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitTerm(MyLangParser.TermContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -718,6 +810,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
     }
 
+    /**
+     * Code generation for an expression in the program
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitExpr(MyLangParser.ExprContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -765,7 +862,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     }
 
 
-
+    /**
+     * Code generation for an expression within parenthesis
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitParFactor(MyLangParser.ParFactorContext ctx) {
         List<Instruction> InstructionList = new ArrayList<>();
@@ -773,6 +874,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return InstructionList;
     }
 
+    /**
+     * Code generation for a Prefix operator
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override
     public List<Instruction> visitPrefixFactor(MyLangParser.PrefixFactorContext ctx){
         List<Instruction> InstructionList = new ArrayList<>();
@@ -848,6 +954,11 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return InstructionList;
     }
 
+    /**
+     * Visit a block inside an if, while etc and code generation
+     * @param ctx
+     * @return list of sprockell instructions
+     */
     @Override  public  List<Instruction> visitBlock(MyLangParser.BlockContext ctx){
         List<Instruction> InstructionList = new ArrayList<>();
         for (MyLangParser.InstructionContext context : ctx.instruction()) {
@@ -855,9 +966,16 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         }
         return InstructionList;
     }
+
+    /**
+     * Vsit the return construct
+     * @param ctx
+     * @return Visitor for the return construct
+     */
     @Override public List<Instruction> visitReturnInst(MyLangParser.ReturnInstContext ctx){
         return visit(ctx.returnConstruct());
     }
+
     @Override public List<Instruction> visitRunProInst(MyLangParser.RunProInstContext ctx){
         return visit(ctx.runProcedureConstruct());
     }

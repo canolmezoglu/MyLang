@@ -10,8 +10,8 @@ public class Instruction {
     List<InstructionArgs> args;
 
     /**
-     * @param instr
-     * @param args
+     * @param instr an instance of the Instructions class
+     * @param args arguments of this instruction
      * Constructor for Instructions which can have an instruction and a list of arguments
      */
     public Instruction(Instructions instr,List<InstructionArgs> args){
@@ -20,16 +20,25 @@ public class Instruction {
     }
 
     /**
-     * @param instr
+     * @param instr an instance of the Instructions class
      * Constructor for Instruction with no args
      */
     public Instruction(Instructions instr){
         this.instr=instr;
     }
 
+    /***
+     * Get this instruction
+     * @return this.instr
+     */
     public Instructions getInstr() {
         return this.instr;
     }
+
+    /***
+     * Get the arguments of this instruction
+     * @return this.args
+     */
     public  List<InstructionArgs> getArgs() {
         return this.args;
     }

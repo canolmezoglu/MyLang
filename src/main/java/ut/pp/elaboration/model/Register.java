@@ -8,10 +8,16 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Register {
+    /**
+     * Class to handle the registers being used in the program
+     */
     private List<Registers> registers;
     private Registers reg0;
 
     public Register(){
+        /**
+         * Constructor to initialize the registers for the Sprockell program
+         */
         this.registers = new ArrayList<>();
         this.registers.addAll(Arrays.asList(Registers.values()));
         this.registers.remove(8);
@@ -31,7 +37,7 @@ public class Register {
         return this.registers.remove(0);
     }
     /**
-     * @param reg
+     * @param reg the Gegisters object
      * Release a register by adding it back to the list of registers
      */
     public void release(Registers reg){

@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.function.Function;
 
 public class Checker extends MyLangBaseListener {
+    /**
+     * Class to handle TypeCheck, ScopeCheck,Threading etc
+     */
     private List<String> errors;
     private Result result;
     private ScopeTable scope;
@@ -29,6 +32,11 @@ public class Checker extends MyLangBaseListener {
     private List<ThreadSp> threads;
     private HashMap<String, ArraySp> arrays;
 
+    /**
+     * Returns the number of threads defined in the program
+     * @param tree Antlr ParseTree
+     * @return number of thread occurrences
+     */
     public static int getNumberOfThreads(ParseTree tree){
         int occurences = 0;
         String[] keywords = tree.toStringTree().split(" ");
@@ -39,6 +47,13 @@ public class Checker extends MyLangBaseListener {
         return occurences;
 
     }
+
+    /**
+     * Walk the ParseTree and Check for correctness
+     * @param tree Antlr ParseTree
+     * @return Result object
+     * @throws Exception if any errors are down and displays those errors
+     */
     public Result check (ParseTree tree) throws Exception {
         this.result = new Result();
         this.errors = new ArrayList<String>();
@@ -52,6 +67,13 @@ public class Checker extends MyLangBaseListener {
         }
         return this.result;
     }
+
+    /**
+     * Checker for a Dynamic Array
+     * @param iden name of array
+     * @param ctx
+     * @return boolean dynamic
+     */
     public boolean checkDynamicArray(String iden, ParserRuleContext ctx) {
         boolean dynamicArray = false;
         VariableData mainVariableData = null;
@@ -116,13 +138,20 @@ public class Checker extends MyLangBaseListener {
         return dynamicArray;
     }
 
+    /**
+     * Enter program and add active threads in the program
+     * @param ctx
+     */
     @Override public void enterProgram(MyLangParser.ProgramContext ctx){
         active_thread = new ThreadSp(0,0);
         threads.add(active_thread);
 
     }
 
-
+    /**
+     * Checker for functions
+     * @param ctx
+     */
     @Override public void exitRunProcedureConstruct(MyLangParser.RunProcedureConstructContext ctx){
         if (ctx.factor() instanceof MyLangParser.FuncCallContext){
            String functionname =  ((MyLangParser.FuncCallContext) ctx.factor()).ID().toString();
@@ -138,6 +167,10 @@ public class Checker extends MyLangBaseListener {
         }
     }
 
+    /**
+     * Checker for a prefix operator -MINUS,NOT
+     * @param ctx
+     */
     @Override public void exitPrefixFactor(MyLangParser.PrefixFactorContext ctx){
         if (ctx.prefixOp().MINUS() != null && getType(ctx.factor())!= MyType.NUM){
 
@@ -148,6 +181,11 @@ public class Checker extends MyLangBaseListener {
         }
         setType(ctx, getType(ctx.factor()));
     }
+
+    /**
+     * Checker for a Term - AND,OR
+     * @param ctx
+     */
     @Override public void exitTerm(MyLangParser.TermContext ctx){
         if (ctx.mult()!=null || ctx.AND()!=null)  {
             if (getType(ctx.factor()) != getType(ctx.term())) {
@@ -169,6 +207,11 @@ public class Checker extends MyLangBaseListener {
         }
         setType(ctx, getType(ctx.factor()));
     }
+
+    /**
+     * Checker for a superior expression - PLUS,MINUS,OR
+     * @param ctx
+     */
     @Override public void exitSuperiorExpr(MyLangParser.SuperiorExprContext ctx){
         if (ctx.superiorExpr() != null) {
             if (getType(ctx.term()) == getType(ctx.superiorExpr())) {
@@ -191,6 +234,10 @@ public class Checker extends MyLangBaseListener {
         setType(ctx, getType(ctx.term()));
     }
 
+    /**
+     * Checker for a program expression -EQ,NE
+     * @param ctx
+     */
     @Override public void exitExpr(MyLangParser.ExprContext ctx){
         if (ctx.superiorExpr().size() == 1 ){
             setType(ctx,getType(ctx.superiorExpr(0)));
@@ -211,14 +258,26 @@ public class Checker extends MyLangBaseListener {
 
     }
 
+    /**
+     * Checker for an expression inside parenthesis
+     * @param ctx
+     */
     @Override public void exitParFactor(MyLangParser.ParFactorContext ctx){
         setType(ctx,getType(ctx.expr()));
     }
+
+    /**
+     * Checker for a Primitiv Factor
+     * @param ctx
+     */
     @Override public void exitPrimitiveFactor(MyLangParser.PrimitiveFactorContext ctx){
         setType(ctx,getType(ctx.primitive()));
     }
 
-
+    /**
+     * Checker for a factor inside a function
+     * @param ctx
+     */
     @Override public void exitIdFactor(MyLangParser.IdFactorContext ctx){
         String iden = ctx.ID().toString();
         VariableData type = null;
@@ -250,6 +309,11 @@ public class Checker extends MyLangBaseListener {
             }
         }
     }
+
+    /**
+     * Checker for a Primitive -NUM,BOOL
+     * @param ctx
+     */
     @Override public void exitPrimitive(MyLangParser.PrimitiveContext ctx) {
         if (ctx.NUM() != null) {
             try{
@@ -266,13 +330,19 @@ public class Checker extends MyLangBaseListener {
         }
     }
 
-
+    /**
+     * Add a syntax error if the error node is visited
+     * @param node
+     */
     @Override
     public void visitErrorNode(ErrorNode node) {
         this.errors.add("SyntaxError: at Line: "+node.getSymbol().getLine() + " Character: "+node.getSymbol().getCharPositionInLine());
     }
 
-
+    /**
+     * Checker for a changing a value - variables,arrays,pointers
+     * @param ctx
+     */
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
         if(ctx.ID().getText().contains(".")){
             this.errors.add("Error: Enum values are fixed: they cannot be updated at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
@@ -329,8 +399,10 @@ public class Checker extends MyLangBaseListener {
         }
 
 
-
-
+    /**
+     * Checker for a declaration of a variable
+     * @param ctx
+     */
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
             if (ctx.ID().toString().contains("%") || ctx.ID().toString().contains(",") || ctx.ID().toString().contains(".")){
                 this.errors.add("Error: Variable cannot contain special character at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
@@ -367,6 +439,11 @@ public class Checker extends MyLangBaseListener {
             }
 
     }
+
+    /**
+     * Checker for a Pointer declaration
+     * @param ctx
+     */
     @Override
     public void exitDeclarePointer(MyLangParser.DeclarePointerContext ctx) {
         try {
@@ -388,6 +465,11 @@ public class Checker extends MyLangBaseListener {
             //Do nothing, errors have already been added by ScopeTable
         }
     }
+
+    /**
+     * Checker for a 1d array declaration
+     * @param ctx
+     */
     @Override
     public void exitDeclareArray(MyLangParser.DeclareArrayContext ctx) {
         if(ctx.darray().expr().size()!=Integer.parseInt(ctx.NUM().getText())){
@@ -417,6 +499,11 @@ public class Checker extends MyLangBaseListener {
             //Do nothing, errors have already been added by ScopeTable
         }
     }
+
+    /**
+     * Checker for a 2d array declaration
+     * @param ctx
+     */
     @Override
     public void exitDeclare2dArray(MyLangParser.Declare2dArrayContext ctx) {
         List<MyLangParser.DarrayContext> rows_list = ctx.darray();
@@ -458,6 +545,11 @@ public class Checker extends MyLangBaseListener {
             //Do nothing, errors have already been added by ScopeTable
         }
     }
+
+    /**
+     * Checker for an enum declaration
+     * @param ctx
+     */
     @Override
     public void exitDeclareEnum(MyLangParser.DeclareEnumContext ctx) {
         try {
@@ -484,12 +576,19 @@ public class Checker extends MyLangBaseListener {
         }
     }
 
-
+    /**
+     * Open a scope when you enter an if block
+     * @param ctx
+     */
     @Override
     public void enterIfConstruct(MyLangParser.IfConstructContext ctx) {
         scope.openScope();
     }
 
+    /**
+     * Checker for if condition and close scope for this if block
+     * @param ctx
+     */
     @Override public void exitIfConstruct(MyLangParser.IfConstructContext ctx){
         scope.closeScope();
         result.setThread(ctx,active_thread);
@@ -499,11 +598,19 @@ public class Checker extends MyLangBaseListener {
         }
     }
 
+    /**
+     * Open scope when you enter a while block
+     * @param ctx
+     */
     @Override
     public void enterWhileConstruct(MyLangParser.WhileConstructContext ctx) {
         scope.openScope();
     }
 
+    /**
+     * Checker for while condition and close scope for this while loop
+     * @param ctx
+     */
     @Override public void exitWhileConstruct(MyLangParser.WhileConstructContext ctx){
         scope.closeScope();
         result.setThread(ctx,active_thread);
@@ -512,19 +619,37 @@ public class Checker extends MyLangBaseListener {
             this.errors.add("Error: while statement can only check a boolean at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
     }
+
+    /**
+     * Set this statement to this active thread
+     * @param ctx
+     */
     @Override public void exitStatementInst(MyLangParser.StatementInstContext ctx){
         result.setThread(ctx.statement(),active_thread);
     }
+
+    /**
+     * Add all thread children to thread when a Parallel block is entered
+     * @param ctx
+     */
     @Override public void exitParallelConstruct(MyLangParser.ParallelConstructContext ctx){
         for (MyLangParser.ThreadConstructContext threadConstructContext : ctx.threadConstruct()){
             result.addChild(ctx,result.getThread(threadConstructContext).getThreadnr());
         }
     }
+
+    /**
+     * Add a child to the in the parllel block thread
+     * @param ctx
+     */
     @Override public void exitParallelInst(MyLangParser.ParallelInstContext ctx){
         result.addChild(ctx,result.getChildren(ctx.parallelConstruct()));
     }
 
-
+    /**
+     * Checker for the Thread Construct and open a new scope for this thread
+     * @param ctx
+     */
     @Override
     public void enterThreadConstruct(
             MyLangParser.ThreadConstructContext ctx
@@ -536,6 +661,10 @@ public class Checker extends MyLangBaseListener {
         threads.add(active_thread);
     }
 
+    /**
+     * Close scope and keep track of threads when you exit the thread construct
+     * @param ctx
+     */
     @Override
     public void exitThreadConstruct(MyLangParser.ThreadConstructContext ctx) {
         result.setThread(ctx,active_thread);
@@ -543,14 +672,29 @@ public class Checker extends MyLangBaseListener {
         scope.closeScope();
 
     }
+
+    /**
+     * Set the active thread when a print statement is visited
+     * @param ctx
+     */
     @Override
     public void exitPrintConstruct(MyLangParser.PrintConstructContext ctx){
         result.setThread(ctx,active_thread);
     }
+
+    /**
+     * Set active thread when Program ends
+     * @param ctx
+     */
     @Override
     public void exitProgram(MyLangParser.ProgramContext ctx){
         result.setThread(ctx,active_thread);
     }
+
+    /**
+     * Checker for return statement inside a function
+     * @param ctx
+     */
     @Override
     public void exitReturnConstruct(MyLangParser.ReturnConstructContext ctx){
         if (this.currFunction !=null){
@@ -568,6 +712,10 @@ public class Checker extends MyLangBaseListener {
         }
     }
 
+    /**
+     * Checker for a function definition
+     * @param ctx
+     */
     @Override
     public void enterFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
         MyType mytype = null;
@@ -596,6 +744,11 @@ public class Checker extends MyLangBaseListener {
             this.errors.add("Error: function has not been named at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
     }
+
+    /**
+     * Checker for a function call - enter
+     * @param ctx
+     */
     @Override
     public void enterFuncCall(MyLangParser.FuncCallContext ctx) {
         if (this.currFunction !=null) return;
@@ -605,6 +758,11 @@ public class Checker extends MyLangBaseListener {
             this.errors.add("Error: you are calling a function that does not exist yet at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
     }
+
+    /**
+     * Checker for a function call - exit
+     * @param ctx
+     */
     @Override
     public void exitFuncCall(MyLangParser.FuncCallContext ctx){
         FunctionData functionData = null;
@@ -623,6 +781,11 @@ public class Checker extends MyLangBaseListener {
         }
 
     }
+
+    /**
+     * Checker for function construct in the program
+     * @param ctx
+     */
     @Override
     public void exitFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
         if (this.result.functionDataHashMapContains(ctx.ID(0).toString())){
@@ -642,20 +805,52 @@ public class Checker extends MyLangBaseListener {
         this.currFunction = null;
     }
 
+    /**
+     * Set the type of the parse tree node to MyType
+     * @param node parsetree node
+     * @param type MuType object
+     */
     public void setType(ParseTree node, MyType type) {
         this.result.setType(node, type);
     }
+
+    /**
+     * Get type of this parsetree node
+     * @param node parsetree node
+     * @return MyType object - type of the parse tree node
+     */
     public MyType getType (ParseTree node) {
         return this.result.getType(node);
     }
+
+    /**
+     * Set the offset value of a parsetree node
+     * @param node parsetree node
+     * @param offset int offset value
+     */
     public void setOffset(ParseTree node, int offset) {
         this.result.setOffset(node, offset);
     }
+
+    /**
+     * Get the offset value of the parsetree node
+     * @param node parsetree node
+     * @return offset value of this parse tree node
+     */
     public int getOffset(ParseTree node){return this.result.getOffset(node);}
 
+    /**
+     * Get all errors in the program
+     * @return list of error messages
+     */
     public List<String> getErrors() {
         return this.errors;
     }
+
+    /**
+     * Get all Scope errors in the program
+     * @return list of scope check errors
+     */
     public Set<String> getScopeErrors(){
 
         return scope.errors;

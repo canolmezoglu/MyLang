@@ -5,12 +5,18 @@ import org.antlr.v4.runtime.Token;
 import java.util.*;
 
 public class ScopeTable {
+    /**
+     * Class to handle Scope Checking and keeping track identifiers in the program
+     */
     Set<String> errors;
     List<HashMap<String,VariableData>> scopes;
     List<Integer> sizes;
     List<Integer> globalSizes;
     int scope_num;
 
+    /**
+     * Constructor for the ScopeTable
+     */
     public ScopeTable(){
         this.errors = new HashSet<>();
         this.scopes = new ArrayList<>();
@@ -23,6 +29,10 @@ public class ScopeTable {
 
     }
 
+    /**
+     * Constructor for scope table + check for shared memory locations
+     * @param globalSizes number of shared variables
+     */
     public ScopeTable(int globalSizes){
         this.errors = new HashSet<>();
         this.scopes = new ArrayList<>();
@@ -37,6 +47,12 @@ public class ScopeTable {
         this.globalSizes.add(globalSizes);
 
     }
+
+    /**
+     * Get total size of a list of integers
+     * @param x
+     * @return
+     */
     public int getPrevSizes(List<Integer> x){
         int total = 0;
         for (int i : x){
@@ -44,8 +60,9 @@ public class ScopeTable {
         }
         return total;
     }
-    /*
-    Open a new Scope Level
+
+    /**
+     * Open a new Scope Level
      */
     public void openScope(){
         this.sizes.add(getPrevSizes( this.sizes));
@@ -53,8 +70,9 @@ public class ScopeTable {
         this.scopes.add(new HashMap<>());
         this.scope_num++;
     }
-    /*
-    Closes the scope level in the program
+
+    /**
+     * Closes a scope level in the program
      */
     public void closeScope(){
         this.scopes.remove(scope_num);
@@ -62,9 +80,15 @@ public class ScopeTable {
         this.globalSizes.remove(scope_num);
         this.scope_num--;
     }
-    /*
-    Adds a variable to the current scope in the program and adds an error if a variable with the
-    same name already exists in this scope
+
+    /**
+     * Adds a variable to the current scope in the program and adds an error if a variable with the
+     *     same name already exists in this scope
+     * @param var name of variable
+     * @param type type of variable
+     * @param tk Token object
+     * @param shared is the variable shared or not
+     * @return VariableData object
      */
     public VariableData declare(String var, MyType type, Token tk,boolean shared){
         if (shared){
@@ -97,6 +121,12 @@ public class ScopeTable {
         }
     }
 
+    /**
+     * Check whether the variable has been defined for this scope
+     * @param var name of variable
+     * @param tk Token object
+     * @return
+     */
     public VariableData check(String var,Token tk){
         VariableData check = checkLocal(var,tk);
         if (check!=null){
@@ -115,9 +145,14 @@ public class ScopeTable {
         }
         return check;
     }
-    /*
-    Checks the current scope if the variable exists and returns the type of the variable if it exists,
-    and returns null if the variable does not exist in the current scope
+
+
+    /**
+     * Checks the current scope if the variable exists and returns the type of the variable if it exists,
+     *     and returns null if the variable does not exist in the current scope
+     * @param var name of variable
+     * @param tk Token object
+     * @return VariableData object
      */
     public VariableData checkLocal(String var,Token tk){
         if(this.scopes.get(this.scope_num).containsKey(var)){
@@ -125,11 +160,15 @@ public class ScopeTable {
         }
         return null;
     }
-    /*
-    Checks all scopes starting from the deepest level if the variable exists and returns the type of the variable if it exists,
-    and returns null if the variable does not exist globally
-     */
 
+
+    /**
+     * Checks all scopes starting from the deepest level if the variable exists and returns the type of the variable if it exists,
+     *     and returns null if the variable does not exist globally
+     * @param var name of variable
+     * @param tk Token object
+     * @return VariableData object
+     */
     public VariableData checkGlobal(String var,Token tk){
         for (int i = this.scopes.size()-1; i >= 0; i--){
             if (this.scopes.get(i).containsKey(var)){
@@ -139,14 +178,17 @@ public class ScopeTable {
         }
         return null;
     }
-    /*
-    Returns the current scope number in the program
+
+    /**
+     * Return the current scope number in the program
+     * @return scope number value
      */
     public int getCurrentScope(){
         return this.scope_num;
     }
-    /*
-    Print the Scope Table
+
+    /**
+     * Print the Scope Table
      */
     public void print(){
         for(int i=0;i<this.scopes.size();i++){
@@ -158,6 +200,7 @@ public class ScopeTable {
             }
         }
     }
+
     public void addOffset(int offset){
         this.sizes.add(getPrevSizes(this.sizes) + offset);
     }

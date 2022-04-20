@@ -43,6 +43,10 @@ public class Target implements InstructionArgs{
         }
         return "(" + this.target + temp;
     }
+
+    /**
+     * @return this object
+     */
     @Override
     public InstructionArgs get() {
         return this;
