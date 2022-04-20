@@ -31,8 +31,12 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
     HashMap<String,Integer> var_address;
     HashMap<String,Boolean> var_global;
 
+    /**
+     * Generates Sprockell code for the String inputted.
+     * @param args
+     * @throws Exception
+     */
     public static void main(String args[]) throws Exception {
-//        String code = "int a[1] = {100}; print(a%1);";
         String code ="int a =900;\n" +
                 "int b=100;\n" +
                 "print(a/b);";
@@ -76,7 +80,7 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
      */
 
     // small explanation for concurrency:
-    // in the beginning, every thread their shared memory location to 1
+    // in the beginning, every thread except 0 sets their shared memory location to 1
     // main thread still continues with memory location 1
     // the other threads jump to their code blocks
     // on top of their code blocks, there is a test and set loop
@@ -85,29 +89,26 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
     // when the main thread wants to spawn another thread, it sets their memory
     // location to 0.
     // for this part i'll use || to signify left and right happen concurrently.
-    // the main thread then loops until its shared location is 0 again.  || the spawned thread exits the loop as its mem location is open
-    // the main thread, loops until its shared location is 0, when it is , sets it to 1. (test and set) || the spawned thread sets the main threads memory to 0 and executes its code block
+    // the main thread then loops until its shared location is 2  || the spawned thread exits the loop as its mem location is 0 finally and sets its mem location to 2
+    // the main thread goes on and starts other threads || the spawned thread executes its instructios
     // the main thread then loops until the shared location of the spawned thread is 0. || the spawned thread, after code block is executed, sets its memory location to 0
     @Override
     public List<Instruction> visitProgram(MyLangParser.ProgramContext ctx) {
 
         // small explanation for the shared memory:
-        // 0 -> lock used for blocking the main thread
-        // 1 ... 6 ->  used to trigger threads and store shared variables
-        // 7 -> lock used for shared memory access
+        // 1 ... 7 ->  used to trigger threads and store shared variables
+        // 0-> lock used for shared memory access
 
         // InstructionList is the code block that the main thread executes
         List<Instruction> InstructionList = new ArrayList<>();
 
         for (MyLangParser.InstructionContext context : ctx.instruction()) {
-            // If the current block is parallel,
-            // add the thread starting and stopping codes
+            // If the current block is a function, do not add the instructions to
+            // the codebase directly.
             if (context.getStart().getText().equals("function")){
                 visit(context);
             }
-//            else if (context.getStart().getText().equals("parallel")){
-//                visit(context);
-//            }
+
             // If it is not related , visit and to the instructionList.
             else{
                 InstructionList.addAll(visit(context));
@@ -217,7 +218,6 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
      * @param ctx
      * @return Visitor for a statement
      */
-    //TODO understand if # stuff on the right of ANTLR file is necessary for Instructions
     @Override
     public List<Instruction> visitStatementInst(MyLangParser.StatementInstContext ctx) {
         return visit(ctx.statement());
@@ -966,7 +966,7 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
     }
 
     /**
-     * Vsit the return construct
+     * Visit the return construct
      * @param ctx
      * @return Visitor for the return construct
      */
@@ -974,18 +974,36 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
         return visit(ctx.returnConstruct());
     }
 
+    /**
+     * Visits a run procedure
+     * @param ctx
+     * @return
+     */
     @Override public List<Instruction> visitRunProInst(MyLangParser.RunProInstContext ctx){
         return visit(ctx.runProcedureConstruct());
     }
+    /**
+     * Visits a run procedure.
+     * Does not need to do anything extra
+     * as the type checking is done inside scanner.
+     * @param ctx
+     * @return
+     */
     @Override public List<Instruction> visitRunProcedureConstruct(MyLangParser.RunProcedureConstructContext ctx){
         return visit(ctx.factor());
     }
+
+    /**
+     *  Visits a return construct inside a function.
+     *  Gets the jump location from ARP + 1 and jumps there.
+     * @param ctx
+     * @return
+     */
     @Override public List<Instruction> visitReturnConstruct(MyLangParser.ReturnConstructContext ctx){
         List<Instruction> InstructionList = new ArrayList<>();
         if (ctx.expr() !=null) {
             InstructionList.addAll(visit(ctx.expr()));
         }
-        // todo do this with incr instead
         InstructionList.add(sp.loadToMemory("1",Registers.regB));
         InstructionList.add(sp.compute(Operators.Add,Registers.regB,Registers.regF,Registers.regB));
         InstructionList.add(sp.getFromIndAddr(Registers.regB,Registers.regB));
@@ -995,11 +1013,20 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
     @Override public List<Instruction> visitFunctionInst(MyLangParser.FunctionInstContext ctx){
         return visit(ctx.functionConstruct());
     }
+
+    /**
+     * Visits a function construct.
+     * Changes function data so the
+     * code generator can generate instructions for being inside
+     * a function, such as having different memory locations.
+     * @param ctx
+     * @return
+     */
     @Override public List<Instruction> visitFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
         List<Instruction> InstructionList = new ArrayList<>();
         this.currentfunctionData = res.getFunctionData(ctx.ID(0).toString());
         InstructionList.addAll(visit(ctx.block()));
-        // todo do this with incr instead
+        // if function does not have a return, add the jump in the end
         if (!this.currentfunctionData.isLastLineHasReturn()) {
             InstructionList.add(sp.loadToMemory("1", Registers.regB));
             InstructionList.add(sp.compute(Operators.Add, Registers.regB, Registers.regF, Registers.regB));
@@ -1010,6 +1037,13 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
         this.currentfunctionData = null;
         return null;
     }
+
+    /**
+     * Visits a parallel instruction and creates
+     * thread spawning instructions.
+     * @param context
+     * @return
+     */
     @Override public List<Instruction> visitParallelInst(MyLangParser.ParallelInstContext context){
         threaded = true;
         List<Instruction> InstructionList = new ArrayList<>();
@@ -1053,21 +1087,33 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
         visit(context.parallelConstruct());
         return InstructionList;
     }
+
+    /**
+     * Visits a function call and
+     * creates dynamic memory allocation
+     * for recursion using ARP's.
+     * @param ctx
+     * @return
+     */
     @Override public List<Instruction> visitFuncCall(MyLangParser.FuncCallContext ctx){
         List<Instruction> InstructionList = new ArrayList<>();
+        // if currently inside a function
         if (this.currentfunctionData !=null){
             FunctionData calledFunction = res.getFunctionData(ctx.ID().toString());
-            // put the prev arp in next arp -1
             // current memory usage 2 + parameters
             int arpAdd =  1 + currentfunctionData.getParameters().size() + calledFunction.getLocalDataSize() + 1;
-
+            // visit all the parameters
             for (int i=0;i<ctx.expr().size();i++){
                 InstructionList.addAll(visit(ctx.expr(i)));
                 InstructionList.add(sp.pop(Registers.regA));
+                // add the arp add to the regF but do not update the regF yet so variables from the previous
+                // scope can be parsed.
                 InstructionList.add(sp.loadToMemory(Integer.toString(arpAdd +i + 1 + 1+ 1),Registers.regB));
                 InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regB,Registers.regB));
                 InstructionList.add(sp.storeInMemory(Registers.regA,Registers.regB));
             }
+            // store callee arp - 1 in regA, store caller ARP, which is
+            // regF into IndAddr regA, which is arp - 1
             InstructionList.add(sp.loadToMemory(Integer.toString(arpAdd),Registers.regA));
             InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regA,Registers.regA));
             InstructionList.add(sp.storeInMemory(Registers.regF,Registers.regA));
@@ -1075,21 +1121,20 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
             // set the arp correctly
             InstructionList.add(sp.compute(Operators.Incr,Registers.regA,Registers.regA,Registers.regA));
             InstructionList.add(sp.compute(Operators.Add,Registers.regA,Registers.reg0,Registers.regF));
-
+            // store arp + 1 in regA for return address
             InstructionList.add(sp.loadToMemory("1",Registers.regA));
             InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regA,Registers.regA));
-
+            // current pc counter + 3 will be the line to get back.
             InstructionList.add(sp.loadToMemory("3",Registers.regB));
             InstructionList.add(sp.compute(Operators.Add,Registers.regPC,Registers.regB,Registers.regB));
             InstructionList.add(sp.storeInMemory(Registers.regB,Registers.regA));
-            // jump here
+            // jump instruction to the callee is added here
             InstructionList.add(sp.fakeInst(ctx.ID().toString()));
 
+            //reset arp to before
             InstructionList.add(sp.loadToMemory("1",Registers.regA));
-
             InstructionList.add(sp.compute(Operators.Sub,Registers.regF,Registers.regA,Registers.regA));
             InstructionList.add(sp.getFromIndAddr(Registers.regA,Registers.regA));
-            //reset arp to before
             InstructionList.add(sp.compute(Operators.Add,Registers.regA,Registers.reg0,Registers.regF));
 
 
@@ -1103,7 +1148,7 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
             FunctionData calledFunction = res.getFunctionData(ctx.ID().toString());
             // current mem  + local storage + caller arp (empty for here)
             int arpLocation = currentMemoryUsage +  calledFunction.getLocalDataSize() + 1 + 1 ;
-
+            // go over the parameters
             for (int i=0;i<ctx.expr().size();i++){
                 InstructionList.addAll(visit(ctx.expr(i)));
                 InstructionList.add(sp.pop(Registers.regA));
@@ -1111,15 +1156,16 @@ public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
                 InstructionList.add(sp.storeInMemory(Registers.regA,Registers.regB));
             }
 
-
+            // set arp to regF
             InstructionList.add(sp.loadToMemory(Integer.toString(arpLocation),Registers.regF));
 
+            // put the return address in arp + 1
             InstructionList.add(sp.loadToMemory("1",Registers.regA));
             InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regA,Registers.regA));
-
             InstructionList.add(sp.loadToMemory("3",Registers.regB));
             InstructionList.add(sp.compute(Operators.Add,Registers.regPC,Registers.regB,Registers.regB));
             InstructionList.add(sp.storeInMemory(Registers.regB,Registers.regA));
+            // jump to the callee
             InstructionList.add(sp.fakeInst(ctx.ID().toString()));
 
 

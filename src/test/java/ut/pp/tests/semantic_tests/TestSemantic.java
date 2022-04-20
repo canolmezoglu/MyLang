@@ -1,4 +1,4 @@
-package ut.pp.tests;
+package ut.pp.tests.semantic_tests;
 
 import static org.junit.Assert.assertEquals;
 

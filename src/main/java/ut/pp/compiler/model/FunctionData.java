@@ -4,6 +4,11 @@ import ut.pp.compiler.model.enums.MyType;
 
 import java.util.*;
 
+/**
+ * FunctionData is a model that stores functions. It
+ * is used to send data from the Scanner to the
+ * Code Generation.
+ */
 public class FunctionData {
     Set<String> errors;
     int localDataSize;
@@ -64,6 +69,15 @@ public class FunctionData {
         this.returnType = returnType;
         this.errors = new HashSet<>();
     }
+
+    /**
+     * Adds a variable data as a parameter,
+     * and then changes the pointed
+     * object to a parameter.
+     * @param id
+     * @param type
+     * @param pointer
+     */
     public void addParameter(String id, MyType type,boolean pointer){
         if (localScope.containsKey(id) ){
             errors.add("You have declared a parameter more than once");
@@ -77,6 +91,15 @@ public class FunctionData {
         localScope.put(id,var);
 
     }
+
+    /**
+     * Used to declare a variable inside the function block.
+     * Increases the size of the local data so ARP can be created
+     * accordingly.
+     * @param id
+     * @param type
+     * @return
+     */
     public int declare(String id, MyType type){
         if (localScope.containsKey(id) ){
             errors.add("Scopetable error");
