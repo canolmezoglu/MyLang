@@ -1,13 +1,13 @@
-package ut.pp.tests.checker;
+package ut.pp.tests.contextual;
 
 import org.junit.Assert;
 import org.junit.Test;
-import ut.pp.elaboration.Checker;
+import ut.pp.elaboration.Scanner;
 
-import static ut.pp.tests.checker.TestSimpleExpr.getParseTree;
+import static ut.pp.tests.contextual.TestSimpleExpr.getParseTree;
 
 public class TestConcurrency {
-    final Checker checker = new Checker();
+    final Scanner scanner = new Scanner();
 
     /**
      * Test if the system rejects more than 7 threads being defined.
@@ -15,7 +15,7 @@ public class TestConcurrency {
     @Test
     public void test_concurrency1() throws Exception{
         try {
-            checker.check(
+            scanner.check(
                     getParseTree(" print(0);\n" +
                             "parallel{\n" +
                             "    thread {print(1);\n" +
@@ -40,8 +40,8 @@ public class TestConcurrency {
             Assert.fail();
         }
         catch (Exception e){
-            Assert.assertEquals(1,checker.getErrors().size());
-            Assert.assertTrue(checker.getErrors().contains(" Error: More than 7 threads are defined, more shared memory locations are used than capacity"));
+            Assert.assertEquals(1, scanner.getErrors().size());
+            Assert.assertTrue(scanner.getErrors().contains(" Error: More than 7 threads are defined, more shared memory locations are used than capacity"));
         }
 
     }
@@ -51,7 +51,7 @@ public class TestConcurrency {
     @Test
     public void test_concurrency2() throws Exception{
         try {
-            checker.check(
+            scanner.check(
                     getParseTree(" print(0);\n" +
                             "shared int arr[6] = {1,2,3,4,5,6};" +
                             "parallel{\n" +
@@ -66,8 +66,8 @@ public class TestConcurrency {
             Assert.fail();
         }
         catch (Exception e){
-            Assert.assertEquals(1,checker.getErrors().size());
-            Assert.assertTrue(checker.getErrors().contains("Error: More than 7 shared memory locations are used at line: 2"));
+            Assert.assertEquals(1, scanner.getErrors().size());
+            Assert.assertTrue(scanner.getErrors().contains("Error: More than 7 shared memory locations are used at line: 2"));
         }
     }
     /**
@@ -76,7 +76,7 @@ public class TestConcurrency {
     @Test
     public void test_concurrency3() throws Exception{
         try {
-            checker.check(
+            scanner.check(
                     getParseTree(
                             "shared int var1 = 5;" +
                             "shared int var2 = 5;" +
@@ -95,8 +95,8 @@ public class TestConcurrency {
             Assert.fail();
         }
         catch (Exception e){
-            Assert.assertEquals(1,checker.getErrors().size());
-            Assert.assertTrue(checker.getErrors().contains("Error: More than 7 shared memory locations are used at line: 1"));
+            Assert.assertEquals(1, scanner.getErrors().size());
+            Assert.assertTrue(scanner.getErrors().contains("Error: More than 7 shared memory locations are used at line: 1"));
         }
 
     }
@@ -105,7 +105,7 @@ public class TestConcurrency {
      */
     @Test
     public void test_concurrency4() throws Exception{
-            checker.check(
+            scanner.check(
                     getParseTree(
                             "shared int var1 = 5;" +
                                     "shared int var2 = 5;" +
@@ -118,14 +118,14 @@ public class TestConcurrency {
                                     "              }\n" +
                                     "    }\n"
                     ));
-        Assert.assertEquals(0,checker.getErrors().size());
+        Assert.assertEquals(0, scanner.getErrors().size());
     }
     /**
      * Test if the system accepts less than 7 memory locations being used with arrays.
      */
     @Test
     public void test_concurrency5() throws Exception{
-        checker.check(
+        scanner.check(
                 getParseTree(
                         "shared int arr[3] = {1,2,3};" +
                                 "parallel{\n" +
@@ -137,9 +137,7 @@ public class TestConcurrency {
                                 "              }\n" +
                                 "    }\n"
                 ));
-        Assert.assertEquals(0,checker.getErrors().size());
-
-
+        Assert.assertEquals(0, scanner.getErrors().size());
     }
 
 

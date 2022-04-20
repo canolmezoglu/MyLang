@@ -4,11 +4,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import ut.pp.elaboration.model.ArraySp;
+import ut.pp.elaboration.model.enums.MyType;
 import ut.pp.elaboration.model.ThreadSp;
-import ut.pp.parser.MyLangParser;
 
 import java.util.*;
-import java.util.function.Function;
 
 /** Class holding the results of the Simple Pascal checker. */
 public class Result {

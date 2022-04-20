@@ -1,16 +1,15 @@
-package ut.pp.tests.checker;
+package ut.pp.tests.contextual;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
 import org.junit.Test;
-import ut.pp.elaboration.Checker;
-import ut.pp.tests.checker.TestSimpleExpr;
+import ut.pp.elaboration.Scanner;
 
 public class TestScope {
 
-    Checker c = new Checker();
+    Scanner c = new Scanner();
 
     /**
      * Check if a normally constructed statement with
@@ -97,8 +96,8 @@ public class TestScope {
      */
     @Test
     public void scope_test_5()  throws Exception {
-        String input = "global int numberofiterations = 100;\n" +
-                "global bool numberofiterations = true;";
+        String input = "shared int numberofiterations = 100;\n" +
+                "shared bool numberofiterations = true;";
         try {
 
             c.check(TestSimpleExpr.getParseTree(input));
@@ -119,8 +118,8 @@ public class TestScope {
      */
     @Test
     public void scope_test_6()  throws Exception {
-        String input = "global int numberofiterations = 100;\n" +
-                "global bool numberofiterations = true;";
+        String input = "shared int numberofiterations = 100;\n" +
+                "shared bool numberofiterations = true;";
         try {
 
             c.check(TestSimpleExpr.getParseTree(input));
@@ -132,6 +131,7 @@ public class TestScope {
             assertTrue(c.getScopeErrors().contains("Error:numberofiterations already declared in this scope at Line 2 Character:0"));
         }
     }
+
 
 
 }

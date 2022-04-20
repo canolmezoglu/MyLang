@@ -1,4 +1,4 @@
-package ut.pp.elaboration;
+package ut.pp.elaboration.model.enums;
 
 public enum MyType {
     /**
@@ -6,5 +6,6 @@ public enum MyType {
      */
     BOOLEAN,
     NUM,
-    VOID
+    VOID,
+    ARRAY
 }

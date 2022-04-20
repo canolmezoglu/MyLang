@@ -1,12 +1,7 @@
 package ut.pp.elaboration.model;
 
-import ut.pp.elaboration.MyType;
-import ut.pp.elaboration.Result;
-import ut.pp.elaboration.ScopeTable;
-import ut.pp.elaboration.model.Instruction;
 import ut.pp.elaboration.model.enums.*;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

@@ -26,6 +26,11 @@ public class TestConcurrency {
         Assert.assertEquals("Sprockell 0 says 100",ut.pp.Main.runSprockell(input).get(0));
     }
     @Test
+    public void testPetersonWithSharedArray() throws Exception {
+        String input = "petersonWithSharedArray";
+        Assert.assertEquals("Sprockell 0 says 100",ut.pp.Main.runSprockell(input).get(0));
+    }
+    @Test
     public void testNestedConcurrency() throws Exception {
         String input = "nestedConcurrency";
         Assert.assertEquals("Sprockell 0 says -287",ut.pp.Main.runSprockell(input).get(0));
