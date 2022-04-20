@@ -9,7 +9,7 @@ import ut.pp.elaboration.Checker;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
-public class SimpleExpr {
+public class TestSimpleExpr {
 
     final Checker checker = new Checker();
 
@@ -54,7 +54,7 @@ public class SimpleExpr {
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
-            Assert.assertEquals(e.getMessage(),"[Prefix operation has type mismatch, expected bool, got int]");
+            Assert.assertEquals(e.getMessage(),"Prefix operation has type mismatch, expected bool, got int at Line: 1 Character: 6");
         }
 
     }
@@ -74,7 +74,7 @@ public class SimpleExpr {
         }
         catch (Exception e){
             Assert.assertEquals(1,checker.getErrors().size());
-            Assert.assertEquals(e.getMessage(),"[Prefix operation has type mismatch, expected int, got bool]");
+            Assert.assertEquals(e.getMessage(),"Prefix operation has type mismatch, expected int, got bool at Line: 1 Character: 6");
 
         }
     }

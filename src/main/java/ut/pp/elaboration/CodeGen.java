@@ -34,19 +34,9 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
     public static void main(String args[]) throws Exception {
 //        String code = "int a[1] = {100}; print(a%1);";
-        String code =
-                "function int changeReference (int x&, int y&){\n" +
-                        "    x = x + 2;\n" +
-                        "    y = y + 6;\n" +
-                        "    return 5;\n" +
-                        "}\n" +
-                        "int i = 4;\n" +
-                        "int d = 5;\n" +
-                        "pointer b = i;\n" +
-                        "pointer c = d;\n" +
-                        "print(changeReference(b,c));\n" +
-                        "print(i);\n" +
-                        "print(d);";
+        String code ="int a =900;\n" +
+                "int b=100;\n" +
+                "print(a/b);";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(code));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
@@ -77,16 +67,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         return this.visit(tree);
     }
 
-    /**
-     * Loads an expression to a register and returns it
-     * Invokes the reghandler to acquire an empty register,
-     * therefore, the returned register should be released
-     * @return register
-     */
-    private Registers getRegister(MyLangParser.ExprContext expr) {
-        return registers.get(expr);
-
-    }
 
 
 
@@ -297,7 +277,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.add(sp.writeToMemory(Registers.regA,res.getOffset(ctx)));
         }  //functions have different address space
         else if (this.currentfunctionData != null) {
-            InstructionList.add(sp.loadToMemory(Integer.toString(res.getOffset(ctx)),Registers.regB));
+            InstructionList.add(sp.loadToMemory(Integer.toString(res.getOffset(ctx) + 1),Registers.regB));
             InstructionList.add(sp.compute(Operators.Sub,Registers.regF,Registers.regB,Registers.regB));
             InstructionList.add(sp.storeInMemory(Registers.regA,Registers.regB));
         }
@@ -562,7 +542,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
             }
             else {
-                InstructionList.add(sp.loadToMemory(Integer.toString(offset), Registers.regB));
+                InstructionList.add(sp.loadToMemory(Integer.toString(offset +1), Registers.regB));
                 InstructionList.add(sp.compute(Operators.Sub, Registers.regF, Registers.regB, Registers.regB));
                 if (this.currentfunctionData.getVariable(child).pointer) {
                     InstructionList.add(sp.getFromIndAddr(Registers.regB, Registers.regB));
@@ -685,7 +665,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
                 }
             }
             else{
-                InstructionList.add(sp.loadToMemory(Integer.toString(offset),Registers.regB));
+                InstructionList.add(sp.loadToMemory(Integer.toString(offset +1  ),Registers.regB));
                 InstructionList.add(sp.compute(Operators.Sub,Registers.regF,Registers.regB,Registers.regB));
                 if (variableData.pointer){
                     InstructionList.add(sp.getFromIndAddr(Registers.regB,Registers.regB));
@@ -753,14 +733,31 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.add(sp.pop(Registers.regB));
             if (ctx.mult() != null) {
                 if(ctx.mult().DIV()!=null){
-                    //TODO fix 100 / 850
+                    // check if first operand is negative, if so make positive
+                    InstructionList.add(sp.compute(Operators.GtE,Registers.regA,Registers.reg0,Registers.regC));
+                    InstructionList.add(sp.branch(Registers.regC,new Target(Targets.Rel,2)));
+                    InstructionList.add(sp.compute(Operators.Sub,Registers.reg0,Registers.regA,Registers.regA));
+                    // check if second operand is negative, if so make positive
+
+                    InstructionList.add(sp.compute(Operators.GtE,Registers.regB,Registers.reg0,Registers.regD));
+                    InstructionList.add(sp.branch(Registers.regD,new Target(Targets.Rel,2)));
+                    InstructionList.add(sp.compute(Operators.Sub,Registers.reg0,Registers.regB,Registers.regB));
+                    // if only one of those numbers were negative, store 1 in regE
+                    InstructionList.add(sp.compute(Operators.Xor,Registers.regC,Registers.regD,Registers.regE));
+                    // division by subtraction
                     InstructionList.add(sp.compute(Operators.Add,Registers.reg0,Registers.reg0,Registers.regC));
-                    InstructionList.add(sp.compute(Operators.Add,Registers.reg0,Registers.reg0,Registers.regE));
+                    InstructionList.add(sp.compute(Operators.GtE, Registers.regA, Registers.regB, Registers.regD));
+                    InstructionList.add(sp.compute(Operators.Equal,Registers.regD,Registers.reg0,Registers.regD));
+                    InstructionList.add(sp.branch(Registers.regD,new Target(Targets.Rel,4)));
                     InstructionList.add(sp.compute(Operators.Sub,Registers.regA,Registers.regB,Registers.regA));
                     InstructionList.add(sp.compute(Operators.Incr, Registers.regC, Registers.regC, Registers.regC));
-                    InstructionList.add(sp.compute(Operators.GtE, Registers.regA, Registers.regB, Registers.regE));
-                    InstructionList.add(sp.branch(Registers.regE,new Target(Targets.Rel,-3)));
-                    InstructionList.add(sp.compute(Operators.Add, Registers.regC, Registers.regE, Registers.regA));
+                    InstructionList.add(sp.relJump(-5));
+                    InstructionList.add(sp.compute(Operators.Add, Registers.regC, Registers.reg0, Registers.regA));
+                    // if only one was negative, make the number negative
+                    InstructionList.add(sp.compute(Operators.Equal,Registers.regE,Registers.reg0,Registers.regE));
+                    InstructionList.add(sp.branch(Registers.regE,new Target(Targets.Rel,2)));
+                    InstructionList.add(sp.compute(Operators.Sub, Registers.reg0, Registers.regA, Registers.regA));
+
                 }
                 else {
                     InstructionList.add(sp.compute(Operators.Mul, Registers.regA, Registers.regB, Registers.regA));
@@ -1078,11 +1075,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.add(sp.compute(Operators.Incr,Registers.regA,Registers.regA,Registers.regA));
             InstructionList.add(sp.compute(Operators.Add,Registers.regA,Registers.reg0,Registers.regF));
 
-
-            //TODO SAVE REGHANDLER BEFORE GENERATING FUNCTION
-
-
-
             InstructionList.add(sp.loadToMemory("1",Registers.regA));
             InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regA,Registers.regA));
 
@@ -1091,8 +1083,6 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.add(sp.storeInMemory(Registers.regB,Registers.regA));
             // jump here
             InstructionList.add(sp.fakeInst(ctx.ID().toString()));
-
-
 
             InstructionList.add(sp.loadToMemory("1",Registers.regA));
 
@@ -1110,8 +1100,8 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         else {
 
             FunctionData calledFunction = res.getFunctionData(ctx.ID().toString());
-            // current mem + register save + local storage + caller arp (empty for here)
-            int arpLocation = currentMemoryUsage +  calledFunction.localDataSize + 1 ;
+            // current mem  + local storage + caller arp (empty for here)
+            int arpLocation = currentMemoryUsage +  calledFunction.localDataSize + 1 + 1 ;
 
             for (int i=0;i<ctx.expr().size();i++){
                 InstructionList.addAll(visit(ctx.expr(i)));

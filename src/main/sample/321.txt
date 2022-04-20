@@ -4,9 +4,12 @@ int c = (2 * 3) + 4;
 bool d = a == b;
 bool e = b == c;
 bool f = d and d or e;
+bool h = 5 != 6;
 print(a);
 print(b);
 print(c);
 print(d);
 print(e);
 print(f);
+print(h);
+

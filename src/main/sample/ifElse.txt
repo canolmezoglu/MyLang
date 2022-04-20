@@ -2,9 +2,8 @@ function bool belowSpeedLimit ( int speedLimit , int currentSpeed ) {
      if  ( currentSpeed >= speedLimit ) {
             return false;
             }
-     else {
-        return true;
-     }
+      return true;
+
 }
 
 int fine = 500;

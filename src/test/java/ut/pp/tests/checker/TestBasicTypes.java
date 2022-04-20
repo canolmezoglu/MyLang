@@ -11,7 +11,7 @@ import ut.pp.elaboration.Result;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
-public class BasicTypes {
+public class TestBasicTypes {
     final Checker checker = new Checker();
 
     public static ParseTree getParseTree(String code) {
@@ -57,8 +57,8 @@ public class BasicTypes {
                     tree);
         } catch (Exception e) {
             Assert.assertEquals(1, checker.getErrors().size());
-            Assert.assertEquals(e.getMessage()
-                    , "[This int defined is larger than the limits]");
+            Assert.assertEquals("Error: This int defined is larger than the limits at Line: 1 Character: 7"
+            , e.getMessage());
         }
 
 
@@ -75,8 +75,8 @@ public class BasicTypes {
                     tree);
         } catch (Exception e) {
             Assert.assertEquals(1, checker.getErrors().size());
-            Assert.assertEquals(e.getMessage()
-                    , "[This int defined is larger than the limits]");
+            Assert.assertEquals("Error: This int defined is larger than the limits at Line: 1 Character: 6",
+                    e.getMessage());
         }
     }
 }

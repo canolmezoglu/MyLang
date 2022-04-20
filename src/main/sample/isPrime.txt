@@ -1,0 +1,23 @@
+function int modulo (int a, int b) {
+    if (b > a){
+        return a;
+    }
+    int c = a / b ;
+    return a - c * b;
+}
+
+function bool isPrime (int a) {
+    int limit = a / 2 + 1;
+    if ( (a==1) or (a==2)) {
+        return true;
+    }
+    int i = 2;
+    while (i <= limit) {
+        if ( modulo(a,i) == 0){
+         return false;
+        }
+        i = i  + 1;
+    }
+    return true;
+}
+print(isPrime(24 ));

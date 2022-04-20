@@ -1,0 +1,16 @@
+function int modulo (int a, int b) {
+    if (b > a){
+        return a;
+    }
+    int c = a / b ;
+    return a - c * b;
+}
+
+function int gcd(int x, int y) {
+        if (y == 0) {
+            return x;
+        }
+        int mod = modulo( x , y );
+        return gcd(y, mod);
+}
+print(gcd(34 , 6 ));

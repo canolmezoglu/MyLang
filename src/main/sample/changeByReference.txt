@@ -8,5 +8,5 @@ int d = 5;
 pointer b = i;
 pointer c = d;
 run(changeReference(b,c));
-print(d);
 print(i);
+print(d);

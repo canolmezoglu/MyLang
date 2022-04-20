@@ -9,7 +9,7 @@ import ut.pp.elaboration.Checker;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
-public class VariableChecker {
+public class TestVariableChecker {
     final Checker checker = new Checker();
 
     public static ParseTree getParseTree(String code) {
@@ -80,6 +80,7 @@ public class VariableChecker {
     }
     /**
      * Test declaring without an expression
+     * is rejected.
      */
     @Test
     public void test_declStat3() throws Exception {
@@ -89,7 +90,7 @@ public class VariableChecker {
             );
             Assert.fail();
         }catch (Exception e){
-            Assert.assertEquals(2, checker.getErrors().size());
+            Assert.assertEquals(4, checker.getErrors().size());
         }
         }
 

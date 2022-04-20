@@ -1,0 +1,30 @@
+parallel {
+    thread {
+            int wait = 100; while (wait > 0){
+            wait = wait - 1;
+            print(1);
+        }
+        parallel {
+            thread {
+                    int wait = 100;
+                    while (wait > 0){
+                         print(3);
+                         wait = wait - 1;
+                    }
+            }
+             thread {
+                    int wait = 100;
+                    while (wait > 0){
+                        print(4);
+                        wait = wait - 1;
+                    }
+            }
+        }
+    }
+    thread {
+        int wait = 200; while (wait > 0){
+            wait = wait - 1;
+            print(2);
+        }
+    }
+}
