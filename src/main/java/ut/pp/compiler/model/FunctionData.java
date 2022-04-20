@@ -1,7 +1,6 @@
-package ut.pp.elaboration;
+package ut.pp.compiler.model;
 
-import ut.pp.elaboration.model.enums.MyType;
-import ut.pp.elaboration.model.VariableData;
+import ut.pp.compiler.model.enums.MyType;
 
 import java.util.*;
 
@@ -10,6 +9,43 @@ public class FunctionData {
     int localDataSize;
     Map<String, VariableData> localScope;
     List<String> parameters;
+
+    public Set<String> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(Set<String> errors) {
+        this.errors = errors;
+    }
+
+    public void setLocalDataSize(int localDataSize) {
+        this.localDataSize = localDataSize;
+    }
+
+    public Map<String, VariableData> getLocalScope() {
+        return localScope;
+    }
+
+    public void setLocalScope(Map<String, VariableData> localScope) {
+        this.localScope = localScope;
+    }
+
+    public List<String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(List<String> parameters) {
+        this.parameters = parameters;
+    }
+
+    public MyType getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(MyType returnType) {
+        this.returnType = returnType;
+    }
+
     MyType returnType;
 
     public boolean isLastLineHasReturn() {

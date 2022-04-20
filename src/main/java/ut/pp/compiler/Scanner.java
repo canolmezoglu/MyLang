@@ -1,13 +1,14 @@
-package ut.pp.elaboration;
+package ut.pp.compiler;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import ut.pp.elaboration.model.ArraySp;
-import ut.pp.elaboration.model.enums.MyType;
-import ut.pp.elaboration.model.ThreadSp;
-import ut.pp.elaboration.model.VariableData;
+import ut.pp.compiler.model.ArraySp;
+import ut.pp.compiler.model.FunctionData;
+import ut.pp.compiler.model.enums.MyType;
+import ut.pp.compiler.model.ThreadSp;
+import ut.pp.compiler.model.VariableData;
 import ut.pp.parser.MyLangBaseListener;
 import ut.pp.parser.MyLangParser;
 
@@ -63,7 +64,8 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Scanner for a Dynamic Array
+     * Scanner for a Dynamic Array. Checks whether a dynamic call is being made to the
+     * array.
      * @param iden name of array
      * @param ctx
      * @return boolean dynamic
@@ -73,7 +75,9 @@ public class Scanner extends MyLangBaseListener {
         VariableData mainVariableData = null;
         String[] arrayDynamic = iden.split("%");
         if (arrayDynamic.length > 1) {
+            // if the array is one dimensional
             if (arrayDynamic.length < 3 && Character.isLetter(arrayDynamic[1].charAt(0))) {
+                // get the beginning offset of the array
                 VariableData variableData = scope.check(arrayDynamic[0] + "%" + "0" , ctx.getStart());
                 ArraySp arraySp =
                         new ArraySp(variableData.getSizeCurr());
@@ -81,10 +85,11 @@ public class Scanner extends MyLangBaseListener {
                 mainVariableData = variableData;
                 result.addDynamicArrayCall(ctx, arraySp);
                 dynamicArray = true;
-
-
+                // if the array is two dimensional
             } else if (arrayDynamic.length == 3) {
+                // if two indices are both variables
                 if (Character.isLetter(arrayDynamic[1].charAt(0)) && Character.isLetter(arrayDynamic[2].charAt(0))) {
+                    // get the beginning offset of the array
                     VariableData variableData = scope.check(arrayDynamic[0] + "%" + "0"  + "%" + "0"  , ctx.getStart());
                     ArraySp arraySp =
                             new ArraySp(variableData.getSizeCurr());
@@ -96,8 +101,9 @@ public class Scanner extends MyLangBaseListener {
                     mainVariableData = variableData;
 
                     dynamicArray = true;
-
+                // if only the first call is a variable
                 } else if (Character.isLetter(arrayDynamic[1].charAt(0))) {
+                    // get the beginning offset of the array
                     VariableData variableData = scope.check(arrayDynamic[0] + "%" + "0"  + "%" + "0"  ,  ctx.getStart());
                     ArraySp arraySp =
                             new ArraySp(variableData.getSizeCurr());
@@ -108,8 +114,7 @@ public class Scanner extends MyLangBaseListener {
                     arraySp.setColumnSize(variableData.getColumnCount());
                     mainVariableData = variableData;
                     dynamicArray = true;
-
-
+                // if only the second call is a variable
                 } else if (Character.isLetter(arrayDynamic[2].charAt(0))) {
                     VariableData variableData = scope.check(arrayDynamic[0] + "%" + "0"  + "%" + "0"   , ctx.getStart());
                     ArraySp arraySp =
@@ -124,6 +129,7 @@ public class Scanner extends MyLangBaseListener {
                 }
             }
         }
+        // if the array is dynamic store the context
         if (dynamicArray){
             setType(ctx,mainVariableData.getType());
             result.setGlobal(ctx, mainVariableData.isGlobal());
@@ -134,23 +140,25 @@ public class Scanner extends MyLangBaseListener {
 
     /**
      * Enter program and add active threads in the program
+     * Makes the main thread the current active thread.
      * @param ctx
      */
     @Override public void enterProgram(MyLangParser.ProgramContext ctx){
         active_thread = new ThreadSp(0,0);
         threads.add(active_thread);
-
     }
 
     /**
-     * Scanner for functions
+     * A checker for the void function running method.
+     * Only allows for void function calls to be
+     * executed.
      * @param ctx
      */
     @Override public void exitRunProcedureConstruct(MyLangParser.RunProcedureConstructContext ctx){
         if (ctx.factor() instanceof MyLangParser.FuncCallContext){
            String functionname =  ((MyLangParser.FuncCallContext) ctx.factor()).ID().toString();
            FunctionData functionData =result.getFunctionData(functionname);
-           if (functionData.returnType != MyType.VOID){
+           if (functionData.getReturnType() != MyType.VOID){
                this.errors.add("Error:Run does not run any not void functions at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
 
            }
@@ -163,6 +171,7 @@ public class Scanner extends MyLangBaseListener {
 
     /**
      * Scanner for a prefix operator -MINUS,NOT
+     *  Does type checking for the operations.
      * @param ctx
      */
     @Override public void exitPrefixFactor(MyLangParser.PrefixFactorContext ctx){
@@ -178,6 +187,7 @@ public class Scanner extends MyLangBaseListener {
 
     /**
      * Scanner for a Term - AND,OR
+     * Does type checking for the operations.
      * @param ctx
      */
     @Override public void exitTerm(MyLangParser.TermContext ctx){
@@ -204,6 +214,7 @@ public class Scanner extends MyLangBaseListener {
 
     /**
      * Scanner for a superior expression - PLUS,MINUS,OR
+     * Does type checking for the operations.
      * @param ctx
      */
     @Override public void exitSuperiorExpr(MyLangParser.SuperiorExprContext ctx){
@@ -230,6 +241,7 @@ public class Scanner extends MyLangBaseListener {
 
     /**
      * Scanner for a program expression -EQ,NE
+     * Does type checking for the operations.
      * @param ctx
      */
     @Override public void exitExpr(MyLangParser.ExprContext ctx){
@@ -261,7 +273,8 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Scanner for a Primitiv Factor
+     * Scanner for a Primitive Factor, sets the type
+     * so type checking can be done.
      * @param ctx
      */
     @Override public void exitPrimitiveFactor(MyLangParser.PrimitiveFactorContext ctx){
@@ -269,12 +282,19 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Scanner for a factor inside a function
+     * Scanner for a variable call, sets
+     * the offset of the variable as well as
+     * checking whether variable is a pointer,
+     * where the variable is called - inside a function or
+     * outside and whether its shared or not.
+     * Stores this information in the result so it
+     * could be used during code generation.
      * @param ctx
      */
     @Override public void exitIdFactor(MyLangParser.IdFactorContext ctx){
         String iden = ctx.ID().toString();
         VariableData type = null;
+        // if we are currently inside a function
         if (this.currFunction !=null){
             if(iden.contains("&")){ //this is a pointer
                 setType(ctx,this.currFunction.getVariable(iden.substring(0,iden.length()-1)).getType());
@@ -306,6 +326,8 @@ public class Scanner extends MyLangBaseListener {
 
     /**
      * Scanner for a Primitive -NUM,BOOL
+     * Does type checking and checks the size of an integer to
+     * make sure its within bounds.
      * @param ctx
      */
     @Override public void exitPrimitive(MyLangParser.PrimitiveContext ctx) {
@@ -344,6 +366,7 @@ public class Scanner extends MyLangBaseListener {
         String iden = ctx.ID().toString();
 
         VariableData type = null;
+        // if inside a function
         if (this.currFunction !=null){
             if(iden.contains("&")){ //this is a pointer
                 type = this.currFunction.getVariable(iden.substring(0,iden.length()-1));
@@ -352,6 +375,7 @@ public class Scanner extends MyLangBaseListener {
                 }
                 return;
             }
+            // checks whether a dynamic array call is made
             if (!checkDynamicArray(iden,ctx)) {
                 type = this.currFunction.getVariable(iden);
                 if (type != null) {
@@ -395,6 +419,8 @@ public class Scanner extends MyLangBaseListener {
 
     /**
      * Scanner for a declaration of a variable
+     * Checks if the variable has been previously declared
+     * and sets type.
      * @param ctx
      */
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
@@ -436,6 +462,8 @@ public class Scanner extends MyLangBaseListener {
 
     /**
      * Scanner for a Pointer declaration
+     * Checks if the variable has been previously declared
+     * and sets type.
      * @param ctx
      */
     @Override
@@ -465,7 +493,10 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Scanner for a 1d array declaration
+     * Scanner for a 1d array declaration,
+     * Checks if the array name has been used
+     * before, checks whether array lengths and
+     * types match.
      * @param ctx
      */
     @Override
@@ -500,6 +531,9 @@ public class Scanner extends MyLangBaseListener {
 
     /**
      * Scanner for a 2d array declaration
+     * Checks if the array name has been used
+     * before, checks whether array lengths and
+     * types match.
      * @param ctx
      */
     @Override
@@ -638,7 +672,7 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Add a child to the in the parllel block thread
+     * Add a child to the in the parallel block thread
      * @param ctx
      */
     @Override public void exitParallelInst(MyLangParser.ParallelInstContext ctx){
@@ -646,7 +680,8 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Scanner for the Thread Construct and open a new scope for this thread
+     * Scanner for the Thread Construct and open a new scope for this thread.
+     * Makes the entered thread active.
      * @param ctx
      */
     @Override
@@ -661,7 +696,8 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Close scope and keep track of threads when you exit the thread construct
+     * Close scope and keep track of threads when you exit the thread construct.
+     * Makes the parent of the currently exiting thread the active thread.
      * @param ctx
      */
     @Override
@@ -697,12 +733,12 @@ public class Scanner extends MyLangBaseListener {
     @Override
     public void exitReturnConstruct(MyLangParser.ReturnConstructContext ctx){
         if (this.currFunction !=null){
-            if (this.currFunction.returnType == MyType.VOID){
+            if (this.currFunction.getReturnType() == MyType.VOID){
                 if ( ctx.expr()!= null)
                 this.errors.add("Error: A function that is void is trying to return a " + getType(ctx.expr()) + " at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
             }
-            else if (this.currFunction.returnType != getType(ctx.expr())){
-                this.errors.add("Error: A function claims to return " + this.currFunction.returnType.toString() +
+            else if (this.currFunction.getReturnType() != getType(ctx.expr())){
+                this.errors.add("Error: A function claims to return " + this.currFunction.getReturnType().toString() +
                         " but actually returns " + getType(ctx.expr()) + " at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine() );
             }
         }
@@ -712,7 +748,10 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Scanner for a function definition
+     * Scanner for a function definition.
+     * Gets the defined type of the function
+     * and stores the types of parameters, both for
+     * future checking.
      * @param ctx
      */
     @Override
@@ -745,7 +784,7 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Scanner for a function call - enter
+     * Scanner for a function call - enter.
      * @param ctx
      */
     @Override
@@ -759,7 +798,9 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Scanner for a function call - exit
+     * Scanner for a function call - exit.
+     * Tests if the types of parameters match and
+     * if a function call is made inside the parameters.
      * @param ctx
      */
     @Override
@@ -774,7 +815,7 @@ public class Scanner extends MyLangBaseListener {
                 return;
             }
         }
-        setType(ctx,functionData.returnType);
+        setType(ctx,functionData.getReturnType());
         for (int i=0; i < ctx.expr().size();i++){
             if (ctx.expr(i).superiorExpr(0) !=null &&
                     ctx.expr(i).superiorExpr(0).term() !=null &&
@@ -782,7 +823,7 @@ public class Scanner extends MyLangBaseListener {
                     ctx.expr(i).superiorExpr(0).term().factor() instanceof MyLangParser.FuncCallContext){
                 this.errors.add("Error: Function calls cannot be made inside function calls at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
             }
-            if (getType(ctx.expr(i)) != functionData.getVariable(functionData.parameters.get(i)).getType()){
+            if (getType(ctx.expr(i)) != functionData.getVariable(functionData.getParameters().get(i)).getType()){
                 this.errors.add("Error: the parameter type not equal to expected type at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
             }
 
@@ -791,12 +832,12 @@ public class Scanner extends MyLangBaseListener {
     }
 
     /**
-     * Scanner for function construct in the program
+     * Scanner for function construct in the program.
      * @param ctx
      */
     @Override
     public void exitFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
-        if (this.errors.addAll(this.currFunction.errors));
+        if (this.errors.addAll(this.currFunction.getErrors()));
         if (this.result.functionDataHashMapContains(ctx.ID(0).toString())){
             this.errors.add("Error: you cannot have two functions with the same name at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
@@ -804,8 +845,8 @@ public class Scanner extends MyLangBaseListener {
             this.currFunction.setLastLineHasReturn(true);
 
         }
-        else if (this.currFunction.returnType == MyType.NUM ||
-                this.currFunction.returnType == MyType.BOOLEAN
+        else if (this.currFunction.getReturnType() == MyType.NUM ||
+                this.currFunction.getReturnType() == MyType.BOOLEAN
         ){
             this.errors.add("Error: You cannot have an integer or boolean function that returns nothing at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }

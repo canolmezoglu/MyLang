@@ -1,7 +1,6 @@
-package ut.pp.elaboration.model;
+package ut.pp.compiler.model;
 
-import ut.pp.elaboration.model.enums.Registers;
-import ut.pp.elaboration.model.interfaces.InstructionArgs;
+import ut.pp.compiler.model.enums.Registers;
 
 import java.util.ArrayList;
 import java.util.Arrays;

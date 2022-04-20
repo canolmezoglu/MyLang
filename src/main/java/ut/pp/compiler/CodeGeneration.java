@@ -1,19 +1,19 @@
-package ut.pp.elaboration;
+package ut.pp.compiler;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
-import ut.pp.elaboration.model.*;
-import ut.pp.elaboration.model.enums.*;
-import ut.pp.elaboration.model.VariableData;
+import ut.pp.compiler.model.*;
+import ut.pp.compiler.model.enums.*;
+import ut.pp.compiler.model.VariableData;
 import ut.pp.parser.MyLangBaseVisitor;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
 import java.util.*;
 
-public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
+public class CodeGeneration extends MyLangBaseVisitor<List<Instruction>> {
     /**
      * Code Generated for Sprockell program with no errors
      */
@@ -40,7 +40,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
         ParseTree tree = parser.program();
-        CodeGen c = new CodeGen();
+        CodeGeneration c = new CodeGeneration();
         List<Instruction> instructions = c.genCode(tree);
         for (Instruction i : instructions){
             System.out.println(" ," + i.toString());
@@ -446,7 +446,9 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         String pointer_name = ctx.ID().getText();
         String varname = ctx.factor().getText();
         pointer_map.put(pointer_name,varname);
+        // gets the address of the value its pointing to
         InstructionList.add(sp.loadToMemory(Integer.toString(res.getOffset(ctx.factor())),Registers.regA));
+        // stores that address in itself
         InstructionList.add(sp.storeInMemory(Registers.regA,res.getOffset(ctx)));
         currentMemoryUsage = res.getOffset(ctx) ;
         return InstructionList;
@@ -1057,7 +1059,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             FunctionData calledFunction = res.getFunctionData(ctx.ID().toString());
             // put the prev arp in next arp -1
             // current memory usage 2 + parameters
-            int arpAdd =  1 + currentfunctionData.parameters.size() + calledFunction.localDataSize + 1;
+            int arpAdd =  1 + currentfunctionData.getParameters().size() + calledFunction.getLocalDataSize() + 1;
 
             for (int i=0;i<ctx.expr().size();i++){
                 InstructionList.addAll(visit(ctx.expr(i)));
@@ -1100,7 +1102,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
 
             FunctionData calledFunction = res.getFunctionData(ctx.ID().toString());
             // current mem  + local storage + caller arp (empty for here)
-            int arpLocation = currentMemoryUsage +  calledFunction.localDataSize + 1 + 1 ;
+            int arpLocation = currentMemoryUsage +  calledFunction.getLocalDataSize() + 1 + 1 ;
 
             for (int i=0;i<ctx.expr().size();i++){
                 InstructionList.addAll(visit(ctx.expr(i)));

@@ -1,6 +1,6 @@
-package ut.pp.elaboration.model.enums;
+package ut.pp.compiler.model.enums;
 
-import ut.pp.elaboration.model.interfaces.InstructionArgs;
+import ut.pp.compiler.model.interfaces.InstructionArgs;
 
 public enum Registers implements InstructionArgs {
     /***

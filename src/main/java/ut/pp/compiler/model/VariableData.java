@@ -1,7 +1,7 @@
-package ut.pp.elaboration.model;
+package ut.pp.compiler.model;
 
 
-import ut.pp.elaboration.model.enums.MyType;
+import ut.pp.compiler.model.enums.MyType;
 
 public class VariableData {
     MyType type;

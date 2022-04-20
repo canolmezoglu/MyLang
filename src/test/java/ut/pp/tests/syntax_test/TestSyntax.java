@@ -5,16 +5,12 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.Assert;
 import org.junit.Test;
-import ut.pp.elaboration.Checker;
-import ut.pp.elaboration.Result;
+import ut.pp.compiler.Scanner;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
-import java.io.File;
-import java.util.List;
-
 public class TestSyntax {
-    final Checker c =new Checker();
+    final Scanner c =new Scanner();
 
     public ParseTree getParseTree(String input){
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromString(input));

@@ -1,7 +1,7 @@
-package ut.pp.elaboration.model;
+package ut.pp.compiler.model;
 
-import ut.pp.elaboration.model.enums.Instructions;
-import ut.pp.elaboration.model.interfaces.InstructionArgs;
+import ut.pp.compiler.model.enums.Instructions;
+import ut.pp.compiler.model.interfaces.InstructionArgs;
 
 import java.util.List;
 

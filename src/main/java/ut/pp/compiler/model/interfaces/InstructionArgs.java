@@ -1,4 +1,4 @@
-package ut.pp.elaboration.model.interfaces;
+package ut.pp.compiler.model.interfaces;
 
 public interface InstructionArgs {
     /***

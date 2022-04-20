@@ -1,4 +1,4 @@
-package ut.pp.elaboration.model;
+package ut.pp.compiler.model;
 
 import java.util.ArrayList;
 import java.util.List;

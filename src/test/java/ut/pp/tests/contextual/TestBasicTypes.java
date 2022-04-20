@@ -5,9 +5,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.Assert;
 import org.junit.Test;
-import ut.pp.elaboration.Scanner;
-import ut.pp.elaboration.model.enums.MyType;
-import ut.pp.elaboration.Result;
+import ut.pp.compiler.Scanner;
+import ut.pp.compiler.model.enums.MyType;
+import ut.pp.compiler.Result;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 

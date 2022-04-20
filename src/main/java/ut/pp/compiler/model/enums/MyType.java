@@ -1,4 +1,4 @@
-package ut.pp.elaboration.model.enums;
+package ut.pp.compiler.model.enums;
 
 public enum MyType {
     /**

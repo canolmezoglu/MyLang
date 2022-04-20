@@ -4,10 +4,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import ut.pp.elaboration.Scanner;
-import ut.pp.elaboration.CodeGen;
-import ut.pp.elaboration.haskell.HaskellProcess;
-import ut.pp.elaboration.model.Instruction;
+import ut.pp.compiler.Scanner;
+import ut.pp.compiler.CodeGeneration;
+import ut.pp.compiler.haskell.HaskellProcess;
+import ut.pp.compiler.model.Instruction;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
@@ -22,12 +22,12 @@ public class Main {
          * Raise exception and show errors in code if there are any (excluding syntax errors) , in that case - no code generation
          * Generated Sprockell code can be seen in elaboration/haskell/output.hs
          */
-        String path ="src/main/sample/humaid.txt";
+        String path ="src/main/sample/bankingMaxThreads.txt";
         MyLangLexer myLangLexer = new MyLangLexer(CharStreams.fromPath(new File(path).toPath()));
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
         ParseTree tree = parser.program();
-        CodeGen c = new CodeGen();
+        CodeGeneration c = new CodeGeneration();
         Scanner scanner = new Scanner();
         scanner.check(tree);
         int thread_count = Scanner.getNumberOfThreads(tree);
@@ -60,7 +60,7 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(myLangLexer);
         MyLangParser parser = new MyLangParser(tokens);
         ParseTree tree = parser.program();
-        CodeGen c = new CodeGen();
+        CodeGeneration c = new CodeGeneration();
         Scanner scanner = new Scanner();
         scanner.check(tree);
         int thread_count = Scanner.getNumberOfThreads(tree);

@@ -1,8 +1,8 @@
-package ut.pp.elaboration;
+package ut.pp.compiler;
 
 import org.antlr.v4.runtime.Token;
-import ut.pp.elaboration.model.enums.MyType;
-import ut.pp.elaboration.model.VariableData;
+import ut.pp.compiler.model.enums.MyType;
+import ut.pp.compiler.model.VariableData;
 
 import java.util.*;
 
@@ -33,6 +33,7 @@ public class ScopeTable {
 
     /**
      * Constructor for scope table + check for shared memory locations
+     * Global sizes are initialized with the number of threads
      * @param globalSizes number of shared variables
      */
     public ScopeTable(int globalSizes){

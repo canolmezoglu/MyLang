@@ -1,6 +1,6 @@
-package ut.pp.elaboration.model;
+package ut.pp.compiler.model;
 
-import ut.pp.elaboration.model.enums.*;
+import ut.pp.compiler.model.enums.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;

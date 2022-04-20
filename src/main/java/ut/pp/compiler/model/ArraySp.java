@@ -1,11 +1,9 @@
-package ut.pp.elaboration.model;
+package ut.pp.compiler.model;
 
-import ut.pp.elaboration.model.enums.Operators;
-import ut.pp.elaboration.model.enums.Registers;
+import ut.pp.compiler.model.enums.Operators;
+import ut.pp.compiler.model.enums.Registers;
 
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class ArraySp {
@@ -132,6 +130,7 @@ public class ArraySp {
 
     /***
      * Generate sprockell code to get the array value
+     * dynamically
      * @return list of sprockell instructions
      */
     public List<Instruction> getArrPointer(){
@@ -178,7 +177,8 @@ public class ArraySp {
     }
 
     /**
-     * Generate sprockell code when an array value is changed
+     * Generate sprockell code when an array value is changed.
+     * Generates different instructions based on the parameter shared.
      * @param shared is the array shared or not
      * @return list of sprockell instructions
      */

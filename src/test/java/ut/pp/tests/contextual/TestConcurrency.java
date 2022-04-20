@@ -2,7 +2,7 @@ package ut.pp.tests.contextual;
 
 import org.junit.Assert;
 import org.junit.Test;
-import ut.pp.elaboration.Scanner;
+import ut.pp.compiler.Scanner;
 
 import static ut.pp.tests.contextual.TestSimpleExpr.getParseTree;
 

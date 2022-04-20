@@ -1,4 +1,4 @@
-package ut.pp.elaboration.haskell;
+package ut.pp.compiler.haskell;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ public class HaskellProcess {
     /**
      * Class to generate haskell code
      */
-    private static final String path = "src/main/java/ut/pp/elaboration/haskell/output.hs";
+    private static final String path = "src/main/java/ut/pp/compiler/haskell/output.hs";
     private static final String sprockellPath = "src/main/java/ut/pp/elaboration/haskell/sprockell-master";
     /**
      * Run sprockell code
