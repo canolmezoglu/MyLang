@@ -1,0 +1,21 @@
+function int referenceSumAndChange(int a&,int b&, int c){
+    int d = a + b;
+    b = b - c;
+    a = a * c;
+    return d;
+}
+int a = 10;
+int b = 8;
+pointer c = a;
+pointer d = b;
+print(referenceSumAndChange(c,d,6));
+print(a);
+print(b);
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 10) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (ImmValue 8) regA,Push  regA,Pop  regA,Store  regA (DirAddr 2),Load  (ImmValue 1) regA,Store  regA (DirAddr 3),Load  (ImmValue 2) regA,Store  regA (DirAddr 4),Load  (DirAddr 3) regA,Push  regA,Pop  regA,Load  (ImmValue 9) regB,Store  regA (IndAddr regB),Load  (DirAddr 4) regA,Push  regA,Pop  regA,Load  (ImmValue 10) regB,Store  regA (IndAddr regB),Load  (ImmValue 6) regA,Push  regA,Pop  regA,Load  (ImmValue 11) regB,Store  regA (IndAddr regB),Load  (ImmValue 7) regF,Load  (ImmValue 1) regA,Compute  Add regF regA regA,Load  (ImmValue 3) regB,Compute  Add regPC regB regB,Store  regB (IndAddr regA),Jump  (Abs (45)),Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 1) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 2) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,EndProg,Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 3) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regB,Load  (IndAddr regB) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Load  (ImmValue 2) regB,Compute  Sub regF regB regB,Store  regA (IndAddr regB),Load  (ImmValue 3) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 4) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Load  (ImmValue 3) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regB,Store  regA (IndAddr regB),Load  (ImmValue 4) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regB,Load  (IndAddr regB) regA,Push  regA,Pop  regA,Pop  regB,Compute  Mul regA regB regA,Push  regA,Pop  regA,Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regB,Store  regA (IndAddr regB),Load  (ImmValue 2) regB,Compute  Sub regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 1) regB,Compute  Add regB regF regB,Load  (IndAddr regB) regB,Jump  (Ind (regB))]
+
+main = run[prog]
+
+[Sprockell 0 says 18, Sprockell 0 says 60, Sprockell 0 says 2]

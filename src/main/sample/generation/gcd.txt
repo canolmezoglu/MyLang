@@ -1,0 +1,18 @@
+function int gcd(int a, int b) {
+    if (a==b){
+        return a;
+    }
+    if (a > b){
+       return gcd( a - b, b);
+    }
+    return gcd(a, b -a);
+}
+print(gcd(1 , 2 ));
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 1) regA,Push  regA,Pop  regA,Load  (ImmValue 4) regB,Store  regA (IndAddr regB),Load  (ImmValue 2) regA,Push  regA,Pop  regA,Load  (ImmValue 5) regB,Store  regA (IndAddr regB),Load  (ImmValue 2) regF,Load  (ImmValue 1) regA,Compute  Add regF regA regA,Load  (ImmValue 3) regB,Compute  Add regPC regB regB,Store  regB (IndAddr regA),Jump  (Abs (20)),Pop  regA,WriteInstr  regA numberIO,EndProg,Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 3) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Pop  regB,Pop  regA,Compute  Equal regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (10)),Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 1) regB,Compute  Add regB regF regB,Load  (IndAddr regB) regB,Jump  (Ind (regB)),Jump  (Rel (1)),Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 3) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Pop  regB,Pop  regA,Compute  Gt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (45)),Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 3) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Load  (ImmValue 7) regB,Compute  Add regF regB regB,Store  regA (IndAddr regB),Load  (ImmValue 3) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Pop  regA,Load  (ImmValue 8) regB,Compute  Add regF regB regB,Store  regA (IndAddr regB),Load  (ImmValue 4) regA,Compute  Add regF regA regA,Store  regF (IndAddr regA),Compute  Incr regA regA regA,Compute  Add regA reg0 regF,Load  (ImmValue 1) regA,Compute  Add regF regA regA,Load  (ImmValue 3) regB,Compute  Add regPC regB regB,Store  regB (IndAddr regA),Jump  (Abs (20)),Load  (ImmValue 1) regA,Compute  Sub regF regA regA,Load  (IndAddr regA) regA,Compute  Add regA reg0 regF,Load  (ImmValue 1) regB,Compute  Add regB regF regB,Load  (IndAddr regB) regB,Jump  (Ind (regB)),Jump  (Rel (1)),Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Pop  regA,Load  (ImmValue 7) regB,Compute  Add regF regB regB,Store  regA (IndAddr regB),Load  (ImmValue 3) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Load  (ImmValue 8) regB,Compute  Add regF regB regB,Store  regA (IndAddr regB),Load  (ImmValue 4) regA,Compute  Add regF regA regA,Store  regF (IndAddr regA),Compute  Incr regA regA regA,Compute  Add regA reg0 regF,Load  (ImmValue 1) regA,Compute  Add regF regA regA,Load  (ImmValue 3) regB,Compute  Add regPC regB regB,Store  regB (IndAddr regA),Jump  (Abs (20)),Load  (ImmValue 1) regA,Compute  Sub regF regA regA,Load  (IndAddr regA) regA,Compute  Add regA reg0 regF,Load  (ImmValue 1) regB,Compute  Add regB regF regB,Load  (IndAddr regB) regB,Jump  (Ind (regB))]
+
+main = run[prog]
+
+[Sprockell 0 says 1]

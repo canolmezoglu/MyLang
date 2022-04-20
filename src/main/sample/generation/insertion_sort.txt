@@ -1,0 +1,29 @@
+int arr[7] = {7,16,9,4,8,2,1};
+int i = 1;
+while (i < 7){
+    int key = arr%i ;
+    int j = i - 1;
+    while ( (j >= 0) and (arr%j > key)) {
+          int indexToChange = j + 1;
+          arr%indexToChange = arr%j ;
+          j = j - 1;
+          }
+          j = j + 1;
+          arr%j = key;
+          i = i+1;
+}
+print(arr%0);
+print(arr%1);
+print(arr%2);
+print(arr%3);
+print(arr%4);
+print(arr%5);
+print(arr%6);
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 7) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (ImmValue 16) regA,Push  regA,Pop  regA,Store  regA (DirAddr 2),Load  (ImmValue 9) regA,Push  regA,Pop  regA,Store  regA (DirAddr 3),Load  (ImmValue 4) regA,Push  regA,Pop  regA,Store  regA (DirAddr 4),Load  (ImmValue 8) regA,Push  regA,Pop  regA,Store  regA (DirAddr 5),Load  (ImmValue 2) regA,Push  regA,Pop  regA,Store  regA (DirAddr 6),Load  (ImmValue 1) regA,Push  regA,Pop  regA,Store  regA (DirAddr 7),Load  (ImmValue 1) regA,Push  regA,Pop  regA,Store  regA (DirAddr 8),Load  (DirAddr 8) regA,Push  regA,Load  (ImmValue 7) regA,Push  regA,Pop  regB,Pop  regA,Compute  Lt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (108)),Load  (ImmValue 8) regB,Load  (IndAddr regB) regB,Load  (ImmValue 1) regC,Compute  Add regB regC regB,Load  (IndAddr regB) regA,Push  regA,Pop  regA,Store  regA (DirAddr 9),Load  (DirAddr 8) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 10),Load  (ImmValue 10) regB,Load  (IndAddr regB) regB,Load  (ImmValue 1) regC,Compute  Add regB regC regB,Load  (IndAddr regB) regA,Push  regA,Load  (DirAddr 9) regA,Push  regA,Pop  regB,Pop  regA,Compute  Gt regA regB regA,Push  regA,Load  (DirAddr 10) regA,Push  regA,Load  (ImmValue 0) regA,Push  regA,Pop  regB,Pop  regA,Compute  GtE regA regB regA,Push  regA,Pop  regA,Pop  regB,Compute  And regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (34)),Load  (DirAddr 10) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 19),Load  (ImmValue 10) regB,Load  (IndAddr regB) regB,Load  (ImmValue 1) regC,Compute  Add regB regC regB,Load  (IndAddr regB) regA,Push  regA,Pop  regA,Load  (ImmValue 19) regB,Load  (IndAddr regB) regB,Load  (ImmValue 1) regC,Compute  Add regB regC regB,Store  regA (IndAddr regB),Load  (DirAddr 10) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 10),Jump  (Rel (-59)),Load  (DirAddr 10) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 10),Load  (DirAddr 9) regA,Push  regA,Pop  regA,Load  (ImmValue 10) regB,Load  (IndAddr regB) regB,Load  (ImmValue 1) regC,Compute  Add regB regC regB,Store  regA (IndAddr regB),Load  (DirAddr 8) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 8),Jump  (Rel (-117)),Load  (DirAddr 1) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 2) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 3) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 4) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 5) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 6) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 7) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,EndProg]
+
+main = run[prog]
+
+[Sprockell 0 says 1, Sprockell 0 says 2, Sprockell 0 says 4, Sprockell 0 says 7, Sprockell 0 says 8, Sprockell 0 says 9, Sprockell 0 says 16]

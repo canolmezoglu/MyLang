@@ -1,0 +1,36 @@
+int enum cars {
+bmw = 1,
+mercedes = 2,
+ferrari =3
+};
+
+print(cars.bmw);
+
+int enum fruits {
+apple = 10,
+banana = 25,
+orange =39
+};
+
+print(fruits.orange);
+
+int a = 10;
+
+if(a == fruits.apple){
+ print(cars.mercedes);
+}
+
+bool enum tests {
+yes =true,
+no =false
+};
+
+print(tests.yes);
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 1) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (ImmValue 2) regA,Push  regA,Pop  regA,Store  regA (DirAddr 2),Load  (ImmValue 3) regA,Push  regA,Pop  regA,Store  regA (DirAddr 3),Load  (DirAddr 1) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (ImmValue 10) regA,Push  regA,Pop  regA,Store  regA (DirAddr 4),Load  (ImmValue 25) regA,Push  regA,Pop  regA,Store  regA (DirAddr 5),Load  (ImmValue 39) regA,Push  regA,Pop  regA,Store  regA (DirAddr 6),Load  (DirAddr 6) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (ImmValue 10) regA,Push  regA,Pop  regA,Store  regA (DirAddr 7),Load  (DirAddr 7) regA,Push  regA,Load  (DirAddr 4) regA,Push  regA,Pop  regB,Pop  regA,Compute  Equal regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (6)),Load  (DirAddr 2) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Jump  (Rel (1)),Load  (ImmValue 1) regA,Push  regA,Pop  regA,Store  regA (DirAddr 8),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 9),Load  (DirAddr 8) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,EndProg]
+
+main = run[prog]
+
+[Sprockell 0 says 1, Sprockell 0 says 39, Sprockell 0 says 2, Sprockell 0 says 1]

@@ -1,0 +1,13 @@
+int a = 100;
+while (a > 0){
+    a = a - 1;
+    print(a);
+}
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 100) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 0) regA,Push  regA,Pop  regB,Pop  regA,Compute  Gt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (16)),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (DirAddr 1) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Jump  (Rel (-25)),EndProg]
+
+main = run[prog]
+
+[Sprockell 0 says 99, Sprockell 0 says 98, Sprockell 0 says 97, Sprockell 0 says 96, Sprockell 0 says 95, Sprockell 0 says 94, Sprockell 0 says 93, Sprockell 0 says 92, Sprockell 0 says 91, Sprockell 0 says 90, Sprockell 0 says 89, Sprockell 0 says 88, Sprockell 0 says 87, Sprockell 0 says 86, Sprockell 0 says 85, Sprockell 0 says 84, Sprockell 0 says 83, Sprockell 0 says 82, Sprockell 0 says 81, Sprockell 0 says 80, Sprockell 0 says 79, Sprockell 0 says 78, Sprockell 0 says 77, Sprockell 0 says 76, Sprockell 0 says 75, Sprockell 0 says 74, Sprockell 0 says 73, Sprockell 0 says 72, Sprockell 0 says 71, Sprockell 0 says 70, Sprockell 0 says 69, Sprockell 0 says 68, Sprockell 0 says 67, Sprockell 0 says 66, Sprockell 0 says 65, Sprockell 0 says 64, Sprockell 0 says 63, Sprockell 0 says 62, Sprockell 0 says 61, Sprockell 0 says 60, Sprockell 0 says 59, Sprockell 0 says 58, Sprockell 0 says 57, Sprockell 0 says 56, Sprockell 0 says 55, Sprockell 0 says 54, Sprockell 0 says 53, Sprockell 0 says 52, Sprockell 0 says 51, Sprockell 0 says 50, Sprockell 0 says 49, Sprockell 0 says 48, Sprockell 0 says 47, Sprockell 0 says 46, Sprockell 0 says 45, Sprockell 0 says 44, Sprockell 0 says 43, Sprockell 0 says 42, Sprockell 0 says 41, Sprockell 0 says 40, Sprockell 0 says 39, Sprockell 0 says 38, Sprockell 0 says 37, Sprockell 0 says 36, Sprockell 0 says 35, Sprockell 0 says 34, Sprockell 0 says 33, Sprockell 0 says 32, Sprockell 0 says 31, Sprockell 0 says 30, Sprockell 0 says 29, Sprockell 0 says 28, Sprockell 0 says 27, Sprockell 0 says 26, Sprockell 0 says 25, Sprockell 0 says 24, Sprockell 0 says 23, Sprockell 0 says 22, Sprockell 0 says 21, Sprockell 0 says 20, Sprockell 0 says 19, Sprockell 0 says 18, Sprockell 0 says 17, Sprockell 0 says 16, Sprockell 0 says 15, Sprockell 0 says 14, Sprockell 0 says 13, Sprockell 0 says 12, Sprockell 0 says 11, Sprockell 0 says 10, Sprockell 0 says 9, Sprockell 0 says 8, Sprockell 0 says 7, Sprockell 0 says 6, Sprockell 0 says 5, Sprockell 0 says 4, Sprockell 0 says 3, Sprockell 0 says 2, Sprockell 0 says 1, Sprockell 0 says 0]

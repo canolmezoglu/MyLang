@@ -1,0 +1,13 @@
+int i = 1024;
+while (i > 0){
+    print(i);
+    i = i / 2;
+}
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 1024) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 0) regA,Push  regA,Pop  regB,Pop  regA,Compute  Gt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (33)),Load  (DirAddr 1) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (ImmValue 2) regA,Push  regA,Load  (DirAddr 1) regA,Push  regA,Pop  regA,Pop  regB,Compute  GtE regA reg0 regC,Branch  regC (Rel (2)),Compute  Sub reg0 regA regA,Compute  GtE regB reg0 regD,Branch  regD (Rel (2)),Compute  Sub reg0 regB regB,Compute  Xor regC regD regE,Compute  Add reg0 reg0 regC,Compute  GtE regA regB regD,Compute  Equal regD reg0 regD,Branch  regD (Rel (4)),Compute  Sub regA regB regA,Compute  Incr regC regC regC,Jump  (Rel (-5)),Compute  Add regC reg0 regA,Compute  Equal regE reg0 regE,Branch  regE (Rel (2)),Compute  Sub reg0 regA regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Jump  (Rel (-42)),EndProg]
+
+main = run[prog]
+
+[Sprockell 0 says 1024, Sprockell 0 says 512, Sprockell 0 says 256, Sprockell 0 says 128, Sprockell 0 says 64, Sprockell 0 says 32, Sprockell 0 says 16, Sprockell 0 says 8, Sprockell 0 says 4, Sprockell 0 says 2, Sprockell 0 says 1]

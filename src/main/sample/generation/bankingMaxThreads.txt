@@ -1,0 +1,59 @@
+shared int money = 0;
+
+parallel {
+thread {   int wait = 100; while (wait > 0){
+        wait = wait - 1;
+        lock {
+           money = money + 1;
+           }
+        unlock
+    }
+}
+thread {
+    int wait = 100; while (wait > 0){
+        wait = wait - 1;
+        lock {
+            money = money - 2;
+            }
+        unlock
+    }
+}
+thread {
+    lock {
+         money = money + 5;
+         }
+    unlock
+}
+thread {   int wait = 100; while (wait > 0){
+        wait = wait - 1;
+        lock {
+           money = money - 1;
+           }
+        unlock
+    }
+}
+thread {
+    int wait = 100; while (wait > 0){
+        wait = wait - 1;
+        lock {
+            money = money + 3;
+            }
+        unlock
+    }
+}
+thread {
+    lock {
+         money = money + 78;
+         }
+    unlock
+}
+}
+print(money);
+
+import Sprockell
+prog :: [Instruction]
+prog = [Compute  Equal regSprID reg0 regA,Branch  regA (Rel (3)),Load  (ImmValue 1) regA,WriteInstr  regA (IndAddr regSprID),Load  (ImmValue 1) regA,Compute  Sub regA regSprID regA,Branch  regA (Rel (2)),Jump  (Rel (91)),Load  (ImmValue 2) regA,Compute  Sub regA regSprID regA,Branch  regA (Rel (2)),Jump  (Rel (137)),Load  (ImmValue 3) regA,Compute  Sub regA regSprID regA,Branch  regA (Rel (2)),Jump  (Rel (183)),Load  (ImmValue 4) regA,Compute  Sub regA regSprID regA,Branch  regA (Rel (2)),Jump  (Rel (203)),Load  (ImmValue 5) regA,Compute  Sub regA regSprID regA,Branch  regA (Rel (2)),Jump  (Rel (249)),Load  (ImmValue 6) regA,Compute  Sub regA regSprID regA,Branch  regA (Rel (2)),Jump  (Rel (295)),Load  (ImmValue 0) regA,Push  regA,Pop  regA,WriteInstr  regA (DirAddr 7),WriteInstr  reg0 (DirAddr 1),ReadInstr  (DirAddr 1),Receive  regA,Load  (ImmValue 2) regB,Compute  Sub regB regA regB,Branch  regA (Rel (-4)),WriteInstr  reg0 (DirAddr 2),ReadInstr  (DirAddr 2),Receive  regA,Load  (ImmValue 2) regB,Compute  Sub regB regA regB,Branch  regA (Rel (-4)),WriteInstr  reg0 (DirAddr 3),ReadInstr  (DirAddr 3),Receive  regA,Load  (ImmValue 2) regB,Compute  Sub regB regA regB,Branch  regA (Rel (-4)),WriteInstr  reg0 (DirAddr 4),ReadInstr  (DirAddr 4),Receive  regA,Load  (ImmValue 2) regB,Compute  Sub regB regA regB,Branch  regA (Rel (-4)),WriteInstr  reg0 (DirAddr 5),ReadInstr  (DirAddr 5),Receive  regA,Load  (ImmValue 2) regB,Compute  Sub regB regA regB,Branch  regA (Rel (-4)),WriteInstr  reg0 (DirAddr 6),ReadInstr  (DirAddr 6),Receive  regA,Load  (ImmValue 2) regB,Compute  Sub regB regA regB,Branch  regA (Rel (-4)),TestAndSet  (DirAddr 1),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),TestAndSet  (DirAddr 2),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),TestAndSet  (DirAddr 3),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),TestAndSet  (DirAddr 4),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),TestAndSet  (DirAddr 5),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),TestAndSet  (DirAddr 6),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),ReadInstr  (DirAddr 7),Receive  regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,EndProg,TestAndSet  (DirAddr 1),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),Load  (ImmValue 2) regA,WriteInstr  regA (DirAddr 1),Load  (ImmValue 100) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 0) regA,Push  regA,Pop  regB,Pop  regA,Compute  Gt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (28)),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),TestAndSet  (DirAddr 0),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),ReadInstr  (DirAddr 7),Receive  regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,WriteInstr  regA (DirAddr 7),WriteInstr  reg0 (DirAddr 0),Jump  (Rel (-37)),WriteInstr  reg0 (DirAddr 1),EndProg,TestAndSet  (DirAddr 2),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),Load  (ImmValue 2) regA,WriteInstr  regA (DirAddr 2),Load  (ImmValue 100) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 0) regA,Push  regA,Pop  regB,Pop  regA,Compute  Gt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (28)),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),TestAndSet  (DirAddr 0),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),ReadInstr  (DirAddr 7),Receive  regA,Push  regA,Load  (ImmValue 2) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,WriteInstr  regA (DirAddr 7),WriteInstr  reg0 (DirAddr 0),Jump  (Rel (-37)),WriteInstr  reg0 (DirAddr 2),EndProg,TestAndSet  (DirAddr 3),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),Load  (ImmValue 2) regA,WriteInstr  regA (DirAddr 3),TestAndSet  (DirAddr 0),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),ReadInstr  (DirAddr 7),Receive  regA,Push  regA,Load  (ImmValue 5) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,WriteInstr  regA (DirAddr 7),WriteInstr  reg0 (DirAddr 0),WriteInstr  reg0 (DirAddr 3),EndProg,TestAndSet  (DirAddr 4),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),Load  (ImmValue 2) regA,WriteInstr  regA (DirAddr 4),Load  (ImmValue 100) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 0) regA,Push  regA,Pop  regB,Pop  regA,Compute  Gt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (28)),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),TestAndSet  (DirAddr 0),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),ReadInstr  (DirAddr 7),Receive  regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,WriteInstr  regA (DirAddr 7),WriteInstr  reg0 (DirAddr 0),Jump  (Rel (-37)),WriteInstr  reg0 (DirAddr 4),EndProg,TestAndSet  (DirAddr 5),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),Load  (ImmValue 2) regA,WriteInstr  regA (DirAddr 5),Load  (ImmValue 100) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 0) regA,Push  regA,Pop  regB,Pop  regA,Compute  Gt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (28)),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),TestAndSet  (DirAddr 0),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),ReadInstr  (DirAddr 7),Receive  regA,Push  regA,Load  (ImmValue 3) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,WriteInstr  regA (DirAddr 7),WriteInstr  reg0 (DirAddr 0),Jump  (Rel (-37)),WriteInstr  reg0 (DirAddr 5),EndProg,TestAndSet  (DirAddr 6),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),Load  (ImmValue 2) regA,WriteInstr  regA (DirAddr 6),TestAndSet  (DirAddr 0),Receive  regA,Compute  Equal regA reg0 regA,Branch  regA (Rel (-3)),ReadInstr  (DirAddr 7),Receive  regA,Push  regA,Load  (ImmValue 78) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,WriteInstr  regA (DirAddr 7),WriteInstr  reg0 (DirAddr 0),WriteInstr  reg0 (DirAddr 6),EndProg]
+
+main = run[prog,prog,prog,prog,prog,prog,prog]
+
+[Sprockell 0 says 183]

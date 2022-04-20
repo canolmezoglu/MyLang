@@ -1,0 +1,22 @@
+int a=100;
+pointer b =a;
+int d = 200;
+pointer c = d;
+
+if( b& < c& ){
+    a = a+500;
+    d = d+500;
+}
+print(b&);
+print(c&);
+
+c& = 100;
+print(d);
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 100) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (ImmValue 1) regA,Store  regA (DirAddr 2),Load  (ImmValue 200) regA,Push  regA,Pop  regA,Store  regA (DirAddr 3),Load  (ImmValue 3) regA,Store  regA (DirAddr 4),Load  (DirAddr 1) regA,Push  regA,Load  (DirAddr 3) regA,Push  regA,Pop  regB,Pop  regA,Compute  Lt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (22)),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 500) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (DirAddr 3) regA,Push  regA,Load  (ImmValue 500) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 3),Jump  (Rel (1)),Load  (DirAddr 1) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 3) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (ImmValue 100) regA,Push  regA,Pop  regA,Store  regA (DirAddr 3),Load  (DirAddr 3) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,EndProg]
+
+main = run[prog]
+
+[Sprockell 0 says 600, Sprockell 0 says 700, Sprockell 0 says 100]

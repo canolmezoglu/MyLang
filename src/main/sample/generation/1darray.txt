@@ -1,0 +1,25 @@
+int a[5] = {100,250,30,47,55};
+int b[6] =  {1,2,30,47,6,55};
+a%1 = a%2+a%0;
+print(a%1);
+
+int i = 2;
+a%i = 203;
+print(a%2);
+
+if(a%4 == b%5){
+    print(true);
+}
+
+bool arr[3] = {true,false,true};
+
+print(a%0);
+print(arr%1==arr%2);
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 100) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (ImmValue 250) regA,Push  regA,Pop  regA,Store  regA (DirAddr 2),Load  (ImmValue 30) regA,Push  regA,Pop  regA,Store  regA (DirAddr 3),Load  (ImmValue 47) regA,Push  regA,Pop  regA,Store  regA (DirAddr 4),Load  (ImmValue 55) regA,Push  regA,Pop  regA,Store  regA (DirAddr 5),Load  (ImmValue 1) regA,Push  regA,Pop  regA,Store  regA (DirAddr 6),Load  (ImmValue 2) regA,Push  regA,Pop  regA,Store  regA (DirAddr 7),Load  (ImmValue 30) regA,Push  regA,Pop  regA,Store  regA (DirAddr 8),Load  (ImmValue 47) regA,Push  regA,Pop  regA,Store  regA (DirAddr 9),Load  (ImmValue 6) regA,Push  regA,Pop  regA,Store  regA (DirAddr 10),Load  (ImmValue 55) regA,Push  regA,Pop  regA,Store  regA (DirAddr 11),Load  (DirAddr 3) regA,Push  regA,Load  (DirAddr 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 2),Load  (DirAddr 2) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (ImmValue 2) regA,Push  regA,Pop  regA,Store  regA (DirAddr 12),Load  (ImmValue 203) regA,Push  regA,Pop  regA,Load  (ImmValue 12) regB,Load  (IndAddr regB) regB,Load  (ImmValue 1) regC,Compute  Add regB regC regB,Store  regA (IndAddr regB),Load  (DirAddr 3) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 5) regA,Push  regA,Load  (DirAddr 11) regA,Push  regA,Pop  regB,Pop  regA,Compute  Equal regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (6)),Load  (ImmValue 1) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Jump  (Rel (1)),Load  (ImmValue 1) regA,Push  regA,Pop  regA,Store  regA (DirAddr 13),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 14),Load  (ImmValue 1) regA,Push  regA,Pop  regA,Store  regA (DirAddr 15),Load  (DirAddr 1) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 14) regA,Push  regA,Load  (DirAddr 15) regA,Push  regA,Pop  regB,Pop  regA,Compute  Equal regA regB regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,EndProg]
+
+main = run[prog]
+
+[Sprockell 0 says 130, Sprockell 0 says 203, Sprockell 0 says 1, Sprockell 0 says 100, Sprockell 0 says 0]

@@ -1,0 +1,33 @@
+bool hiddenTrue[5][4] = { {false,false,false,false}
+                        , {false,false,false,false}
+                        , {false,false,false,false}
+                        , {false,false,true,false}
+                        , {false,false,false,false}
+                        };
+
+int location[2] = {-1,-1};
+int x = 0;
+int y = 0;
+while (x < 5){
+    y = 0;
+    while ( y < 4) {
+        if (hiddenTrue%x%y){
+            location%0 = x;
+            location%1 = y;
+        }
+        y = y + 1;
+    }
+    x = x + 1;
+}
+print(location%0);
+print(location%1);
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 2),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 3),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 4),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 5),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 6),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 7),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 8),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 9),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 10),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 11),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 12),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 13),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 14),Load  (ImmValue 1) regA,Push  regA,Pop  regA,Store  regA (DirAddr 15),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 16),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 17),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 18),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 19),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 20),Load  (ImmValue 1) regA,Push  regA,Pop  regA,Compute  Sub reg0 regA regA,Push  regA,Pop  regA,Store  regA (DirAddr 21),Load  (ImmValue 1) regA,Push  regA,Pop  regA,Compute  Sub reg0 regA regA,Push  regA,Pop  regA,Store  regA (DirAddr 22),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 23),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 24),Load  (DirAddr 23) regA,Push  regA,Load  (ImmValue 5) regA,Push  regA,Pop  regB,Pop  regA,Compute  Lt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (61)),Load  (ImmValue 0) regA,Push  regA,Pop  regA,Store  regA (DirAddr 24),Load  (DirAddr 24) regA,Push  regA,Load  (ImmValue 4) regA,Push  regA,Pop  regB,Pop  regA,Compute  Lt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (35)),Load  (ImmValue 23) regB,Load  (IndAddr regB) regB,Load  (ImmValue 4) regC,Compute  Mul regB regC regB,Load  (ImmValue 1) regC,Compute  Add regB regC regB,Load  (ImmValue 24) regC,Load  (IndAddr regC) regC,Compute  Add regB regC regB,Load  (IndAddr regB) regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (10)),Load  (DirAddr 23) regA,Push  regA,Pop  regA,Store  regA (DirAddr 21),Load  (DirAddr 24) regA,Push  regA,Pop  regA,Store  regA (DirAddr 22),Jump  (Rel (1)),Load  (DirAddr 24) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 24),Jump  (Rel (-44)),Load  (DirAddr 23) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 23),Jump  (Rel (-70)),Load  (DirAddr 21) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 22) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,EndProg]
+
+main = run[prog]
+
+[Sprockell 0 says 3, Sprockell 0 says 2]
+
+

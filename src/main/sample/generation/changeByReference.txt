@@ -1,0 +1,20 @@
+function void changeReference (int x&, int y&){
+    x = x + 2;
+    y = y + 6;
+    return;
+}
+int i = 4;
+int d = 5;
+pointer b = i;
+pointer c = d;
+run(changeReference(b,c));
+print(i);
+print(d);
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 4) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (ImmValue 5) regA,Push  regA,Pop  regA,Store  regA (DirAddr 2),Load  (ImmValue 1) regA,Store  regA (DirAddr 3),Load  (ImmValue 2) regA,Store  regA (DirAddr 4),Load  (DirAddr 3) regA,Push  regA,Pop  regA,Load  (ImmValue 8) regB,Store  regA (IndAddr regB),Load  (DirAddr 4) regA,Push  regA,Pop  regA,Load  (ImmValue 9) regB,Store  regA (IndAddr regB),Load  (ImmValue 6) regF,Load  (ImmValue 1) regA,Compute  Add regF regA regA,Load  (ImmValue 3) regB,Compute  Add regPC regB regB,Store  regB (IndAddr regA),Jump  (Abs (38)),Load  (DirAddr 1) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Load  (DirAddr 2) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,EndProg,Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 2) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regB,Store  regA (IndAddr regB),Load  (ImmValue 3) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 6) regA,Push  regA,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Pop  regA,Load  (ImmValue 3) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regB,Store  regA (IndAddr regB),Load  (ImmValue 1) regB,Compute  Add regB regF regB,Load  (IndAddr regB) regB,Jump  (Ind (regB))]
+
+main = run[prog]
+
+[Sprockell 0 says 6, Sprockell 0 says 11]

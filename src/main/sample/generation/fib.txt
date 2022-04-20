@@ -1,0 +1,15 @@
+function int fib( int a ){
+    if ( (a == 0) or (a == 1)){
+        return a;
+    }
+    return fib(a - 1) + fib (a - 2);
+}
+print(fib(6));
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 6) regA,Push  regA,Pop  regA,Load  (ImmValue 4) regB,Store  regA (IndAddr regB),Load  (ImmValue 2) regF,Load  (ImmValue 1) regA,Compute  Add regF regA regA,Load  (ImmValue 3) regB,Compute  Add regPC regB regB,Store  regB (IndAddr regA),Jump  (Abs (15)),Pop  regA,WriteInstr  regA numberIO,EndProg,Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 0) regA,Push  regA,Pop  regB,Pop  regA,Compute  Equal regA regB regA,Push  regA,Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Equal regA regB regA,Push  regA,Pop  regB,Pop  regA,Compute  Or regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (10)),Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 1) regB,Compute  Add regB regF regB,Load  (IndAddr regB) regB,Jump  (Ind (regB)),Jump  (Rel (1)),Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 1) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Load  (ImmValue 6) regB,Compute  Add regF regB regB,Store  regA (IndAddr regB),Load  (ImmValue 3) regA,Compute  Add regF regA regA,Store  regF (IndAddr regA),Compute  Incr regA regA regA,Compute  Add regA reg0 regF,Load  (ImmValue 1) regA,Compute  Add regF regA regA,Load  (ImmValue 3) regB,Compute  Add regPC regB regB,Store  regB (IndAddr regA),Jump  (Abs (15)),Load  (ImmValue 1) regA,Compute  Sub regF regA regA,Load  (IndAddr regA) regA,Compute  Add regA reg0 regF,Load  (ImmValue 2) regB,Compute  Add regF regB regB,Load  (IndAddr regB) regA,Push  regA,Load  (ImmValue 2) regA,Push  regA,Pop  regB,Pop  regA,Compute  Sub regA regB regA,Push  regA,Pop  regA,Load  (ImmValue 6) regB,Compute  Add regF regB regB,Store  regA (IndAddr regB),Load  (ImmValue 3) regA,Compute  Add regF regA regA,Store  regF (IndAddr regA),Compute  Incr regA regA regA,Compute  Add regA reg0 regF,Load  (ImmValue 1) regA,Compute  Add regF regA regA,Load  (ImmValue 3) regB,Compute  Add regPC regB regB,Store  regB (IndAddr regA),Jump  (Abs (15)),Load  (ImmValue 1) regA,Compute  Sub regF regA regA,Load  (IndAddr regA) regA,Compute  Add regA reg0 regF,Pop  regB,Pop  regA,Compute  Add regA regB regA,Push  regA,Load  (ImmValue 1) regB,Compute  Add regB regF regB,Load  (IndAddr regB) regB,Jump  (Ind (regB))]
+
+main = run[prog]
+
+[Sprockell 0 says 8]

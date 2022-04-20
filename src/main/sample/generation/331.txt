@@ -1,0 +1,18 @@
+int outerScope = 10;
+if (outerScope > 0) {
+    bool outerScope = outerScope == 10;
+    if (outerScope){
+        int outerScope = 75;
+        print(outerScope);
+    }
+    print(outerScope);
+}
+print(outerScope);
+
+import Sprockell
+prog :: [Instruction]
+prog = [Load  (ImmValue 10) regA,Push  regA,Pop  regA,Store  regA (DirAddr 1),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 0) regA,Push  regA,Pop  regB,Pop  regA,Compute  Gt regA regB regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (30)),Load  (DirAddr 1) regA,Push  regA,Load  (ImmValue 10) regA,Push  regA,Pop  regB,Pop  regA,Compute  Equal regA regB regA,Push  regA,Pop  regA,Store  regA (DirAddr 2),Load  (DirAddr 2) regA,Push  regA,Pop  regA,Branch  regA (Rel (2)),Jump  (Rel (10)),Load  (ImmValue 75) regA,Push  regA,Pop  regA,Store  regA (DirAddr 4),Load  (DirAddr 4) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Jump  (Rel (1)),Load  (DirAddr 2) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,Jump  (Rel (1)),Load  (DirAddr 1) regA,Push  regA,Pop  regA,WriteInstr  regA numberIO,EndProg]
+
+main = run[prog]
+
+[Sprockell 0 says 75, Sprockell 0 says 1, Sprockell 0 says 10]
