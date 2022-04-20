@@ -1,15 +1,4 @@
-# PP Final Project: Maven boilerplate project
-
-This folder contains a boilerplate project for Java & Maven, which includes:
-
-- JUnit integration
-- ANTLR integration
-- Example grammar of the "Hello" language (which allows zero or more repetitions of "Hello")
-- Example test of the "Hello" language
-
-Intellij integration is also possible.
-
-The rest of this document gives a brief explanation of maven, antlr 4, and junit 4. For more information we refer you to the documentation of the respective tools.
+# PP Final Project:
 
 ## Prerequisites
 
@@ -25,18 +14,26 @@ To test if you have these tools set up properly, run the following two commands 
 
 If these commands print sensible outputs (e.g. "version so and so"), this boilerplate project should work fine. Otherwise, you will have to install these tools either manually or using your operating system's package manager.
 
+## Compiling and Running all tests
+
+Before compiling, In the terminal run:
+
+```
+mvn clean install
+```
+
+This is used because a ParseTree Visitor has been used for Code Generation. 
+The command will compile the program and run all the tests.
+
 ## Compiling
 
 In a terminal, run:
-
 ```
 mvn compile
 ```
-
 This first generates parsers for any grammars in `src/main/antlr4`. Then it compiles code in the `src/main/java` directory.
 
 ## Running
-
 In a terminal, run:
 
 ```
@@ -74,3 +71,10 @@ To run your main class, open the main class and click on the green arrow besides
 To run your a specific test, open the test class and click the green arrows beside the test methods to run the individual tests. Note: you have to run the "test" target in the maven pane before running the individual tests.
 
 For more information on intellij's maven integration, we refer you to the intellij documentation.
+
+##Using the compiler
+
+To use the compiler, you can write code in the `src/sample/compiler.txt` which is run by the `Main` class.
+
+If the code contains any errors, they are thrown as an exception and the error messages can be seen, otherwise the generated sprockell code can 
+be found inside `ut/pp/compiler/haskell/output.hs` and the output can be seen in the Terminal.
