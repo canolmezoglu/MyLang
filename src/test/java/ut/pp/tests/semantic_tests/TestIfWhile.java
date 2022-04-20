@@ -7,7 +7,11 @@ import java.security.spec.ECField;
 import java.util.List;
 
 public class TestIfWhile {
-
+    /**
+     * A basic while loop to see if while loops work
+     * as expected.
+     * @throws Exception
+     */
     @Test
     public void testWhile() throws Exception {
         String input = "while";
@@ -17,6 +21,11 @@ public class TestIfWhile {
         }
 
     }
+    /**
+     * A basic if statement to see if while loops work
+     * as expected.
+     * @throws Exception
+     */
     @Test
     public void testIf() throws Exception {
         String input = "ifElse";
@@ -26,6 +35,7 @@ public class TestIfWhile {
     }
 
     /**
+     * Tests a rosetta example.
      * http://rosettacode.org/wiki/Loops/While
      * @throws Exception
      */
@@ -45,6 +55,11 @@ public class TestIfWhile {
         Assert.assertEquals("Sprockell 0 says 2",output.get(9));
         Assert.assertEquals("Sprockell 0 says 1",output.get(10));
     }
+
+    /**
+     * Tests an implementation of insertion sort made in Sprockell.
+     * @throws Exception
+     */
     @Test
     public void TestInsertionSort() throws Exception{
         String input = "insertion_sort";
@@ -58,7 +73,7 @@ public class TestIfWhile {
         Assert.assertEquals("Sprockell 0 says 16",output.get(6));
     }
     /**
-     * A changed version of:
+     * Tests a changed version of:
      * http://rosettacode.org/wiki/Loops/Nested
      */
     @Test

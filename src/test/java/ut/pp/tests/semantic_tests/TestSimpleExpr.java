@@ -6,6 +6,10 @@ import org.junit.Test;
 import java.util.List;
 
 public class TestSimpleExpr {
+    /**
+     * Tests whether precedence works as expected.
+     * @throws Exception
+     */
     @Test
     public void testPrecedence() throws Exception {
         String input = "precedence";
@@ -16,6 +20,10 @@ public class TestSimpleExpr {
         Assert.assertEquals("Sprockell 0 says 43" ,output.get(3));
 
     }
+    /**
+     * Tests if basic types are represented in the program.
+     * @throws Exception
+     */
 
     @Test
     public void testBasicTypes() throws Exception{

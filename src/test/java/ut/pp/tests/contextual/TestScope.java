@@ -131,6 +131,28 @@ public class TestScope {
             assertTrue(c.getScopeErrors().contains("Error:numberofiterations already declared in this scope at Line 2 Character:0"));
         }
     }
+    /**
+     * Check if a variable cannot be
+     * called without initilization
+     * @throws Exception
+     */
+    @Test
+    public void scope_test_7()  throws Exception {
+        String input = "bool test;\n" +
+                "if(test){" +
+                "print(6);" +
+                "}";
+        try {
+
+            c.check(TestSimpleExpr.getParseTree(input));
+            Assert.fail();
+
+        }
+        catch (Exception e) {
+            assertEquals(2, c.getScopeErrors().size());
+            assertEquals(c.getErrors().get(2),"Error: this variable you are changing does not exist at Line: 1 Character: 5");
+        }
+    }
 
 
 

@@ -159,11 +159,12 @@ public class TestConcurrency {
 
     }
     /**
-     * Expected to fail. Test to show that threads can deadlock.
+     * Expected to fail by timing out.
+     * Test to show that threads can deadlock.
      */
-    @Test
+    @Test(timeout = 10000)
     public void testDeadlock() throws Exception{
-        String input = "shared_enum";
+        String input = "deadlockwiththreads";
         List<String> output = ut.pp.Main.runSprockell(input);
         Assert.fail();
     }

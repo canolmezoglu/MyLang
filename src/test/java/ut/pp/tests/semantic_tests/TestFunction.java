@@ -11,12 +11,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TestFunction {
+    /**
+     * Testing to see whether recursive functions work.
+     * For the standard memory of sprockell, only works
+     * till fib(6).
+     * @throws Exception
+     */
     @Test
     public void testFib() throws Exception {
         String input = "fib";
         List<String> output = ut.pp.Main.runSprockell(input);
         Assert.assertEquals("Sprockell 0 says 8", output.get(0));
     }
+
+    /**
+     * Testing pass by reference by a basic swap.
+     * @throws Exception
+     */
     @Test
     public void testSwapByReference() throws Exception {
         String input = "swapByReference";
@@ -25,6 +36,11 @@ public class TestFunction {
         Assert.assertEquals("Sprockell 0 says 5", output.get(1));
 
     }
+    /**
+     * Testing if normal parameters and parameters passed by reference
+     * can work together.
+     * @throws Exception
+     */
     @Test
     public void testReferenceSumAndChange() throws Exception {
         String input = "referenceSumAndChange";
@@ -44,6 +60,12 @@ public class TestFunction {
         }
         return true;
     }
+
+    /**
+     * Tests the isPrime function written in Sprockell
+     * against an isPrime function written in Java.
+     * @throws Exception
+     */
 
     @Test
     public void testIsPrime() throws Exception {
@@ -68,7 +90,11 @@ public class TestFunction {
         }
         return gcd(n2, n1 % n2);
     }
-
+    /**
+     * Tests the gcd function written in Sprockell
+     * against an gcd function written in Java.
+     * @throws Exception
+     */
     @Test
     public void testGcd() throws Exception {
         String input = "euclidGcd";

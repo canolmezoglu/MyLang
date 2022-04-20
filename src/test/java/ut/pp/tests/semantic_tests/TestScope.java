@@ -6,6 +6,12 @@ import org.junit.Test;
 import java.util.List;
 
 public class TestScope {
+    /**
+     * Tests if variables can be renamed
+     * in inner scopes and still accesssed.
+     * Also tests if scopes are closed correctly.
+     * @throws Exception
+     */
     @Test
     public void testScope1() throws Exception {
         String input = "331";
