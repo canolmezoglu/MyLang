@@ -1,15 +1,13 @@
-package ut.pp.tests.checker;
+package ut.pp.tests.contextual;
 
 import org.junit.Assert;
 import org.junit.Test;
-import ut.pp.elaboration.Checker;
+import ut.pp.elaboration.Scanner;
 
-import java.util.ArrayList;
-
-import static ut.pp.tests.checker.TestBasicTypes.getParseTree;
+import static ut.pp.tests.contextual.TestBasicTypes.getParseTree;
 
 public class TestIfWhile {
-    private final Checker checker = new Checker();
+    private final Scanner scanner = new Scanner();
 
     /**
      * Test if a correct use of an if
@@ -18,13 +16,13 @@ public class TestIfWhile {
      */
     @Test
     public void test_If1() throws Exception{
-        checker.check(
+        scanner.check(
                 getParseTree("if (false or true){" +
                         "   print(1);" +
                         "}")
         );
 
-        Assert.assertEquals(0,checker.getErrors().size());
+        Assert.assertEquals(0, scanner.getErrors().size());
 
     }
     /**
@@ -35,14 +33,14 @@ public class TestIfWhile {
      */
     @Test
     public void test_If4() throws Exception{
-            checker.check(
+            scanner.check(
                     getParseTree(
                             "bool arr[2] = {true,false};" +
                                     "if ( arr%1 ){" +
                                     "   print(1);" +
                                     "}")
             );
-            Assert.assertEquals(0,checker.getErrors().size());
+            Assert.assertEquals(0, scanner.getErrors().size());
     }
     /**
      * Test if an incorrect type in used
@@ -53,7 +51,7 @@ public class TestIfWhile {
     @Test
     public void test_If2() throws Exception{
         try {
-            checker.check(
+            scanner.check(
                     getParseTree("if (5+4){" +
                             "   print(1);" +
                             "}")
@@ -61,9 +59,9 @@ public class TestIfWhile {
             Assert.fail();
         }
         catch (Exception e){
-            Assert.assertEquals(1,checker.getErrors().size());
+            Assert.assertEquals(1, scanner.getErrors().size());
             Assert.assertEquals("Error: if statement can only check a boolean at Line: 1 Character: 0",
-                    checker.getErrors().get(0));
+                    scanner.getErrors().get(0));
         }
     }
     /**
@@ -75,7 +73,7 @@ public class TestIfWhile {
     @Test
     public void test_If3() throws Exception{
         try {
-            checker.check(
+            scanner.check(
                     getParseTree(
                             "int arr[2] = {1,2};" +
                             "if ( arr%1 ){" +
@@ -85,11 +83,12 @@ public class TestIfWhile {
             Assert.fail();
         }
         catch (Exception e){
-            Assert.assertEquals(1,checker.getErrors().size());
+            Assert.assertEquals(1, scanner.getErrors().size());
             Assert.assertEquals("Error: if statement can only check a boolean at Line: 1 Character: 19",
-                    checker.getErrors().get(0));
+                    scanner.getErrors().get(0));
         }
         }
+
     /**
      * Test if a correct use of an while
      * statement is accepted.
@@ -97,13 +96,13 @@ public class TestIfWhile {
      */
     @Test
     public void test_While1() throws Exception{
-        checker.check(
+        scanner.check(
                 getParseTree("while (false or true){" +
                         "   print(1);" +
                         "}")
         );
 
-        Assert.assertEquals(0,checker.getErrors().size());
+        Assert.assertEquals(0, scanner.getErrors().size());
 
     }
     /**
@@ -114,14 +113,14 @@ public class TestIfWhile {
      */
     @Test
     public void test_While4() throws Exception{
-        checker.check(
+        scanner.check(
                 getParseTree(
                         "bool arr[2] = {true,false};" +
                                 "while ( arr%1 ){" +
                                 "   print(1);" +
                                 "}")
         );
-        Assert.assertEquals(0,checker.getErrors().size());
+        Assert.assertEquals(0, scanner.getErrors().size());
     }
     /**
      * Test if an incorrect type in used
@@ -132,7 +131,7 @@ public class TestIfWhile {
     @Test
     public void test_While2() throws Exception{
         try {
-            checker.check(
+            scanner.check(
                     getParseTree("while (5+4){" +
                             "   print(1);" +
                             "}")
@@ -140,9 +139,9 @@ public class TestIfWhile {
             Assert.fail();
         }
         catch (Exception e){
-            Assert.assertEquals(1,checker.getErrors().size());
+            Assert.assertEquals(1, scanner.getErrors().size());
             Assert.assertEquals("Error: while statement can only check a boolean at Line: 1 Character: 0",
-                    checker.getErrors().get(0));
+                    scanner.getErrors().get(0));
         }
     }
     /**
@@ -154,7 +153,7 @@ public class TestIfWhile {
     @Test
     public void test_While3() throws Exception{
         try {
-            checker.check(
+            scanner.check(
                     getParseTree(
                             "int arr[2] = {1,2};" +
                                     "while ( arr%1 ){" +
@@ -164,9 +163,9 @@ public class TestIfWhile {
             Assert.fail();
         }
         catch (Exception e){
-            Assert.assertEquals(1,checker.getErrors().size());
+            Assert.assertEquals(1, scanner.getErrors().size());
             Assert.assertEquals("Error: while statement can only check a boolean at Line: 1 Character: 19",
-                    checker.getErrors().get(0));
+                    scanner.getErrors().get(0));
         }
     }
 }

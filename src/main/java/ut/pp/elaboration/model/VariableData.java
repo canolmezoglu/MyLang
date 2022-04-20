@@ -1,4 +1,7 @@
-package ut.pp.elaboration;
+package ut.pp.elaboration.model;
+
+
+import ut.pp.elaboration.model.enums.MyType;
 
 public class VariableData {
     MyType type;
@@ -7,6 +10,29 @@ public class VariableData {
     boolean global = false;
     int columnCount = 0;
     boolean pointer = false;
+
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public void setGlobal(boolean global) {
+        this.global = global;
+    }
+
+    public boolean isParameter() {
+        return isParameter;
+    }
+
+
+    public boolean isPointer() {
+        return pointer;
+    }
+
+    public void setPointer(boolean pointer) {
+        this.pointer = pointer;
+    }
+
+
     public VariableData(MyType type,int sizeCurr){
         this.sizeCurr = sizeCurr;
         this.type = type;

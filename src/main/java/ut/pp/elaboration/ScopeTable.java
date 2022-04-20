@@ -1,6 +1,8 @@
 package ut.pp.elaboration;
 
 import org.antlr.v4.runtime.Token;
+import ut.pp.elaboration.model.enums.MyType;
+import ut.pp.elaboration.model.VariableData;
 
 import java.util.*;
 
@@ -9,7 +11,7 @@ public class ScopeTable {
      * Class to handle Scope Checking and keeping track identifiers in the program
      */
     Set<String> errors;
-    List<HashMap<String,VariableData>> scopes;
+    List<HashMap<String, VariableData>> scopes;
     List<Integer> sizes;
     List<Integer> globalSizes;
     int scope_num;
@@ -90,9 +92,11 @@ public class ScopeTable {
      * @param shared is the variable shared or not
      * @return VariableData object
      */
-    public VariableData declare(String var, MyType type, Token tk,boolean shared){
-        if (shared){
-            this.globalSizes.set(this.scope_num,this.globalSizes.get(this.scope_num)+1);
+    public VariableData declare(String var, MyType type, Token tk, boolean shared){
+        if (shared && !this.scopes.get(this.scope_num).containsKey(var)){
+            if (type!= MyType.ARRAY) {
+                this.globalSizes.set(this.scope_num, this.globalSizes.get(this.scope_num) + 1);
+            }
 
             this.scopes.get(this.scope_num).put(var, new VariableData(type,this.globalSizes.get(this.scope_num),shared));
             if (globalSizes.get(this.scope_num) > 7){
@@ -102,8 +106,10 @@ public class ScopeTable {
 
 
         }
-        if (!this.scopes.get(this.scope_num).containsKey(var)) {
-            this.sizes.set(this.scope_num,this.sizes.get(this.scope_num)+1);
+        else if (!this.scopes.get(this.scope_num).containsKey(var)) {
+            if (type!=MyType.ARRAY) {
+                this.sizes.set(this.scope_num, this.sizes.get(this.scope_num) + 1);
+            }
             this.scopes.get(this.scope_num).put(var, new VariableData(type,this.sizes.get(this.scope_num)));
             return this.scopes.get(this.scope_num).get(var);
         }

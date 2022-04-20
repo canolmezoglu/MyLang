@@ -6,13 +6,12 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import ut.pp.elaboration.model.*;
 import ut.pp.elaboration.model.enums.*;
-import ut.pp.elaboration.model.interfaces.InstructionArgs;
+import ut.pp.elaboration.model.VariableData;
 import ut.pp.parser.MyLangBaseVisitor;
 import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
 
 import java.util.*;
-import java.util.function.Function;
 
 public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     /**
@@ -49,7 +48,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
     }
 
     /**
-     * Start the tree visitor for code generation after running the Code Checker
+     * Start the tree visitor for code generation after running the Code Scanner
      * @param tree
      * @return
      * @throws Exception
@@ -62,8 +61,8 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         pointer_map=new HashMap<>();
         var_address=new HashMap<>();
         var_global=new HashMap<>();
-        Checker checker = new Checker();
-        res = checker.check(tree);
+        Scanner scanner = new Scanner();
+        res = scanner.check(tree);
         return this.visit(tree);
     }
 
@@ -533,10 +532,10 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             InstructionList.add(sp.writeToMemory(Registers.regA,offset));
         }
         else if (this.currentfunctionData != null) {
-            if (this.currentfunctionData.getVariable(child).isParameter){
+            if (this.currentfunctionData.getVariable(child).isParameter()){
                 InstructionList.add(sp.loadToMemory(Integer.toString(offset + 1),Registers.regB));
                 InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regB,Registers.regB));
-                if (this.currentfunctionData.getVariable(child).pointer) {
+                if (this.currentfunctionData.getVariable(child).isPointer()) {
                     InstructionList.add(sp.getFromIndAddr(Registers.regB, Registers.regB));
                 }
 
@@ -544,7 +543,7 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
             else {
                 InstructionList.add(sp.loadToMemory(Integer.toString(offset +1), Registers.regB));
                 InstructionList.add(sp.compute(Operators.Sub, Registers.regF, Registers.regB, Registers.regB));
-                if (this.currentfunctionData.getVariable(child).pointer) {
+                if (this.currentfunctionData.getVariable(child).isPointer()) {
                     InstructionList.add(sp.getFromIndAddr(Registers.regB, Registers.regB));
                 }
             }
@@ -656,18 +655,18 @@ public class CodeGen extends MyLangBaseVisitor<List<Instruction>> {
         // if we're inside a function
         else if(this.currentfunctionData !=null){
             VariableData variableData = this.currentfunctionData.getVariable(child);
-            if (variableData.isParameter){
+            if (variableData.isParameter()){
                 // parameter is at the bottom of arp
                 InstructionList.add(sp.loadToMemory(Integer.toString(offset + 1),Registers.regB));
                 InstructionList.add(sp.compute(Operators.Add,Registers.regF,Registers.regB,Registers.regB));
-                if (variableData.pointer){
+                if (variableData.isPointer()){
                     InstructionList.add(sp.getFromIndAddr(Registers.regB,Registers.regB));
                 }
             }
             else{
                 InstructionList.add(sp.loadToMemory(Integer.toString(offset +1  ),Registers.regB));
                 InstructionList.add(sp.compute(Operators.Sub,Registers.regF,Registers.regB,Registers.regB));
-                if (variableData.pointer){
+                if (variableData.isPointer()){
                     InstructionList.add(sp.getFromIndAddr(Registers.regB,Registers.regB));
                 }
 

@@ -1,0 +1,30 @@
+shared int turn = 0;
+shared bool flags[2] = {false,false};
+shared int change = 0;
+
+parallel{
+thread
+{
+  flags%0 = true;
+  turn = 1;
+  while (flags%1 and (turn == 1)) { }
+  int i = 100;
+  while (i > 0){
+    change = change + 5;
+    i = i - 1;
+  }
+  flags%0 = false;
+  }
+thread {
+  flags%1 = true;
+  turn = 0;
+  while (flags%0 and (turn == 0)) { }
+   int i = 100;
+   while (i > 0){
+     change = change - 4;
+     i = i - 1;
+   }
+  flags%1 = false;
+}
+}
+print (change);

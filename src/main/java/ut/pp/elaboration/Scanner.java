@@ -1,26 +1,20 @@
 package ut.pp.elaboration;
 
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import ut.pp.elaboration.model.ArraySp;
+import ut.pp.elaboration.model.enums.MyType;
 import ut.pp.elaboration.model.ThreadSp;
-import ut.pp.elaboration.model.enums.Registers;
+import ut.pp.elaboration.model.VariableData;
 import ut.pp.parser.MyLangBaseListener;
-import ut.pp.parser.MyLangLexer;
 import ut.pp.parser.MyLangParser;
-import ut.pp.elaboration.ScopeTable;
 
-import javax.lang.model.element.VariableElement;
 import java.util.*;
 import java.util.ArrayList;
-import java.util.function.Function;
 
-public class Checker extends MyLangBaseListener {
+public class Scanner extends MyLangBaseListener {
     /**
      * Class to handle TypeCheck, ScopeCheck,Threading etc
      */
@@ -69,7 +63,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a Dynamic Array
+     * Scanner for a Dynamic Array
      * @param iden name of array
      * @param ctx
      * @return boolean dynamic
@@ -131,8 +125,8 @@ public class Checker extends MyLangBaseListener {
             }
         }
         if (dynamicArray){
-            setType(ctx,mainVariableData.type);
-            result.setGlobal(ctx, mainVariableData.global);
+            setType(ctx,mainVariableData.getType());
+            result.setGlobal(ctx, mainVariableData.isGlobal());
 
         }
         return dynamicArray;
@@ -149,7 +143,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for functions
+     * Scanner for functions
      * @param ctx
      */
     @Override public void exitRunProcedureConstruct(MyLangParser.RunProcedureConstructContext ctx){
@@ -168,7 +162,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a prefix operator -MINUS,NOT
+     * Scanner for a prefix operator -MINUS,NOT
      * @param ctx
      */
     @Override public void exitPrefixFactor(MyLangParser.PrefixFactorContext ctx){
@@ -183,7 +177,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a Term - AND,OR
+     * Scanner for a Term - AND,OR
      * @param ctx
      */
     @Override public void exitTerm(MyLangParser.TermContext ctx){
@@ -209,7 +203,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a superior expression - PLUS,MINUS,OR
+     * Scanner for a superior expression - PLUS,MINUS,OR
      * @param ctx
      */
     @Override public void exitSuperiorExpr(MyLangParser.SuperiorExprContext ctx){
@@ -235,7 +229,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a program expression -EQ,NE
+     * Scanner for a program expression -EQ,NE
      * @param ctx
      */
     @Override public void exitExpr(MyLangParser.ExprContext ctx){
@@ -259,7 +253,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for an expression inside parenthesis
+     * Scanner for an expression inside parenthesis
      * @param ctx
      */
     @Override public void exitParFactor(MyLangParser.ParFactorContext ctx){
@@ -267,7 +261,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a Primitiv Factor
+     * Scanner for a Primitiv Factor
      * @param ctx
      */
     @Override public void exitPrimitiveFactor(MyLangParser.PrimitiveFactorContext ctx){
@@ -275,7 +269,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a factor inside a function
+     * Scanner for a factor inside a function
      * @param ctx
      */
     @Override public void exitIdFactor(MyLangParser.IdFactorContext ctx){
@@ -283,10 +277,10 @@ public class Checker extends MyLangBaseListener {
         VariableData type = null;
         if (this.currFunction !=null){
             if(iden.contains("&")){ //this is a pointer
-                setType(ctx,this.currFunction.getVariable(iden.substring(0,iden.length()-1)).type);
+                setType(ctx,this.currFunction.getVariable(iden.substring(0,iden.length()-1)).getType());
                 return;
             }
-            setType(ctx,this.currFunction.getVariable(iden).type);
+            setType(ctx,this.currFunction.getVariable(iden).getType());
             setOffset(ctx,this.currFunction.getVariable(iden).getSizeCurr());
             result.setGlobal(ctx,false);
             return;
@@ -295,23 +289,23 @@ public class Checker extends MyLangBaseListener {
             if (iden.contains("&")) { //this is a pointer
                 type = scope.check(iden.substring(0, iden.length() - 1), ctx.getStart());
                 if (type != null) {
-                    setType(ctx, type.type);
+                    setType(ctx, type.getType());
                 }
                 return;
             }
             if (!checkDynamicArray(iden, ctx)) {
                 type = scope.check(iden, ctx.getStart());
                 if (type != null) {
-                    setType(ctx, type.type);
+                    setType(ctx, type.getType());
                     setOffset(ctx, type.getSizeCurr());
-                    result.setGlobal(ctx, type.global);
+                    result.setGlobal(ctx, type.isGlobal());
                 }
             }
         }
     }
 
     /**
-     * Checker for a Primitive -NUM,BOOL
+     * Scanner for a Primitive -NUM,BOOL
      * @param ctx
      */
     @Override public void exitPrimitive(MyLangParser.PrimitiveContext ctx) {
@@ -340,7 +334,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a changing a value - variables,arrays,pointers
+     * Scanner for a changing a value - variables,arrays,pointers
      * @param ctx
      */
     @Override public void exitChangeAss(MyLangParser.ChangeAssContext ctx) {
@@ -353,7 +347,7 @@ public class Checker extends MyLangBaseListener {
         if (this.currFunction !=null){
             if(iden.contains("&")){ //this is a pointer
                 type = this.currFunction.getVariable(iden.substring(0,iden.length()-1));
-                if(type.type != getType(ctx.expr())){
+                if(type.getType() != getType(ctx.expr())){
                     this.errors.add("Error: You are assigning an invalid type to the pointer-variable at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
                 return;
@@ -361,7 +355,7 @@ public class Checker extends MyLangBaseListener {
             if (!checkDynamicArray(iden,ctx)) {
                 type = this.currFunction.getVariable(iden);
                 if (type != null) {
-                    if (type.type != getType(ctx.expr())) {
+                    if (type.getType() != getType(ctx.expr())) {
                         this.errors.add("Error: you are changing a variable to an unexpected type at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                     }
                     setType(ctx, getType(ctx.expr()));
@@ -374,7 +368,7 @@ public class Checker extends MyLangBaseListener {
         else {
             if (iden.contains("&")) { //this is a pointer
                 type = scope.check(iden.substring(0, iden.length() - 1), ctx.getStart());
-                if (type.type != getType(ctx.expr())) {
+                if (type.getType() != getType(ctx.expr())) {
                     this.errors.add("Error: You are assigning an invalid type to the pointer-variable at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                 }
                 return;
@@ -386,12 +380,12 @@ public class Checker extends MyLangBaseListener {
             if (!checkDynamicArray(iden,ctx)) {
                 type = scope.check(ctx.ID().toString(), ctx.getStart());
                 if (type != null) {
-                    if (type.type != getType(ctx.expr())) {
+                    if (type.getType() != getType(ctx.expr())) {
                         this.errors.add("Error: you are changing a variable to an unexpected type at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
                     }
                     setType(ctx, getType(ctx.expr()));
                     setOffset(ctx, type.getSizeCurr());
-                    result.setGlobal(ctx, type.global);
+                    result.setGlobal(ctx, type.isGlobal());
                     return;
                 }
                 this.errors.add("Error: this variable you are changing does not exist at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
@@ -400,7 +394,7 @@ public class Checker extends MyLangBaseListener {
 
 
     /**
-     * Checker for a declaration of a variable
+     * Scanner for a declaration of a variable
      * @param ctx
      */
     @Override public void exitDeclaration(MyLangParser.DeclarationContext ctx) {
@@ -441,7 +435,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a Pointer declaration
+     * Scanner for a Pointer declaration
      * @param ctx
      */
     @Override
@@ -450,16 +444,20 @@ public class Checker extends MyLangBaseListener {
             if (ctx.factor() instanceof MyLangParser.IdFactorContext) {
                 VariableData check = scope.check(ctx.factor().getText(), ctx.getStart());
                 if (check == null) {
-                    this.errors.add("Pointer is pointing to an undefined variable");
+                    this.errors.add("Error:Pointer is pointing to an undefined variable "  + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
                 } else if (this.currFunction == null) {
-                    setOffset(ctx, scope.declare(ctx.ID().toString(), check.type, ctx.getStart(), false).getSizeCurr());
-                    setType(ctx, check.type);
+                    setOffset(ctx, scope.declare(ctx.ID().toString(), check.getType(), ctx.getStart(), false).getSizeCurr());
+                    setType(ctx, check.getType());
                     setOffset(ctx.factor(), check.getSizeCurr());
                 } else {
-                    this.currFunction.declare(ctx.ID().toString(), check.type);
-                    setType(ctx, check.type);
+                    this.currFunction.declare(ctx.ID().toString(), check.getType());
+                    setType(ctx, check.getType());
                 }
             }
+            else{
+                this.errors.add("Error:Pointers cannot point to something different than variables."  + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
+            }
+
         }
         catch(Exception e){
             //Do nothing, errors have already been added by ScopeTable
@@ -467,7 +465,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a 1d array declaration
+     * Scanner for a 1d array declaration
      * @param ctx
      */
     @Override
@@ -476,20 +474,20 @@ public class Checker extends MyLangBaseListener {
             this.errors.add("Error: The size of the array does not match the number of elements you have listed at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }
         try {
-
+            scope.declare(ctx.ID().toString(),MyType.ARRAY,ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
             for (int i = 0; i < ctx.darray().expr().size(); i++) {
                 if (ctx.type().BOOLEAN() != null) {
                     if (getType(ctx.darray().expr(i)) != MyType.BOOLEAN) {
                         this.errors.add("Error: you are trying to assign an integer to a boolean array at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
                     }
                     setType(ctx.darray().expr(i), MyType.BOOLEAN);
-                    setOffset(ctx.darray().expr(i), scope.declare(ctx.ID().toString() + "%" + i, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                    setOffset(ctx.darray().expr(i), scope.declare(ctx.ID().toString() + "%" + i, MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
                 } else if (ctx.type().INTEGER() != null) {
                     if (getType(ctx.darray().expr(i)) != MyType.NUM) {
                         this.errors.add("Error: you are trying to assign an boolean to an integer array at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
                     }
                     setType(ctx.darray().expr(i), MyType.NUM);
-                    setOffset(ctx.darray().expr(i), scope.declare(ctx.ID().toString() + "%" + i, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                    setOffset(ctx.darray().expr(i), scope.declare(ctx.ID().toString() + "%" + i, MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
                 } else {
                     this.errors.add("Error: Invalid type at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
                 }
@@ -501,13 +499,14 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a 2d array declaration
+     * Scanner for a 2d array declaration
      * @param ctx
      */
     @Override
     public void exitDeclare2dArray(MyLangParser.Declare2dArrayContext ctx) {
         List<MyLangParser.DarrayContext> rows_list = ctx.darray();
         try {
+            scope.declare(ctx.ID().toString(),MyType.ARRAY,ctx.getStart(),ctx.access() != null && ctx.access().SHARED() != null);
 
             if (rows_list.size() != Integer.parseInt(ctx.NUM(0).getText())) {
                 this.errors.add("Error: The number of rows does not match at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
@@ -547,7 +546,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for an enum declaration
+     * Scanner for an enum declaration
      * @param ctx
      */
     @Override
@@ -559,13 +558,13 @@ public class Checker extends MyLangBaseListener {
                         this.errors.add("Error: you are trying to assign an invalid type to a boolean enum at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
                     }
                     setType(ctx.enumAssign().expr(i), MyType.BOOLEAN);
-                    setOffset(ctx.enumAssign().expr(i), scope.declare(ctx.ID().toString() + "." + ctx.enumAssign().ID(i).getText(), MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                    setOffset(ctx.enumAssign().expr(i), scope.declare(ctx.ID().toString() + "." + ctx.enumAssign().ID(i).getText(), MyType.BOOLEAN, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
                 } else if (ctx.type().INTEGER() != null) {
                     if (getType(ctx.enumAssign().expr(i)) != MyType.NUM) {
                         this.errors.add("Error: you are trying to assign an invalid type to an integer enum at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
                     }
                     setType(ctx.enumAssign().expr(i), MyType.NUM);
-                    setOffset(ctx.enumAssign().expr(i), scope.declare(ctx.ID().toString() + "." + ctx.enumAssign().ID(i).getText(), MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).sizeCurr);
+                    setOffset(ctx.enumAssign().expr(i), scope.declare(ctx.ID().toString() + "." + ctx.enumAssign().ID(i).getText(), MyType.NUM, ctx.getStart(), ctx.access() != null && ctx.access().SHARED() != null).getSizeCurr());
                 } else {
                     this.errors.add("Error: Invalid type at Line: " + ctx.getStart().getLine() + " Character: " + ctx.getStart().getCharPositionInLine());
                 }
@@ -586,7 +585,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for if condition and close scope for this if block
+     * Scanner for if condition and close scope for this if block
      * @param ctx
      */
     @Override public void exitIfConstruct(MyLangParser.IfConstructContext ctx){
@@ -608,7 +607,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for while condition and close scope for this while loop
+     * Scanner for while condition and close scope for this while loop
      * @param ctx
      */
     @Override public void exitWhileConstruct(MyLangParser.WhileConstructContext ctx){
@@ -647,7 +646,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for the Thread Construct and open a new scope for this thread
+     * Scanner for the Thread Construct and open a new scope for this thread
      * @param ctx
      */
     @Override
@@ -692,7 +691,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for return statement inside a function
+     * Scanner for return statement inside a function
      * @param ctx
      */
     @Override
@@ -713,7 +712,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a function definition
+     * Scanner for a function definition
      * @param ctx
      */
     @Override
@@ -746,7 +745,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a function call - enter
+     * Scanner for a function call - enter
      * @param ctx
      */
     @Override
@@ -760,7 +759,7 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for a function call - exit
+     * Scanner for a function call - exit
      * @param ctx
      */
     @Override
@@ -783,7 +782,7 @@ public class Checker extends MyLangBaseListener {
                     ctx.expr(i).superiorExpr(0).term().factor() instanceof MyLangParser.FuncCallContext){
                 this.errors.add("Error: Function calls cannot be made inside function calls at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
             }
-            if (getType(ctx.expr(i)) != functionData.getVariable(functionData.parameters.get(i)).type){
+            if (getType(ctx.expr(i)) != functionData.getVariable(functionData.parameters.get(i)).getType()){
                 this.errors.add("Error: the parameter type not equal to expected type at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
             }
 
@@ -792,11 +791,12 @@ public class Checker extends MyLangBaseListener {
     }
 
     /**
-     * Checker for function construct in the program
+     * Scanner for function construct in the program
      * @param ctx
      */
     @Override
     public void exitFunctionConstruct(MyLangParser.FunctionConstructContext ctx){
+        if (this.errors.addAll(this.currFunction.errors));
         if (this.result.functionDataHashMapContains(ctx.ID(0).toString())){
             this.errors.add("Error: you cannot have two functions with the same name at Line: " + ctx.getStart().getLine()+" Character: "+ctx.getStart().getCharPositionInLine());
         }

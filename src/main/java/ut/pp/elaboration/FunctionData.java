@@ -1,11 +1,14 @@
 package ut.pp.elaboration;
 
+import ut.pp.elaboration.model.enums.MyType;
+import ut.pp.elaboration.model.VariableData;
+
 import java.util.*;
 
 public class FunctionData {
     Set<String> errors;
     int localDataSize;
-    Map<String,VariableData> localScope;
+    Map<String, VariableData> localScope;
     List<String> parameters;
     MyType returnType;
 
@@ -23,6 +26,7 @@ public class FunctionData {
         this.localScope = new HashMap<>();
         this.parameters = new ArrayList<>();
         this.returnType = returnType;
+        this.errors = new HashSet<>();
     }
     public void addParameter(String id, MyType type,boolean pointer){
         if (localScope.containsKey(id) ){
